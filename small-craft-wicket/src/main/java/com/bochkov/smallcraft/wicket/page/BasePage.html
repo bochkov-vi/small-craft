@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<wicket:head>
+    <style>
+        html {
+            font-size: 12px;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        .fa {
+            line-height: inherit !important;
+        }
+    </style>
+</wicket:head>
+<body style="padding-top: 42px">
+<div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div id="navbarSupportedContent" class="collapse navbar-collapse">
+            <div class="navbar-nav">
+                <a wicket:id="home-link" href="home" class="nav-item nav-link">
+                    <i class="fa fa-home"/>
+                    <wicket:message key="home-page-title"/>
+                </a>
+                <a wicket:id="boat-link" href="home" class="nav-item nav-link">
+                    <i class="fa fa-ship"/>
+                    <wicket:message key="boat-page-title"/>
+                </a>
+                <a wicket:id="person-link" href="home" class="nav-item nav-link">
+                    <wicket:message key="person-page-title"/>
+                </a>
+                <a wicket:id="legal-person-link" href="home" class="nav-item nav-link">
+                    <wicket:message key="legal-person-page-title"/>
+                </a>
+
+            </div>
+        </div>
+    </nav>
+</div>
+<wicket:child></wicket:child>
+</body>
+</html>
