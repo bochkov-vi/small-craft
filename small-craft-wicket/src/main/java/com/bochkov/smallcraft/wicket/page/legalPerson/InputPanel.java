@@ -15,6 +15,7 @@ import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.GenericPanel;
@@ -30,6 +31,8 @@ public class InputPanel extends GenericPanel<LegalPerson> {
 
     Component inn = new TextField<>("inn").setOutputMarkupId(true);
 
+    FormComponent<Person> person = new SelectPerson("person").setRequired(true);
+
     public InputPanel(String id, IModel<LegalPerson> model) {
         super(id, model);
     }
@@ -42,7 +45,7 @@ public class InputPanel extends GenericPanel<LegalPerson> {
         form.add(new TextField<>("name", String.class).setRequired(true));
         form.add(new TextArea<>("address").setRequired(true));
         form.add(new TextField<>("id").setEnabled(false));
-        form.add(new SelectPerson("person").setRequired(true));
+        form.add(person);
         form.add(new AjaxLink<Void>("btn-add-person") {
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -60,8 +63,15 @@ public class InputPanel extends GenericPanel<LegalPerson> {
     }
 
     @Override
+    protected void onConfigure() {
+        person.setVisible(getModel().map(p -> !p.isNew()).orElse(false).getObject());
+        super.onConfigure();
+    }
+
+    @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
+
         response.render(JavaScriptHeaderItem.forReference(new WebjarsJavaScriptResourceReference("jquery.inputmask/current/jquery.inputmask.bundle.js") {
             @Override
             public List<HeaderItem> getDependencies() {
