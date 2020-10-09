@@ -14,17 +14,26 @@ import javax.persistence.*;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Boat extends AbstractEntity<String> {
+public class Boat extends AbstractEntity<Long> {
 
     @Id
+    @Column(name = "id_boat")
+    @GeneratedValue(generator = "boat_seq")
+    Long id;
+
     @Column(name = "tail_number")
-    String id;
+    String tailNumber;
 
     String type;
 
     String model;
 
     @ManyToOne
-    @JoinColumn(name = "id_person")
-    Person person;
+    @JoinColumn(name = "id_own")
+    Person own;
+
+    @Override
+    public String toString() {
+        return String.format("%s %s %s", type, id, own);
+    }
 }

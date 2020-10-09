@@ -16,11 +16,12 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
+import java.text.MessageFormat;
 import java.util.Optional;
 import java.util.Set;
 
@@ -31,6 +32,10 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
     @Setter
     protected Page backPage;
 
+    protected org.slf4j.Logger log;
+
+    protected FeedbackPanel feedback = new FeedbackPanel("feedback");
+
     protected DeletePanel<ENTITY, ID> deletePanel = new DeletePanel<ENTITY, ID>("deleted-panel") {
         @Override
         public void onDelete(AjaxRequestTarget target, IModel model) {
@@ -38,37 +43,48 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         }
     };
 
-    protected org.slf4j.Logger log;
-
-    protected FeedbackPanel feedback = new FeedbackPanel("feedback");
-
     protected Class<ENTITY> entityClass;
 
     public CrudPage(Class<ENTITY> entityClass) {
+        super();
         this.entityClass = entityClass;
-    }
-
-    public CrudPage() {
         log = org.slf4j.LoggerFactory.getLogger(this.getClass());
-        entityClass = (Class<ENTITY>) ((ParameterizedType) (getClass().getGenericSuperclass())).getActualTypeArguments()[0];
     }
 
-    public CrudPage(IModel<T> model) {
+
+    public CrudPage(Class<ENTITY> entityClass, IModel<T> model) {
         super(model);
+        this.entityClass = entityClass;
         log = org.slf4j.LoggerFactory.getLogger(this.getClass());
-        entityClass = (Class<ENTITY>) ((ParameterizedType) (getClass().getGenericSuperclass())).getActualTypeArguments()[0];
     }
 
-    public CrudPage(PageParameters parameters) {
+    public CrudPage(Class<ENTITY> entityClass, PageParameters parameters) {
         super(parameters);
+        this.entityClass = entityClass;
         log = org.slf4j.LoggerFactory.getLogger(this.getClass());
-        entityClass = (Class<ENTITY>) ((ParameterizedType) (getClass().getGenericSuperclass())).getActualTypeArguments()[0];
     }
 
     protected abstract <R extends JpaRepository<ENTITY, ID>> R getJpaRepository();
 
     public void onDelete(AjaxRequestTarget target, IModel<ENTITY> model) {
-        deletePanel.hide(target);
+
+        if (model != null) {
+            target.add(feedback);
+            ENTITY entity = model.getObject();
+            if (entity != null && !entity.isNew()) {
+                try {
+                    getJpaRepository().delete(model.getObject());
+                    deletePanel.hide(target);
+                    info(MessageFormat.format(getString("delete.success"), entity));
+                } catch (Exception e) {
+                    String message = MessageFormat.format(getString("delete.error"), entity);
+                    error(((NestedRuntimeException) e).getMostSpecificCause());
+                    log.error(message, e);
+                }
+            } else {
+                error(getString(MessageFormat.format("delete.empty.error", entity)));
+            }
+        }
     }
 
     @Override
@@ -78,6 +94,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         deletePanel.add(createDetails("details", deletePanel.deletedEntityModel));
         deletePanel.setDefaultModel(Model.of());
         add(feedback);
+        feedback.setOutputMarkupId(true);
         add(deletePanel);
     }
 
@@ -181,6 +198,9 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         return link;
     }
 
+    public final Class<ENTITY> getEntityClass() {
+        return entityClass;
+    }
 
     public Component createDetails(String id, IModel<ENTITY> entityiModel) {
         return new DefaultDetailsPanel<ENTITY>(id, entityiModel, entityClass);

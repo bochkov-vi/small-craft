@@ -57,9 +57,14 @@ public class InputPanel extends GenericPanel<LegalPerson> {
                     }
                 }.setBackPage(getPage()));
             }
-        });
-        form.add(inn);
 
+            @Override
+            protected void onConfigure() {
+                super.onConfigure();
+                setVisible(person.isVisible());
+            }
+        }.setOutputMarkupPlaceholderTag(true));
+        form.add(inn);
     }
 
     @Override
@@ -71,7 +76,6 @@ public class InputPanel extends GenericPanel<LegalPerson> {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
-
         response.render(JavaScriptHeaderItem.forReference(new WebjarsJavaScriptResourceReference("jquery.inputmask/current/jquery.inputmask.bundle.js") {
             @Override
             public List<HeaderItem> getDependencies() {
@@ -79,6 +83,5 @@ public class InputPanel extends GenericPanel<LegalPerson> {
             }
         }));
         response.render(OnDomReadyHeaderItem.forScript(String.format("$('#%s').inputmask('9{10,12}')", inn.getMarkupId())));
-
     }
 }

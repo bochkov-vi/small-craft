@@ -36,7 +36,7 @@ public class PersonRepositoryTest {
 
     @Test
     public void testFindByMask() {
-        personRepository.findByMask("Анд", PageRequest.of(0,10));
+        personRepository.findByMask(null, PageRequest.of(0,10));
 
     }
 }

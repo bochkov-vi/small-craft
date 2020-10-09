@@ -17,7 +17,8 @@ import javax.persistence.*;
 public class LegalPerson extends AbstractEntity<Long> {
 
     @Id
-    @Column(name = "id_person")
+    @Column(name = "id_legal_person")
+    @GeneratedValue(generator = "legal_person_seq")
     Long id;
 
     String name;
@@ -27,6 +28,11 @@ public class LegalPerson extends AbstractEntity<Long> {
     String address;
 
     @OneToOne
-    @JoinColumn(name = "id_person", referencedColumnName = "id_person", insertable = false, updatable = false)
+    @JoinColumn(name = "id_person", referencedColumnName = "id_person", nullable = false)
     Person person;
+
+    @Override
+    public String toString() {
+        return String.format("%s (%s)", name, person);
+    }
 }

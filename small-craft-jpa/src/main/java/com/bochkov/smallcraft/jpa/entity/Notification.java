@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.jpa.entity;
 
+import com.google.common.base.MoreObjects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +28,7 @@ public class Notification extends AbstractEntity<NotificationPK> {
     String region;
 
     @ManyToOne
-    Person person;
+    Person captain;
 
     @ManyToOne
     Boat boat;
@@ -43,4 +44,14 @@ public class Notification extends AbstractEntity<NotificationPK> {
     String timeOfDay;
 
     Boolean tck; //technical means of verification
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("id", id)
+                .add("captain", captain)
+                .add("boat", boat)
+                .add("date", date)
+                .toString();
+    }
 }

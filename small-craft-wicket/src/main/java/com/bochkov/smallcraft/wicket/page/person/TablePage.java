@@ -5,6 +5,7 @@ import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.page.crud.CrudTablePage;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.LambdaColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -20,7 +21,7 @@ public class TablePage extends CrudTablePage<Person, Long> {
     PersonRepository repository;
 
     public TablePage(PageParameters parameters) {
-        super(parameters);
+        super(Person.class, parameters);
     }
 
     @Override
@@ -32,9 +33,9 @@ public class TablePage extends CrudTablePage<Person, Long> {
     @Override
     protected List<? extends IColumn> columns() {
         List<IColumn> columns = Lists.newArrayList();
-        columns.add(new PropertyColumn(new ResourceModel("firstName"), "firstName", "firstName"));
-        columns.add(new PropertyColumn(new ResourceModel("middleName"), "middleName", "middleName"));
-        columns.add(new PropertyColumn(new ResourceModel("lastName"), "lastName", "lastName"));
+        columns.add(new PropertyColumn(new ResourceModel("id"), "id", "id"));
+
+        columns.add(new LambdaColumn<Person, String>(new ResourceModel("lastName"), "lastName", Person::toString));
         columns.add(new PropertyColumn(new ResourceModel("passport.serial"), "passport.serial", "passport.serial"));
         columns.add(new PropertyColumn(new ResourceModel("passport.number"), "passport.number", "passport.number"));
         columns.add(new PropertyColumn(new ResourceModel("passport.date"), "passport.date", "passport.date"));

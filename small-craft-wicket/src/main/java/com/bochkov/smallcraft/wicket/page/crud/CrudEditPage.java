@@ -31,25 +31,21 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
 
     boolean ajax = false;
 
-    public CrudEditPage(PageParameters parameters) {
-        super(parameters);
-
+    public CrudEditPage(Class<T> entityClass, PageParameters parameters) {
+        super(entityClass, parameters);
         T entity = getConverter(getEntityClass()).convertToObject(parameters.get(0).toOptionalString(), Session.get().getLocale());
         setModel(PersistableModel.of(id -> getJpaRepository().findById(id)));
         setModelObject(entity);
     }
 
-    public CrudEditPage(IModel<T> model) {
-        super(model);
+    public CrudEditPage(Class<T> entityClass, IModel<T> model) {
+        super(entityClass, model);
     }
 
-    public CrudEditPage() {
-        super();
+    public CrudEditPage(Class<T> entityClass) {
+        super(entityClass);
     }
 
-    public CrudEditPage(Class<T> tClass) {
-        super(tClass);
-    }
 
     private Button createSaveButton(String id) {
         Button button = null;
@@ -88,14 +84,19 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     public void onSave(Optional<AjaxRequestTarget> target, IModel<T> model) {
         try {
             getJpaRepository().save(getModelObject());
-            String message = MessageFormat.format(getString("save.success"), model.getObject());
+            String message = model.map(e -> MessageFormat.format(getString("save.success"), model.getObject())).getObject();
             success(message);
             onAfterSave(target, model);
-        } catch (Exception e) {
-            String message = MessageFormat.format(getString("save.error"), model.getObject());
+        } catch (NestedRuntimeException ex) {
+            String message = model.map(e -> MessageFormat.format(getString("save.error"), model.getObject())).getObject();
             error(message);
-            error(((NestedRuntimeException) e).getMostSpecificCause());
-            log.error(message, e);
+            error(((NestedRuntimeException) ex).getMostSpecificCause());
+            log.error(message, ex);
+        } catch (Exception ex) {
+            String message = model.map(e -> MessageFormat.format(getString("save.error"), model.getObject())).getObject();
+            error(message);
+            error(ex);
+            log.error(message, ex);
         }
         target.ifPresent(t -> t.add(feedback));
     }
@@ -116,17 +117,11 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         target.ifPresent(t -> t.add(feedback));
     }
 
-    @Override
-    public void onDelete(AjaxRequestTarget target, IModel<T> model) {
-        error("Object deleted!!!");
-        target.add(feedback);
-    }
-
     public void onAddRow(Optional<AjaxRequestTarget> target) {
-        setResponsePage(BeanUtils.instantiateClass(this.getClass()));
+        CrudEditPage<T, ID> page = BeanUtils.instantiateClass(this.getClass());
+        page.setBackPage(this);
+        setResponsePage(page);
     }
-
-    public abstract Class<T> getEntityClass();
 
     @Override
     protected void onInitialize() {

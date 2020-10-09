@@ -3,7 +3,6 @@ package com.bochkov.smallcraft.wicket.page.legalPerson;
 import com.bochkov.smallcraft.jpa.entity.LegalPerson;
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
-import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.page.crud.CrudTablePage;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
@@ -15,6 +14,7 @@ import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Optional;
 
 @MountPath("person/legal")
 public class TablePage extends CrudTablePage<LegalPerson, Long> {
@@ -23,7 +23,7 @@ public class TablePage extends CrudTablePage<LegalPerson, Long> {
     LegalPersonRepository repository;
 
     public TablePage(PageParameters parameters) {
-        super(parameters);
+        super(LegalPerson.class, parameters);
     }
 
     @Override
@@ -37,8 +37,8 @@ public class TablePage extends CrudTablePage<LegalPerson, Long> {
         List<IColumn> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("id"), "id", "id"));
         columns.add(new PropertyColumn(new ResourceModel("name"), "name", "name"));
+        columns.add(new LambdaColumn<LegalPerson, String>(new ResourceModel("person"), "person.lastName", legalPerson -> Optional.ofNullable(legalPerson.getPerson()).map(Person::getFio).orElse(null)));
         columns.add(new PropertyColumn(new ResourceModel("address"), "address", "address"));
-        columns.add(new LambdaColumn<LegalPerson, String>(new ResourceModel("person"), "person", row -> row.getPerson()));
         columns.add(new PropertyColumn(new ResourceModel("inn"), "inn", "inn"));
         columns.add(createEditColumn());
         columns.add(createDeleteColumn());

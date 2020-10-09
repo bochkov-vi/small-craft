@@ -5,10 +5,13 @@ import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.wicketstuff.annotation.mount.MountPath;
+
+import java.util.Optional;
 
 @MountPath("person/edit")
 public class EditPage extends CrudEditPage<Person, Long> {
@@ -17,15 +20,21 @@ public class EditPage extends CrudEditPage<Person, Long> {
     PersonRepository repository;
 
     public EditPage(PageParameters parameters) {
-        super(parameters);
+        super(Person.class, parameters);
     }
 
     public EditPage(IModel<Person> model) {
-        super(model);
+        super(Person.class, model);
     }
 
     public EditPage() {
         super(Person.class);
+    }
+
+    @Override
+    protected void onInitialize() {
+        super.onInitialize();
+        feedback.setEscapeModelStrings(false);
     }
 
     @Override
@@ -39,8 +48,10 @@ public class EditPage extends CrudEditPage<Person, Long> {
     }
 
     @Override
-    public Class<Person> getEntityClass() {
-        return Person.class;
+    public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<Person> model) {
+        if (model.getObject() != null && model.getObject().getLegalPerson() != null) {
+            super.onAfterSave(target, model);
+        }
     }
 
     @Override

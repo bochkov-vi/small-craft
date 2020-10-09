@@ -16,14 +16,15 @@ public class EditPage extends CrudEditPage<LegalPerson, Long> {
     PersonRepository repository;
 
     public EditPage(PageParameters parameters) {
-        super(parameters);
+        super(LegalPerson.class, parameters);
     }
 
     public EditPage(IModel<LegalPerson> model) {
-        super(model);
+        super(LegalPerson.class, model);
     }
 
     public EditPage() {
+        super(LegalPerson.class);
     }
 
     @Override
@@ -36,8 +37,4 @@ public class EditPage extends CrudEditPage<LegalPerson, Long> {
         return repository;
     }
 
-    @Override
-    public Class<LegalPerson> getEntityClass() {
-        return LegalPerson.class;
-    }
 }

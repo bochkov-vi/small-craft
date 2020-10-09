@@ -39,14 +39,23 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     boolean ajax = false;
 
-    public CrudTablePage(PageParameters parameters) {
-        super(parameters);
+    public CrudTablePage(Class<T> tClass) {
+        super(tClass);
+    }
+
+    public CrudTablePage(Class<T> tClass, IModel<Collection<T>> model) {
+        super(tClass, model);
+    }
+
+    public CrudTablePage(Class<T> tClass, PageParameters parameters) {
+        super(tClass, parameters);
     }
 
     @Override
     protected void onInitialize() {
         super.onInitialize();
         table = new EntityDataTable("table", columns(), provider());
+        table.setOutputMarkupId(true);
         container.add(table);
         container.setOutputMarkupId(true);
         container.add(createAddRowButton("btn-add-row"));
@@ -139,15 +148,6 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     }
 
 
-    public AbstractLink createDeleteSimpleButton(String id, IModel<T> model) {
-        return new Link<T>(id, model) {
-            @Override
-            public void onClick() {
-                onDelete(Optional.empty(), model);
-            }
-        };
-    }
-
     public AbstractLink createEditAjaxButton(String id, IModel<T> model) {
         return new AjaxLink<T>(id, model) {
             @Override
@@ -170,15 +170,6 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         setResponsePage(createEditPage(model));
     }
 
-    public void onDelete(Optional<AjaxRequestTarget> target, IModel<T> model) {
-        try {
-            getJpaRepository().delete(model.getObject());
-            info(getString("delete.success"));
-        } catch (Exception e) {
-            error(e.getCause());
-        }
-    }
-
 
     public void onAddRow(Optional<AjaxRequestTarget> target) {
         setResponsePage(createEditPage().setBackPage(this));
@@ -191,5 +182,11 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         page.setModel(model);
         page.setBackPage(this);
         return page;
+    }
+
+    @Override
+    public void onDelete(AjaxRequestTarget target, IModel<T> model) {
+        super.onDelete(target, model);
+        target.add(table);
     }
 }

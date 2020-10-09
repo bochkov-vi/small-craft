@@ -76,7 +76,7 @@ public class WicketWebApplication extends WicketBootStandardWebApplication {
             @Override
             public Boat convertToObject(String value, Locale locale) throws ConversionException {
                 return Optional.ofNullable(value)
-                        .map(str -> locator.get(Integer.class).convertToObject(str, Session.get().getLocale()))
+                        .map(str -> locator.getConverter(Long.class).convertToObject(str, Session.get().getLocale()))
                         .flatMap(id -> boatRepository.findById(id))
                         .orElse(null);
             }
@@ -85,6 +85,7 @@ public class WicketWebApplication extends WicketBootStandardWebApplication {
             public String convertToString(Boat value, Locale locale) {
                 return Optional.ofNullable(value)
                         .map(Boat::getId)
+                        .map(pk -> locator.getConverter(Long.class).convertToString(pk, Session.get().getLocale()))
                         .orElse(null);
             }
         });

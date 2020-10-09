@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:panel>
+    <form wicket:id="form">
+        <div class="form-row">
+            <div wicket:id="id" class="form-row  col-md-4"></div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label wicket:for="date">
+                        <wicket:message key="date"/>
+                    </label>
+                    <input wicket:id="date" class="form-control">
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label wicket:for="boat">
+                    <wicket:message key="boat"/>
+                </label>
+                <div class="input-group">
+                    <select wicket:id="boat" class="form-control"></select>
+                    <span class="input-group-append">
+                        <span class="btn btn-outline-info">
+                            <span class="fa fa-plus"/>
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label wicket:for="captain">
+                    <wicket:message key="captain"/>
+                </label>
+                <div class="input-group">
+                    <select wicket:id="captain" class="form-control"></select>
+                    <span class="input-group-append">
+                        <span class="btn btn-outline-info">
+                            <span class="fa fa-plus"/>
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+
+
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label wicket:for="dateFrom">
+                    <wicket:message key="dateFrom"/>
+                </label>
+                <input wicket:id="dateFrom" class="form-control">
+            </div>
+            <div class="form-group col-md-4">
+                <label wicket:for="dateTo">
+                    <wicket:message key="dateTo"/>
+                </label>
+                <input wicket:id="dateTo" class="form-control">
+            </div>
+            <div class="form-group col-md-4">
+                <label wicket:for="region">
+                    <wicket:message key="region"/>
+                </label>
+                <input wicket:id="region" class="form-control">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label wicket:for="activity">
+                    <wicket:message key="activity"/>
+                </label>
+                <input wicket:id="activity" class="form-control">
+            </div>
+            <div class="form-group col-md-4">
+                <label wicket:for="timeOfDay">
+                    <wicket:message key="timeOfDay"/>
+                </label>
+                <input wicket:id="timeOfDay" class="form-control">
+            </div>
+            <div class="form-check col-md-4">
+                <input wicket:id="tck" type="checkbox" class="form-check-input">
+                <label wicket:for="tck" class="form-check-label">
+                    <wicket:message key="tck"/>
+                </label>
+            </div>
+        </div>
+    </form>
+</wicket:panel>
+</body>
+</html>

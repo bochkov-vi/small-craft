@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
+import java.util.Objects;
+import java.util.Optional;
 
 
 @Entity
@@ -24,12 +24,16 @@ public class Person extends AbstractEntity<Long> {
     @Column(name = "id_person")
     Long id;
 
+    @Column(nullable = false)
     String firstName;
 
+    @Column(nullable = false)
     String middleName;
 
+    @Column(nullable = false)
     String lastName;
 
+    @Column(nullable = false)
     String phone;
 
     String email;
@@ -39,18 +43,23 @@ public class Person extends AbstractEntity<Long> {
     @Embedded
     Passport passport;
 
-    @OneToOne(mappedBy = "person")
-    @Fetch(FetchMode.JOIN)
+    @OneToOne
+    @JoinColumn(name = "id_legal_person")
     LegalPerson legalPerson;
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append(firstName)
-                .append(" ")
-                .append(middleName)
-                .append(" ")
-                .append(lastName)
-                .toString();
+        return getFio() + Optional.ofNullable(legalPerson)
+                .map(LegalPerson::getName)
+                .map(name -> String.format(" (%s)", name))
+                .orElse("");
+    }
+
+    public String getFio() {
+        return lastName + " " + Optional.ofNullable(firstName)
+                .map(s -> s.substring(0, 1) + ".")
+                .map(fn -> Optional.ofNullable(middleName).map(s -> fn + s.substring(0, 1) + ".").orElse(null))
+                .filter(Objects::nonNull)
+                .orElse(null);
     }
 }

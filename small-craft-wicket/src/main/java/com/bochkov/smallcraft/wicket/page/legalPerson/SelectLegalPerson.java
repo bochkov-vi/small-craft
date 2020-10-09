@@ -25,12 +25,12 @@ public class SelectLegalPerson extends Select2Choice<LegalPerson> {
 
     @Override
     protected void onInitialize() {
-        getSettings().setPlaceholder(getString("own")).setCloseOnSelect(true).setAllowClear(true);
+        getSettings().setPlaceholder(getString("legal-person")).setCloseOnSelect(true).setAllowClear(true).setTheme("bootstrap4");
         super.onInitialize();
     }
 
     ChoiceProvider<LegalPerson> provider() {
-        ChoiceProvider<LegalPerson> provider = PersistableChoiceProvider.of(LegalPerson.class, (s, p) -> repository.findAll(s, p), "name", "inn");
+        ChoiceProvider<LegalPerson> provider = PersistableChoiceProvider.of(LegalPerson.class, (s, p) -> repository.findAll(s, p), "name", "inn", "person.lastName");
         return provider;
     }
 

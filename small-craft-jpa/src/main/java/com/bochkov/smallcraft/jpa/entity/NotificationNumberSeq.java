@@ -15,7 +15,7 @@ import javax.persistence.Id;
 @EqualsAndHashCode(of = "year")
 @AllArgsConstructor
 @NoArgsConstructor
-public class BoatNumberSeq {
+public class NotificationNumberSeq {
 
     @Id
     Integer year;
@@ -26,7 +26,7 @@ public class BoatNumberSeq {
         return number++;
     }
 
-    public BoatNumberSeq increment() {
+    public NotificationNumberSeq increment() {
         nextValue();
         return this;
     }
