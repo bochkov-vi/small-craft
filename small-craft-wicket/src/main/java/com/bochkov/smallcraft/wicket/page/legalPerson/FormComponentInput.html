@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:panel>
+
+
+    <input wicket:id="id" type="hidden">
+
+    <div class="form-group" wicket:enclosure="select">
+        <select wicket:id="select" class="form-control"></select>
+    </div>
+
+    <div class="form-group">
+        <label wicket:for="name">
+            <wicket:message key="name"/>
+        </label>
+        <input wicket:id="name" type="text" class="form-control">
+    </div>
+    <div class="form-group">
+        <label wicket:for="inn">
+            <wicket:message key="inn"/>
+        </label>
+        <input wicket:id="inn" type="text" pattern="[0-9]{10,12}" class="form-control">
+    </div>
+    <div class="form-group">
+        <label wicket:for="address">
+            <wicket:message key="address"/>
+        </label>
+        <textarea wicket:id="address" type="text" class="form-control">
+            </textarea>
+    </div>
+
+</wicket:panel>
+</body>
+</html>

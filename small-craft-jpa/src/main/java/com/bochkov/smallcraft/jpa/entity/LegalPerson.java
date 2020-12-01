@@ -6,7 +6,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 @Entity
 @Getter
@@ -27,12 +30,8 @@ public class LegalPerson extends AbstractEntity<Long> {
 
     String address;
 
-    @OneToOne
-    @JoinColumn(name = "id_person", referencedColumnName = "id_person", nullable = false)
-    Person person;
-
     @Override
     public String toString() {
-        return String.format("%s (%s)", name, person);
+        return name;
     }
 }

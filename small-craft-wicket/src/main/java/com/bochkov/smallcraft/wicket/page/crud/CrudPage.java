@@ -10,10 +10,13 @@ import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.feedback.FeedbackMessage;
+import org.apache.wicket.feedback.IFeedbackMessageFilter;
 import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.core.NestedRuntimeException;
@@ -34,7 +37,12 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
 
     protected org.slf4j.Logger log;
 
-    protected FeedbackPanel feedback = new FeedbackPanel("feedback");
+    protected FeedbackPanel feedback = new FeedbackPanelWithComponentMessage("feedback", new IFeedbackMessageFilter() {
+        @Override
+        public boolean accept(FeedbackMessage message) {
+            return !message.isRendered();
+        }
+    });
 
     protected DeletePanel<ENTITY, ID> deletePanel = new DeletePanel<ENTITY, ID>("deleted-panel") {
         @Override
@@ -204,5 +212,10 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
 
     public Component createDetails(String id, IModel<ENTITY> entityiModel) {
         return new DefaultDetailsPanel<ENTITY>(id, entityiModel, entityClass);
+    }
+
+    @Override
+    public IModelComparator getModelComparator() {
+        return IModelComparator.ALWAYS_FALSE;
     }
 }

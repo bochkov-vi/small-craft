@@ -7,11 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -19,19 +17,32 @@ import java.time.LocalDate;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Notification extends AbstractEntity<NotificationPK> {
+public class Notification extends AbstractEntity<Long> {
 
     @Id
-    @GeneratedValue
-    NotificationPK id;
+    @Column(name = "id_notification")
+    @GeneratedValue(generator = "notification_seq")
+    Long id;
 
-    String region;
+    @ElementCollection
+    @CollectionTable(name = "notification_region", joinColumns = @JoinColumn(name = "id_notification"))
+    Set<String> region;
 
     @ManyToOne
+    @JoinColumn(name = "id_captain", nullable = false)
     Person captain;
 
     @ManyToOne
+    @JoinColumn(name = "id_unit", nullable = false)
+    Unit unit;
+
+    @ManyToOne
+    @JoinColumn(name = "id_boat", nullable = false)
     Boat boat;
+
+    Integer year;
+
+    Integer number;
 
     LocalDate date;
 

@@ -27,5 +27,8 @@ public class HomePage extends BasePage<Void> {
         add(new BookmarkablePageLink<Void>("boat", TablePage.class));
         add(new BookmarkablePageLink<Void>("person", com.bochkov.smallcraft.wicket.page.person.TablePage.class));
         add(new BookmarkablePageLink<Void>("legal", com.bochkov.smallcraft.wicket.page.legalPerson.TablePage.class));
-        add(new BookmarkablePageLink<Void>("notification", com.bochkov.smallcraft.wicket.page.notification.TablePage.class));   }
+        add(new BookmarkablePageLink<Void>("notification", com.bochkov.smallcraft.wicket.page.notification.TablePage.class));
+        add(new BookmarkablePageLink<Void>("exit-notification", com.bochkov.smallcraft.wicket.page.notification.TablePage.class));
+        add(new BookmarkablePageLink<Void>("unit", com.bochkov.smallcraft.wicket.page.unit.TablePage.class));
+    }
 }

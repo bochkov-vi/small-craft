@@ -60,7 +60,10 @@ public class BasePage<T> extends GenericWebPage<T> {
         add(new BookmarkablePageLink<Void>("boat-link", TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
         add(new BookmarkablePageLink<Void>("person-link", com.bochkov.smallcraft.wicket.page.person.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
         add(new BookmarkablePageLink<Void>("legal-person-link", com.bochkov.smallcraft.wicket.page.legalPerson.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("notification-link", com.bochkov.smallcraft.wicket.page.notification.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));  }
+        add(new BookmarkablePageLink<Void>("notification-link", com.bochkov.smallcraft.wicket.page.notification.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
+        add(new BookmarkablePageLink<Void>("exit-notification-link", com.bochkov.smallcraft.wicket.page.exitnotification.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
+        add(new BookmarkablePageLink<Void>("unit", com.bochkov.smallcraft.wicket.page.unit.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
+    }
 
     @Override
     public void renderHead(IHeaderResponse response) {

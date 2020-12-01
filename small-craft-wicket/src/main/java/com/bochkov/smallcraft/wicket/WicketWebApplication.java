@@ -1,11 +1,8 @@
 package com.bochkov.smallcraft.wicket;
 
-import com.bochkov.smallcraft.jpa.entity.Boat;
-import com.bochkov.smallcraft.jpa.entity.LegalPerson;
-import com.bochkov.smallcraft.jpa.entity.Person;
-import com.bochkov.smallcraft.jpa.repository.BoatRepository;
-import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
-import com.bochkov.smallcraft.jpa.repository.PersonRepository;
+import com.bochkov.smallcraft.jpa.entity.*;
+import com.bochkov.smallcraft.jpa.repository.*;
+import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.giffing.wicket.spring.boot.starter.app.WicketBootStandardWebApplication;
 import org.apache.wicket.ConverterLocator;
 import org.apache.wicket.IConverterLocator;
@@ -30,6 +27,15 @@ public class WicketWebApplication extends WicketBootStandardWebApplication {
     @Autowired
     BoatRepository boatRepository;
 
+    @Autowired
+    NotificationRepository notificationRepository;
+
+    @Autowired
+    ExitNotificationRepository exitNotificationRepository;
+
+    @Autowired
+    UnitRepository unitRepository;
+
     @Override
     protected void init() {
         super.init();
@@ -39,11 +45,19 @@ public class WicketWebApplication extends WicketBootStandardWebApplication {
     protected IConverterLocator newConverterLocator() {
         ConverterLocator locator = new ConverterLocator();
 
+        getComponentInstantiationListeners().add(new Html5AttributesBehavior.InstantiationListener());
         locator.set(Person.class, new IConverter<Person>() {
             @Override
             public Person convertToObject(String value, Locale locale) throws ConversionException {
                 return Optional.ofNullable(value)
-                        .map(str -> locator.getConverter(Long.class).convertToObject(str, Session.get().getLocale()))
+                        .map(str -> {
+                            Long id = null;
+                            try {
+                                id = locator.getConverter(Long.class).convertToObject(str, Session.get().getLocale());
+                            } catch (ConversionException e) {
+                            }
+                            return id;
+                        })
                         .flatMap(id -> personRepository.findById(id)).orElse(null);
             }
 
@@ -69,6 +83,41 @@ public class WicketWebApplication extends WicketBootStandardWebApplication {
                         .map(LegalPerson::getId)
                         .map(pk -> locator.getConverter(Long.class).convertToString(pk, Session.get().getLocale()))
                         .orElse(null);
+            }
+        });
+        locator.set(Notification.class, new IConverter<Notification>() {
+            @Override
+            public Notification convertToObject(String value, Locale locale) throws ConversionException {
+                return Optional.ofNullable(locator.getConverter(Long.class).convertToObject(value, Session.get().getLocale())).flatMap(notificationRepository::findById).orElse(null);
+            }
+
+            @Override
+            public String convertToString(Notification value, Locale locale) {
+                return Optional.ofNullable(value).map(Notification::getId).map(id -> locator.getConverter(Long.class).convertToString(id, Session.get().getLocale())).orElse(null);
+            }
+        });
+
+        locator.set(ExitNotification.class, new IConverter<ExitNotification>() {
+            @Override
+            public ExitNotification convertToObject(String value, Locale locale) throws ConversionException {
+                return Optional.ofNullable(locator.getConverter(Long.class).convertToObject(value, Session.get().getLocale())).flatMap(exitNotificationRepository::findById).orElse(null);
+            }
+
+            @Override
+            public String convertToString(ExitNotification value, Locale locale) {
+                return Optional.ofNullable(value).map(ExitNotification::getId).map(id -> locator.getConverter(Long.class).convertToString(id, Session.get().getLocale())).orElse(null);
+            }
+        });
+
+        locator.set(Unit.class, new IConverter<Unit>() {
+            @Override
+            public Unit convertToObject(String value, Locale locale) throws ConversionException {
+                return Optional.ofNullable(locator.getConverter(Long.class).convertToObject(value, Session.get().getLocale())).flatMap(unitRepository::findById).orElse(null);
+            }
+
+            @Override
+            public String convertToString(Unit value, Locale locale) {
+                return Optional.ofNullable(value).map(Unit::getId).map(id -> locator.getConverter(Long.class).convertToString(id, Session.get().getLocale())).orElse(null);
             }
         });
 

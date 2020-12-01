@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
-import java.util.Objects;
 import java.util.Optional;
 
 
@@ -43,23 +42,15 @@ public class Person extends AbstractEntity<Long> {
     @Embedded
     Passport passport;
 
-    @OneToOne
-    @JoinColumn(name = "id_legal_person")
-    LegalPerson legalPerson;
-
     @Override
     public String toString() {
-        return getFio() + Optional.ofNullable(legalPerson)
-                .map(LegalPerson::getName)
-                .map(name -> String.format(" (%s)", name))
-                .orElse("");
+        return getFio();
     }
 
     public String getFio() {
         return lastName + " " + Optional.ofNullable(firstName)
-                .map(s -> s.substring(0, 1) + ".")
-                .map(fn -> Optional.ofNullable(middleName).map(s -> fn + s.substring(0, 1) + ".").orElse(null))
-                .filter(Objects::nonNull)
+                .map(s -> s.charAt(0) + ".")
+                .map(fn -> Optional.ofNullable(middleName).map(s -> fn + s.charAt(0) + ".").orElse(null))
                 .orElse(null);
     }
 }

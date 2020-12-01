@@ -2,6 +2,7 @@ package com.bochkov.smallcraft.wicket.page.person;
 
 import com.bochkov.smallcraft.jpa.entity.Passport;
 import com.bochkov.smallcraft.jpa.entity.Person;
+import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
@@ -18,6 +19,9 @@ public class EditPage extends CrudEditPage<Person, Long> {
 
     @SpringBean
     PersonRepository repository;
+
+    @SpringBean
+    LegalPersonRepository legalPersonRepository;
 
     public EditPage(PageParameters parameters) {
         super(Person.class, parameters);
@@ -39,7 +43,12 @@ public class EditPage extends CrudEditPage<Person, Long> {
 
     @Override
     protected Component createInputPanel(String id, IModel<Person> model) {
-        return new InputPanel(id, model);
+        return new InputPanel(id, model) {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(feedback);
+            }
+        };
     }
 
     @Override
@@ -49,13 +58,23 @@ public class EditPage extends CrudEditPage<Person, Long> {
 
     @Override
     public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<Person> model) {
-        if (model.getObject() != null && model.getObject().getLegalPerson() != null) {
-            super.onAfterSave(target, model);
-        }
+        super.onAfterSave(target, model);
     }
+
+    @Override
+    public void onSave(Optional<AjaxRequestTarget> target, IModel<Person> model) {
+        super.onSave(target, model);
+    }
+
 
     @Override
     public Person newEntityInstance() {
         return new Person().setPassport(new Passport());
+    }
+
+    @Override
+    public Person save(Person entity) {
+        Person person = super.save(entity);
+        return person;
     }
 }

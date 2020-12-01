@@ -3,10 +3,10 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.giffing.wicket.spring.boot.starter</groupId>
-        <artifactId>wicket-spring-boot-starter-parent</artifactId>
-        <version>2.1.9</version>
-        <relativePath/>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.3.2.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>small-craft-wicket</artifactId>
@@ -15,11 +15,99 @@
         <wicket.version>8.8.0</wicket.version>
         <wicketstuff.version>8.8.0</wicketstuff.version>
     </properties>
+    <profiles>
+        <profile>
+            <id>development</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/dev-resources</directory>
+                    </resource>
+                    <resource>
+                        <directory>src/main/java</directory>
+                        <includes>
+                            <include>**</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>production</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                    </resource>
+                    <resource>
+                        <directory>src/main/java</directory>
+                        <includes>
+                            <include>**</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+
+        <profile>
+            <id>deploy-to-server</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <version>2.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>upload-war</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>upload-single</goal>
+                                </goals>
+                                <configuration>
+                                    <fromFile>${project.build.directory}/${project.build.finalName}.war</fromFile>
+                                    <url>scp://bochkov@192.168.30.10/home/bochkov/tomcat8/webapps</url>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <dependencies>
-        <!-- <dependency>
-             <groupId>org.springframework.boot</groupId>
-             <artifactId>spring-boot-starter-security</artifactId>
-         </dependency>-->
+        <dependency>
+            <groupId>com.giffing.wicket.spring.boot.starter</groupId>
+            <artifactId>wicket-spring-boot-starter</artifactId>
+            <version>2.1.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-web</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>jquery.inputmask</artifactId>
@@ -31,18 +119,16 @@
             <optional>true</optional>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-tomcat</artifactId>
-            <scope>provided</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.apache.wicket</groupId>
             <artifactId>wicket-extensions</artifactId>
+            <version>${wicket.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wicketstuff</groupId>
             <artifactId>wicketstuff-annotation</artifactId>
+            <version>${wicket.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wicketstuff</groupId>
@@ -52,13 +138,10 @@
         <dependency>
             <groupId>de.agilecoders.wicket.webjars</groupId>
             <artifactId>wicket-webjars</artifactId>
+            <version>2.0.17</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.giffing.wicket.spring.boot.starter</groupId>
-            <artifactId>wicket-spring-boot-starter</artifactId>
-            <version>2.1.9</version>
-        </dependency>
+
         <dependency>
             <groupId>com.bochkov</groupId>
             <artifactId>wicket-spring-data-jpa</artifactId>
@@ -125,5 +208,13 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
+        <extensions>
+            <!-- Enabling the use of SSH -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>3.3.3</version>
+            </extension>
+        </extensions>
     </build>
 </project>

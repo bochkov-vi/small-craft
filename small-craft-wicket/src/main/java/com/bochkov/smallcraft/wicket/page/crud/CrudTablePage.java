@@ -1,9 +1,12 @@
 package com.bochkov.smallcraft.wicket.page.crud;
 
+import com.bochkov.wicket.component.table.XLSXDataExportLink;
 import com.bochkov.wicket.data.provider.PersistableDataProvider;
 import com.google.common.collect.Lists;
+import lombok.Getter;
 import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.Component;
+import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
@@ -17,12 +20,15 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +45,11 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     boolean ajax = false;
 
+    XLSXDataExportLink exportExcel;
+
+    @Getter
+    private IModel<String> exportFileName;
+
     public CrudTablePage(Class<T> tClass) {
         super(tClass);
     }
@@ -54,17 +65,20 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        exportFileName = new ResourceModel("exportFileName").wrapOnAssignment(getPage());
         table = new EntityDataTable("table", columns(), provider());
+        exportExcel = new XLSXDataExportLink("export-excel", table, exportFileName.getObject());
         table.setOutputMarkupId(true);
         container.add(table);
         container.setOutputMarkupId(true);
         container.add(createAddRowButton("btn-add-row"));
+        container.add(exportExcel);
         add(container);
     }
 
 
     private ISortableDataProvider<T, ?> provider() {
-        return PersistableDataProvider.of(this::getJpaRepository);
+        return PersistableDataProvider.of(this::getJpaRepository, this::specification);
     }
 
 
@@ -175,13 +189,37 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         setResponsePage(createEditPage().setBackPage(this));
     }
 
-    public abstract CrudEditPage<T, ID> createEditPage();
+    public abstract Class<? extends CrudEditPage<T, ID>> getEditPageClass();
 
-    final public CrudEditPage<T, ID> createEditPage(IModel<T> model) {
-        CrudEditPage<T, ID> page = createEditPage();
-        page.setModel(model);
+    final private CrudEditPage<T, ID> createEditPage(IModel<T> model) {
+
+        Class<? extends CrudEditPage<T, ID>> clazz = getEditPageClass();
+        CrudEditPage<T, ID> page = null;
+        try {
+            PageParameters pageParameters = pageParametersForModel(model);
+            Constructor<? extends CrudEditPage<T, ID>> constructor = null;
+            constructor = clazz.getConstructor(PageParameters.class);
+            page = BeanUtils.instantiateClass(constructor, pageParameters);
+        } catch (NoSuchMethodException e) {
+            page = createEditPage();
+            page.setModel(model);
+        }
+
+
         page.setBackPage(this);
         return page;
+    }
+
+    private CrudEditPage<T, ID> createEditPage() {
+        CrudEditPage<T, ID> page = BeanUtils.instantiateClass(getEditPageClass());
+        return page;
+    }
+
+    PageParameters pageParametersForModel(IModel<T> model) {
+        PageParameters parameters = new PageParameters();
+        String value = getConverter(getEntityClass()).convertToString(model.getObject(), Session.get().getLocale());
+        parameters.set(0, value);
+        return parameters;
     }
 
     @Override

@@ -1,9 +1,9 @@
 package com.bochkov.smallcraft.jpa.repository;
 
-import com.bochkov.smallcraft.jpa.entity.Person;
+import com.bochkov.smallcraft.jpa.entity.Unit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface UserRepository extends JpaRepository<Person, Integer>, JpaSpecificationExecutor<Person> {
+public interface UnitRepository extends JpaRepository<Unit, Long>, JpaSpecificationExecutor<Unit> {
 
 }

@@ -1,11 +1,12 @@
 package com.bochkov.smallcraft.wicket.page.notification;
 
+import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.Notification;
-import com.bochkov.smallcraft.jpa.entity.NotificationPK;
 import com.bochkov.smallcraft.jpa.repository.NotificationNumberSeqRepository;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
+import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -17,7 +18,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.Optional;
 
 @MountPath("notification/edit")
-public class EditPage extends CrudEditPage<Notification, NotificationPK> {
+public class EditPage extends CrudEditPage<Notification, Long> {
 
     @SpringBean
     NotificationRepository repository;
@@ -25,8 +26,10 @@ public class EditPage extends CrudEditPage<Notification, NotificationPK> {
     @SpringBean
     NotificationNumberSeqRepository notificationNumberSeqRepository;
 
+
     public EditPage(PageParameters parameters) {
         super(Notification.class, parameters);
+
     }
 
     public EditPage(IModel<Notification> model) {
@@ -49,32 +52,37 @@ public class EditPage extends CrudEditPage<Notification, NotificationPK> {
 
     @Override
     public Notification newEntityInstance() {
-        Notification notification = super.newEntityInstance().setId(new NotificationPK(LocalDate.now().getYear(), null));
-        notification.setDateFrom(LocalDate.now().withYear(notification.getId().getYear()));
+        Notification notification = super.newEntityInstance();
+        notification.setYear(LocalDate.now().getYear());
+        notification.setDateFrom(LocalDate.now().withYear(notification.getYear()));
         notification.setDate(LocalDate.now());
-        notification.setDateTo(LocalDate.now().withYear(notification.getId().getYear()).with(TemporalAdjusters.lastDayOfYear()));
+        notification.setDateTo(LocalDate.now().withYear(notification.getYear()).with(TemporalAdjusters.lastDayOfYear()));
+        PageParameters parameters = getPageParameters();
+        Boat boat = Optional.ofNullable(parameters.get("boat").toOptionalString())
+                .map(value -> getConverter(Boat.class).convertToObject(value, Session.get().getLocale())).orElse(null);
+        if (boat != null) {
+            notification.setBoat(boat);
+            notification.setCaptain(boat.getPerson());
+        }
         return notification;
+    }
+
+    @Override
+    public Notification save(Notification entity) {
+        if (Optional.ofNullable(entity).map(Notification::getNumber).orElse(null) == null) {
+            entity.setNumber(notificationNumberSeqRepository.nextValue(entity.getYear()));
+        }
+        return super.save(entity);
     }
 
     @Override
     public void onSave(Optional<AjaxRequestTarget> target, IModel<Notification> model) {
         Notification notification = model.getObject();
-        if (notification != null) {
-            NotificationPK pk = notification.getId();
-            if (pk == null) {
-                pk = new NotificationPK(LocalDate.now().getYear(), null);
-                notification.setId(pk);
-            } else {
-                pk = notification.getId();
-            }
-            if (pk.getYear() == null) {
-                pk.setYear(LocalDate.MIN.getYear());
-            }
-            Integer year = pk.getYear();
-            if (pk.getNumber() == null) {
-                pk.setNumber(notificationNumberSeqRepository.nextValue(year));
-            }
-        }
         super.onSave(target, model);
+    }
+
+    @Override
+    public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<Notification> model) {
+
     }
 }

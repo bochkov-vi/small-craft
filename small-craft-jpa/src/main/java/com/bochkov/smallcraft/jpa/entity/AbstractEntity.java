@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Setter
 @Accessors(chain = true)
 @EntityListeners(AuditingEntityListener.class)
-public abstract class AbstractEntity<ID extends Serializable> implements Persistable<ID> {
+public abstract class AbstractEntity<ID extends Serializable> implements Persistable<ID>{
 
     @CreatedDate
     LocalDateTime createDate;

@@ -13,7 +13,9 @@
     <version>0.0.1-SNAPSHOT</version>
     <artifactId>small-craft-jpa</artifactId>
 
-
+<properties>
+    <hibernate.version></hibernate.version>
+</properties>
 
     <dependencies>
         <dependency>

@@ -1,6 +1,7 @@
 package com.bochkov.smallcraft.wicket.page.legalPerson;
 
 import com.bochkov.smallcraft.jpa.entity.LegalPerson;
+import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
@@ -13,7 +14,7 @@ import org.wicketstuff.annotation.mount.MountPath;
 public class EditPage extends CrudEditPage<LegalPerson, Long> {
 
     @SpringBean
-    PersonRepository repository;
+    LegalPersonRepository repository;
 
     public EditPage(PageParameters parameters) {
         super(LegalPerson.class, parameters);
@@ -33,7 +34,7 @@ public class EditPage extends CrudEditPage<LegalPerson, Long> {
     }
 
     @Override
-    public PersonRepository getJpaRepository() {
+    public LegalPersonRepository getJpaRepository() {
         return repository;
     }
 

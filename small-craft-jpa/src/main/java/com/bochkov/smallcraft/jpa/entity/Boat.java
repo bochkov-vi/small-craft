@@ -7,6 +7,10 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
 @Getter
@@ -28,12 +32,28 @@ public class Boat extends AbstractEntity<Long> {
 
     String model;
 
+    LocalDate registrationDate;
+
+    LocalDate expirationDate;
+
+    Integer registrationNumber;
+
+    String pier;
+
     @ManyToOne
-    @JoinColumn(name = "id_own")
-    Person own;
+    @JoinColumn(name = "id_person", nullable = false)
+    Person person;
+
+    @ManyToOne
+    @JoinColumn(name = "id_unit", nullable = false)
+    Unit unit;
+
+    @ManyToOne
+    @JoinColumn(name = "id_legal_person")
+    LegalPerson legalPerson;
 
     @Override
     public String toString() {
-        return String.format("%s %s %s", type, id, own);
+        return Stream.of(type, model, tailNumber, person, legalPerson).filter(Objects::nonNull).map(Object::toString).collect(Collectors.joining(" "));
     }
 }

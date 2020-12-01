@@ -2,10 +2,12 @@ package com.bochkov.smallcraft.jpa.repository;
 
 import com.bochkov.smallcraft.jpa.entity.Passport;
 import com.bochkov.smallcraft.jpa.entity.Person;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -36,7 +38,13 @@ public class PersonRepositoryTest {
 
     @Test
     public void testFindByMask() {
-        personRepository.findByMask(null, PageRequest.of(0,10));
+        personRepository.findByMask(null, PageRequest.of(0, 10));
 
+    }
+
+    @Test
+    public void findFirstName() {
+        Page page = personRepository.findFirstNameByMask(null, PageRequest.of(1, 10));
+        Assert.assertFalse(page.isEmpty());
     }
 }

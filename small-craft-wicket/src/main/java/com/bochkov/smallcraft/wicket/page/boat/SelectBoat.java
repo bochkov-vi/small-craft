@@ -30,7 +30,7 @@ public class SelectBoat extends Select2Choice<Boat> {
     }
 
     ChoiceProvider<Boat> provider() {
-        ChoiceProvider<Boat> provider = MaskableChoiceProvider.of(Boat.class, (s, p) -> repository.findAll(s, p), "id", "model", "own.lastName");
+        ChoiceProvider<Boat> provider = MaskableChoiceProvider.of(Boat.class, (s, p) -> repository.findAll(s, p), "tailNumber","id", "model");
         //ChoiceProvider<Boat> provider = PersistableChoiceProvider.of(Boat.class, (s, p) -> repository.findAll(s, p), "lastName", "legalBoat.name");
         return provider;
     }

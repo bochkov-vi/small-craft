@@ -2,6 +2,7 @@ package com.bochkov.smallcraft.wicket.page.person;
 
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
+import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.page.crud.CrudTablePage;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
@@ -49,7 +50,9 @@ public class TablePage extends CrudTablePage<Person, Long> {
     }
 
     @Override
-    public EditPage createEditPage() {
-        return new EditPage();
+    public Class<? extends CrudEditPage<Person, Long>> getEditPageClass() {
+        return EditPage.class;
     }
+
+
 }

@@ -1,7 +1,12 @@
 package com.bochkov.smallcraft.wicket.page.boat;
 
 import com.bochkov.smallcraft.jpa.entity.Boat;
+import com.bochkov.smallcraft.jpa.entity.LegalPerson;
+import com.bochkov.smallcraft.jpa.entity.Person;
+import com.bochkov.smallcraft.jpa.repository.BoatNumberSeqRepository;
 import com.bochkov.smallcraft.jpa.repository.BoatRepository;
+import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
+import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -10,18 +15,29 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.wicketstuff.annotation.mount.MountPath;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @MountPath("boat/edit")
 public class EditPage extends CrudEditPage<Boat, Long> {
 
+    Component inputPanel;
+
     @SpringBean
     BoatRepository repository;
+
+    @SpringBean
+    PersonRepository personRepository;
+
+    @SpringBean
+    LegalPersonRepository legalPersonRepository;
+
+    @SpringBean
+    BoatNumberSeqRepository boatNumberSeqRepository;
 
     public EditPage(PageParameters parameters) {
         super(Boat.class, parameters);
     }
+
 
     public EditPage(IModel<Boat> model) {
         super(Boat.class, model);
@@ -31,9 +47,18 @@ public class EditPage extends CrudEditPage<Boat, Long> {
         super(Boat.class);
     }
 
+
     @Override
     protected Component createInputPanel(String id, IModel<Boat> model) {
-        return new InputPanel(id, model);
+        inputPanel = new InputPanel(id, model) {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(feedback);
+            }
+
+        };
+        inputPanel.setOutputMarkupId(true);
+        return inputPanel;
     }
 
     @Override
@@ -42,9 +67,38 @@ public class EditPage extends CrudEditPage<Boat, Long> {
     }
 
     @Override
-    public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<Boat> model) {
-        if (model.map(Boat::getOwn).filter(Objects::nonNull).map(person -> Boolean.TRUE).orElse(Boolean.FALSE).getObject()) {
-            super.onAfterSave(target, model);
+    protected void onInitialize() {
+        super.onInitialize();
+        feedback.setEscapeModelStrings(false);
+    }
+
+    @Override
+    public Boat save(Boat entity) {
+        Person person = entity.getPerson();
+        if (person != null) {
+            person = personRepository.save(person);
+            entity.setPerson(person);
+//            entity.setOwn(person);
         }
+
+        LegalPerson legalPerson = entity.getLegalPerson();
+        if (legalPerson != null) {
+            legalPerson = legalPersonRepository.save(legalPerson);
+            entity.setLegalPerson(legalPerson);
+        }
+
+        if (entity != null && (entity.getRegistrationNumber() == null || entity.getRegistrationNumber() <= 0)) {
+            entity.setRegistrationNumber(boatNumberSeqRepository.nextValue());
+        }
+        Boat saved = getJpaRepository().safeSave(entity);
+        setModelObject(saved);
+        return saved;
+    }
+
+    @Override
+    public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<Boat> model) {
+//        if (model.map(Boat::getPerson).filter(Objects::nonNull).map(person -> Boolean.TRUE).orElse(Boolean.FALSE).getObject()) {
+//            super.onAfterSave(target, model);
+//        }
     }
 }

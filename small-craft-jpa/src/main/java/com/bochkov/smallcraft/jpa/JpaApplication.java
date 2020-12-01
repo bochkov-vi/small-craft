@@ -1,6 +1,5 @@
 package com.bochkov.smallcraft.jpa;
 
-import com.bochkov.smallcraft.jpa.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,8 +19,6 @@ public class JpaApplication implements CommandLineRunner {
     @Inject
     DataSource dataSource;
 
-    @Inject
-    UserRepository userRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(JpaApplication.class, args);

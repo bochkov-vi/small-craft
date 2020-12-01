@@ -11,7 +11,9 @@ import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.NestedRuntimeException;
@@ -34,8 +36,10 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     public CrudEditPage(Class<T> entityClass, PageParameters parameters) {
         super(entityClass, parameters);
         T entity = getConverter(getEntityClass()).convertToObject(parameters.get(0).toOptionalString(), Session.get().getLocale());
-        setModel(PersistableModel.of(id -> getJpaRepository().findById(id)));
-        setModelObject(entity);
+        setModel(createModelForNewRow());
+        if (entity != null) {
+            setModelObject(entity);
+        }
     }
 
     public CrudEditPage(Class<T> entityClass, IModel<T> model) {
@@ -83,22 +87,29 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
 
     public void onSave(Optional<AjaxRequestTarget> target, IModel<T> model) {
         try {
-            getJpaRepository().save(getModelObject());
-            String message = model.map(e -> MessageFormat.format(getString("save.success"), model.getObject())).getObject();
-            success(message);
+            save(model.getObject());
+            String message = MessageFormat.format(getString("save.success"), model.getObject());
+            Session.get().success(message);
             onAfterSave(target, model);
         } catch (NestedRuntimeException ex) {
-            String message = model.map(e -> MessageFormat.format(getString("save.error"), model.getObject())).getObject();
-            error(message);
-            error(((NestedRuntimeException) ex).getMostSpecificCause());
+            String message = MessageFormat.format(getString("save.error"), model.getObject());
+            Session.get().error(message);
+            Session.get().fatal(((NestedRuntimeException) ex).getMostSpecificCause());
             log.error(message, ex);
+        } catch (CrudIteruptException ex) {
         } catch (Exception ex) {
-            String message = model.map(e -> MessageFormat.format(getString("save.error"), model.getObject())).getObject();
-            error(message);
-            error(ex);
+            String message = MessageFormat.format(getString("save.error"), model.getObject());
+            Session.get().error(message);
+            Session.get().fatal(ex);
             log.error(message, ex);
         }
         target.ifPresent(t -> t.add(feedback));
+    }
+
+    public T save(T entity) {
+        T saved = getJpaRepository().save(entity);
+        setModelObject(saved);
+        return saved;
     }
 
     public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<T> model) {
@@ -130,7 +141,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         if (model == null) {
             setModel(createModelForNewRow());
         }
-        form.setModel(getModel());
+        form.setModel(new CompoundPropertyModel<>(getModel()));
         Button saveButton = createSaveButton("btn-save");
         form.add(saveButton);
 
@@ -158,7 +169,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         return BeanUtils.instantiateClass(getEntityClass());
     }
 
-    protected IModel<T> createModelForNewRow() {
+    final protected IModel<T> createModelForNewRow() {
         IModel<T> model = PersistableModel.of(getJpaRepository()::findById, () -> newEntityInstance());
         return model;
     }
@@ -233,4 +244,8 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         }
     }
 
+    @Override
+    public IModelComparator getModelComparator() {
+        return IModelComparator.ALWAYS_FALSE;
+    }
 }
