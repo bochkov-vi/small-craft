@@ -2,8 +2,7 @@ package com.bochkov.smallcraft.wicket.page.exitnotification;
 
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
-import com.bochkov.smallcraft.jpa.repository.NotificationNumberSeqRepository;
-import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
+import com.bochkov.smallcraft.jpa.service.ExitNotificationCustomSaveService;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -21,6 +20,13 @@ public class EditPage extends CrudEditPage<ExitNotification, Long> {
     @SpringBean
     ExitNotificationRepository repository;
 
+    @SpringBean
+    ExitNotificationCustomSaveService service;
+
+    @Override
+    public ExitNotification save(ExitNotification entity) {
+        return service.save(entity);
+    }
 
     public EditPage(PageParameters parameters) {
         super(ExitNotification.class, parameters);
@@ -46,7 +52,7 @@ public class EditPage extends CrudEditPage<ExitNotification, Long> {
     }
 
     @Override
-    public ExitNotificationRepository getJpaRepository() {
+    public ExitNotificationRepository getRepository() {
         return repository;
     }
 
@@ -57,10 +63,6 @@ public class EditPage extends CrudEditPage<ExitNotification, Long> {
         return notification;
     }
 
-    @Override
-    public ExitNotification save(ExitNotification entity) {
-        return super.save(entity);
-    }
 
     @Override
     public void onSave(Optional<AjaxRequestTarget> target, IModel<ExitNotification> model) {

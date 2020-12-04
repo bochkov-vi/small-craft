@@ -8,13 +8,13 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
 
-public interface BoatRepository extends JpaRepository<Boat, Long>, JpaSpecificationExecutor<Boat>, BoatNumberSequenceRepository {
+public interface BoatRepository extends JpaRepository<Boat, Long>, JpaSpecificationExecutor<Boat> {
 
-    Boat findByTailNumber(String tailNumber);
+    List<Boat> findByTailNumber(String tailNumber);
 
     @Query(nativeQuery = true, value = "SELECT DISTINCT pier FROM(SELECT pier FROM public.boat n WHERE pier ILIKE :mask" +
             " ORDER BY position(:sort in n.pier),length(n.pier),n.pier) as np",
@@ -43,11 +43,4 @@ public interface BoatRepository extends JpaRepository<Boat, Long>, JpaSpecificat
         return number;
     }*/
 
-    @Transactional
-    default <S extends Boat> S safeSave(S entity) {
-        if (entity != null && (entity.getRegistrationNumber() == null || entity.getRegistrationNumber() <= 0)) {
-            entity.setRegistrationNumber(generateNextValue());
-        }
-        return save(entity);
-    }
 }

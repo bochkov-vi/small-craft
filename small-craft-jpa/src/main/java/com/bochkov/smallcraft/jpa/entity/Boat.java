@@ -25,13 +25,14 @@ public class Boat extends AbstractEntity<Long> {
     @GeneratedValue(generator = "boat_seq")
     Long id;
 
-    @Column(name = "tail_number")
+    @Column(name = "tail_number", unique = true, nullable = false)
     String tailNumber;
 
     String type;
 
     String model;
 
+    @Column(nullable = false)
     LocalDate registrationDate;
 
     LocalDate expirationDate;

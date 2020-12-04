@@ -56,7 +56,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
     }
 
     @Override
-    public BoatRepository getJpaRepository() {
+    public BoatRepository getRepository() {
         return repository;
     }
 

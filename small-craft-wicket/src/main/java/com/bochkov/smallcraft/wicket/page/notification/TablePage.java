@@ -28,7 +28,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
     }
 
     @Override
-    public NotificationRepository getJpaRepository() {
+    public NotificationRepository getRepository() {
         return repository;
     }
 

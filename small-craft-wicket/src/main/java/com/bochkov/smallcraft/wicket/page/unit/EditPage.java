@@ -1,7 +1,6 @@
 package com.bochkov.smallcraft.wicket.page.unit;
 
 import com.bochkov.smallcraft.jpa.entity.Unit;
-import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
@@ -34,7 +33,7 @@ public class EditPage extends CrudEditPage<Unit, Long> {
     }
 
     @Override
-    public UnitRepository getJpaRepository() {
+    public UnitRepository getRepository() {
         return repository;
     }
 

@@ -1,12 +1,11 @@
 package com.bochkov.smallcraft.wicket.page.boat;
 
 import com.bochkov.smallcraft.jpa.entity.Boat;
-import com.bochkov.smallcraft.jpa.entity.LegalPerson;
-import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.BoatNumberSeqRepository;
 import com.bochkov.smallcraft.jpa.repository.BoatRepository;
 import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
+import com.bochkov.smallcraft.jpa.service.BoatService;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -33,6 +32,14 @@ public class EditPage extends CrudEditPage<Boat, Long> {
 
     @SpringBean
     BoatNumberSeqRepository boatNumberSeqRepository;
+
+    @SpringBean
+    BoatService boatService;
+
+    @Override
+    public Boat save(Boat entity) {
+        return boatService.save(entity);
+    }
 
     public EditPage(PageParameters parameters) {
         super(Boat.class, parameters);
@@ -62,7 +69,7 @@ public class EditPage extends CrudEditPage<Boat, Long> {
     }
 
     @Override
-    public BoatRepository getJpaRepository() {
+    public BoatRepository getRepository() {
         return repository;
     }
 
@@ -72,28 +79,7 @@ public class EditPage extends CrudEditPage<Boat, Long> {
         feedback.setEscapeModelStrings(false);
     }
 
-    @Override
-    public Boat save(Boat entity) {
-        Person person = entity.getPerson();
-        if (person != null) {
-            person = personRepository.save(person);
-            entity.setPerson(person);
-//            entity.setOwn(person);
-        }
 
-        LegalPerson legalPerson = entity.getLegalPerson();
-        if (legalPerson != null) {
-            legalPerson = legalPersonRepository.save(legalPerson);
-            entity.setLegalPerson(legalPerson);
-        }
-
-        if (entity != null && (entity.getRegistrationNumber() == null || entity.getRegistrationNumber() <= 0)) {
-            entity.setRegistrationNumber(boatNumberSeqRepository.nextValue());
-        }
-        Boat saved = getJpaRepository().safeSave(entity);
-        setModelObject(saved);
-        return saved;
-    }
 
     @Override
     public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<Boat> model) {

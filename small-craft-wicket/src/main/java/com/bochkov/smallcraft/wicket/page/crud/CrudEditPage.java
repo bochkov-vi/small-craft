@@ -18,7 +18,6 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
@@ -87,7 +86,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
 
     public void onSave(Optional<AjaxRequestTarget> target, IModel<T> model) {
         try {
-            save(model.getObject());
+            internalSave(model.getObject());
             String message = MessageFormat.format(getString("save.success"), model.getObject());
             Session.get().success(message);
             onAfterSave(target, model);
@@ -106,10 +105,14 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         target.ifPresent(t -> t.add(feedback));
     }
 
-    public T save(T entity) {
-        T saved = getJpaRepository().save(entity);
+    public final T internalSave(T entity) {
+        T saved = save(entity);
         setModelObject(saved);
         return saved;
+    }
+
+    public T save(T entity) {
+        return getRepository().save(entity);
     }
 
     public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<T> model) {
@@ -163,14 +166,13 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
 
     protected abstract Component createInputPanel(String id, IModel<T> model);
 
-    public abstract <R extends JpaRepository<T, ID>> R getJpaRepository();
 
     public T newEntityInstance() {
         return BeanUtils.instantiateClass(getEntityClass());
     }
 
     final protected IModel<T> createModelForNewRow() {
-        IModel<T> model = PersistableModel.of(getJpaRepository()::findById, () -> newEntityInstance());
+        IModel<T> model = PersistableModel.of(getRepository()::findById, () -> newEntityInstance());
         return model;
     }
 

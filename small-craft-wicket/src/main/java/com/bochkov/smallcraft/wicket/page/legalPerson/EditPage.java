@@ -34,7 +34,7 @@ public class EditPage extends CrudEditPage<LegalPerson, Long> {
     }
 
     @Override
-    public LegalPersonRepository getJpaRepository() {
+    public LegalPersonRepository getRepository() {
         return repository;
     }
 

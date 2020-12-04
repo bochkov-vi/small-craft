@@ -10,6 +10,8 @@ import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
+import com.bochkov.smallcraft.wicket.page.crud.DuplicateEntityValidator;
+import com.bochkov.smallcraft.wicket.page.crud.FeedbackPanelWithComponentMessage;
 import com.bochkov.smallcraft.wicket.page.legalPerson.FormComponentInput;
 import com.bochkov.smallcraft.wicket.page.unit.SelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
@@ -27,12 +29,14 @@ import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.AbstractLink;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -54,6 +58,8 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
     @Getter
     @Setter
     boolean canSelect = false;
+
+    FeedbackPanel feedback = new FeedbackPanelWithComponentMessage("feedback");
 
     IModel<Boolean> legalPersonExists = Model.of(false);
 
@@ -92,8 +98,30 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        feedback.setOutputMarkupId(true);
         add(id, selectBoat, tailNumber, model, type, pier, unit);
-        add(registrationDate, registrationNumber, expirationDate);
+        add(registrationDate, registrationNumber, expirationDate, feedback);
+        tailNumber.add(new DuplicateEntityValidator<Boat, String>(tailNumber, e -> PersistableModel.of(e, id -> boatRepository.findById(id))) {
+
+            @Override
+            public List<Boat> findDuplicates(String value) {
+                return boatRepository.findByTailNumber(value);
+            }
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(feedback);
+                target.add(tailNumber);
+            }
+        });
+        tailNumber.add(new AjaxFormComponentUpdatingBehavior("change") {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(tailNumber);
+                target.add(feedback);
+            }
+        });
+        tailNumber.setOutputMarkupId(true);
         Html5AttributesBehavior.append(this);
         FormComponentErrorBehavior.append(this);
         add(person);

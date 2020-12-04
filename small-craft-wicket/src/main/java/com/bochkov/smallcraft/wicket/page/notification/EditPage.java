@@ -4,6 +4,7 @@ import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.Notification;
 import com.bochkov.smallcraft.jpa.repository.NotificationNumberSeqRepository;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
+import com.bochkov.smallcraft.jpa.service.NotificationService;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
@@ -26,6 +27,8 @@ public class EditPage extends CrudEditPage<Notification, Long> {
     @SpringBean
     NotificationNumberSeqRepository notificationNumberSeqRepository;
 
+    @SpringBean
+    NotificationService service;
 
     public EditPage(PageParameters parameters) {
         super(Notification.class, parameters);
@@ -46,7 +49,7 @@ public class EditPage extends CrudEditPage<Notification, Long> {
     }
 
     @Override
-    public NotificationRepository getJpaRepository() {
+    public NotificationRepository getRepository() {
         return repository;
     }
 
@@ -67,13 +70,14 @@ public class EditPage extends CrudEditPage<Notification, Long> {
         return notification;
     }
 
-    @Override
-    public Notification save(Notification entity) {
-        if (Optional.ofNullable(entity).map(Notification::getNumber).orElse(null) == null) {
-            entity.setNumber(notificationNumberSeqRepository.nextValue(entity.getYear()));
-        }
-        return super.save(entity);
-    }
+//    @Override
+//    public Notification save(Notification entity) {
+//        if (Optional.ofNullable(entity).map(Notification::getNumber).orElse(null) == null) {
+//            entity.setNumber(notificationNumberSeqRepository.nextValue(entity.getYear()));
+//        }
+//
+//        return super.save(entity);
+//    }
 
     @Override
     public void onSave(Optional<AjaxRequestTarget> target, IModel<Notification> model) {
@@ -84,5 +88,10 @@ public class EditPage extends CrudEditPage<Notification, Long> {
     @Override
     public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<Notification> model) {
 
+    }
+
+    @Override
+    public Notification save(Notification entity) {
+        return service.save(entity);
     }
 }

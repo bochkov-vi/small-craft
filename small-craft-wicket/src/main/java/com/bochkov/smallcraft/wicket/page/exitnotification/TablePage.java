@@ -41,7 +41,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     }
 
     @Override
-    public ExitNotificationRepository getJpaRepository() {
+    public ExitNotificationRepository getRepository() {
         return repository;
     }
 

@@ -7,6 +7,10 @@ import com.giffing.wicket.spring.boot.starter.app.WicketBootStandardWebApplicati
 import org.apache.wicket.ConverterLocator;
 import org.apache.wicket.IConverterLocator;
 import org.apache.wicket.Session;
+import org.apache.wicket.SharedResources;
+import org.apache.wicket.request.Request;
+import org.apache.wicket.request.Response;
+import org.apache.wicket.request.resource.ResourceReferenceRegistry;
 import org.apache.wicket.util.convert.ConversionException;
 import org.apache.wicket.util.convert.IConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,5 +143,12 @@ public class WicketWebApplication extends WicketBootStandardWebApplication {
             }
         });
         return locator;
+    }
+
+
+
+    @Override
+    public Session newSession(Request request, Response response) {
+        return super.newSession(request, response);
     }
 }

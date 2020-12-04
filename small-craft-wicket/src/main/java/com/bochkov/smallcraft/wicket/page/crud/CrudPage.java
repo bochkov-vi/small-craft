@@ -21,7 +21,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
@@ -72,7 +72,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         log = org.slf4j.LoggerFactory.getLogger(this.getClass());
     }
 
-    protected abstract <R extends JpaRepository<ENTITY, ID>> R getJpaRepository();
+    protected abstract <R extends CrudRepository<ENTITY, ID>> R getRepository();
 
     public void onDelete(AjaxRequestTarget target, IModel<ENTITY> model) {
 
@@ -81,7 +81,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
             ENTITY entity = model.getObject();
             if (entity != null && !entity.isNew()) {
                 try {
-                    getJpaRepository().delete(model.getObject());
+                    getRepository().delete(model.getObject());
                     deletePanel.hide(target);
                     info(MessageFormat.format(getString("delete.success"), entity));
                 } catch (Exception e) {
@@ -98,7 +98,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
     @Override
     protected void onInitialize() {
         super.onInitialize();
-        deletePanel.setDeletedEntityModel(PersistableModel.of(id -> getJpaRepository().findById(id)));
+        deletePanel.setDeletedEntityModel(PersistableModel.of(id -> getRepository().findById(id)));
         deletePanel.add(createDetails("details", deletePanel.deletedEntityModel));
         deletePanel.setDefaultModel(Model.of());
         add(feedback);

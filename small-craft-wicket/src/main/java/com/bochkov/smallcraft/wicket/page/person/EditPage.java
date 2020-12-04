@@ -52,7 +52,7 @@ public class EditPage extends CrudEditPage<Person, Long> {
     }
 
     @Override
-    public PersonRepository getJpaRepository() {
+    public PersonRepository getRepository() {
         return repository;
     }
 
@@ -72,9 +72,4 @@ public class EditPage extends CrudEditPage<Person, Long> {
         return new Person().setPassport(new Passport());
     }
 
-    @Override
-    public Person save(Person entity) {
-        Person person = super.save(entity);
-        return person;
-    }
 }

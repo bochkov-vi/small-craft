@@ -8,9 +8,10 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.IValidator;
 import org.apache.wicket.validation.ValidationError;
+import org.danekja.java.util.function.serializable.SerializableFunction;
 import org.springframework.data.domain.Persistable;
 
-import java.util.Objects;
+import java.util.List;
 
 public abstract class DuplicateEntityValidator<T extends Persistable, S> implements IValidator<S> {
 
@@ -18,30 +19,36 @@ public abstract class DuplicateEntityValidator<T extends Persistable, S> impleme
 
     Form<T> form;
 
-    public DuplicateEntityValidator(FormComponent<S> formComponent, Form<T> form) {
+    SerializableFunction<T, IModel<T>> modelSupplier;
+
+    public DuplicateEntityValidator(FormComponent<S> formComponent, SerializableFunction<T, IModel<T>> modelSupplier) {
         this.formComponent = formComponent;
-        this.form = form;
+        this.form = (Form<T>) formComponent.getForm();
+        this.modelSupplier = modelSupplier;
     }
 
     @Override
     public void validate(IValidatable<S> validatable) {
         S value = validatable.getValue();
-        IModel<T> duplicate = findDuplicate(value);
-        if (!Objects.equals(duplicate.getObject(), form.getModelObject()) && duplicate.getObject() != null && form.getModelObject().isNew()) {
+        List<T> duplicates = findDuplicates(value);
+        T entity = form.getModelObject();
+
+        for (T duplicate : duplicates) {
+
             FeedbackMessage message = new FeedbackMessageComponentOnDuplicateEntity<T>(formComponent,
-                    String.format("В базе уже есть объект %s, нажмите чтобы загрузить", duplicate), duplicate) {
+                    String.format("В базе уже есть объект %s, нажмите чтобы загрузить", duplicate), modelSupplier.apply(duplicate)) {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     form.setModelObject(this.getModel().getObject());
                     onUpdate(target);
                 }
             };
-            form.getFeedbackMessages().add(message);
+            formComponent.getFeedbackMessages().add(message);
             validatable.error(new ValidationError("Для предупреждения дубликатов сохранение не возможно"));
-        }
+       }
     }
 
-    public abstract IModel<T> findDuplicate(S value);
+    public abstract List<T> findDuplicates(S value);
 
     protected abstract void onUpdate(AjaxRequestTarget target);
 }

@@ -26,7 +26,7 @@ public class TablePage extends CrudTablePage<Person, Long> {
     }
 
     @Override
-    public PersonRepository getJpaRepository() {
+    public PersonRepository getRepository() {
         return repository;
     }
 
