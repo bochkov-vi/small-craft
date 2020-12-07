@@ -1,4 +1,4 @@
-package com.bochkov.smallcraft.wicket.page.crud;
+package com.bochkov.smallcraft.wicket.page.crud.duplicate;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.feedback.FeedbackMessage;

@@ -1,4 +1,4 @@
-package com.bochkov.smallcraft.wicket.page.crud;
+package com.bochkov.smallcraft.wicket.page.crud.duplicate;
 
 import lombok.Getter;
 import org.apache.wicket.Component;

@@ -1,4 +1,4 @@
-package com.bochkov.smallcraft.wicket.page.crud;
+package com.bochkov.smallcraft.wicket.page.crud.duplicate;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;

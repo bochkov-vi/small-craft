@@ -1,6 +1,7 @@
 package com.bochkov.smallcraft.wicket.page.crud;
 
 import com.bochkov.smallcraft.wicket.page.BasePage;
+import com.bochkov.smallcraft.wicket.page.crud.duplicate.FeedbackPanelWithComponentMessage;
 import com.bochkov.wicket.data.model.PersistableModel;
 import lombok.Getter;
 import lombok.Setter;

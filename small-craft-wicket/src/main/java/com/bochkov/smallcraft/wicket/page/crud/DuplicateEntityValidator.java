@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.wicket.page.crud;
 
+import com.bochkov.smallcraft.wicket.page.crud.duplicate.FeedbackMessageComponentOnDuplicateEntity;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.markup.html.form.Form;
@@ -40,7 +41,7 @@ public abstract class DuplicateEntityValidator<T extends Persistable, S> impleme
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     form.setModelObject(this.getModel().getObject());
-                    onUpdate(target);
+                    onUpdate(target,duplicate);
                 }
             };
             formComponent.getFeedbackMessages().add(message);
@@ -50,5 +51,5 @@ public abstract class DuplicateEntityValidator<T extends Persistable, S> impleme
 
     public abstract List<T> findDuplicates(S value);
 
-    protected abstract void onUpdate(AjaxRequestTarget target);
+    protected abstract void onUpdate(AjaxRequestTarget target,T duplicate);
 }
