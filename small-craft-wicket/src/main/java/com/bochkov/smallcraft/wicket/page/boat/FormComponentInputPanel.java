@@ -11,7 +11,6 @@ import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.bochkov.smallcraft.wicket.page.crud.DuplicateEntityValidator;
-import com.bochkov.smallcraft.wicket.page.crud.FeedbackPanelWithComponentMessage;
 import com.bochkov.smallcraft.wicket.page.legalPerson.FormComponentInput;
 import com.bochkov.smallcraft.wicket.page.unit.SelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
@@ -22,6 +21,7 @@ import lombok.experimental.Accessors;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.feedback.FencedFeedbackPanel;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
@@ -59,7 +59,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
     @Setter
     boolean canSelect = false;
 
-    FeedbackPanel feedback = new FeedbackPanelWithComponentMessage("feedback");
+    FeedbackPanel feedback = new FencedFeedbackPanel("feedback", this);
 
     IModel<Boolean> legalPersonExists = Model.of(false);
 
@@ -98,6 +98,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        ;
         feedback.setOutputMarkupId(true);
         add(id, selectBoat, tailNumber, model, type, pier, unit);
         add(registrationDate, registrationNumber, expirationDate, feedback);
@@ -117,6 +118,12 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
         tailNumber.add(new AjaxFormComponentUpdatingBehavior("change") {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
+                target.add(tailNumber);
+                target.add(feedback);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, RuntimeException e) {
                 target.add(tailNumber);
                 target.add(feedback);
             }
