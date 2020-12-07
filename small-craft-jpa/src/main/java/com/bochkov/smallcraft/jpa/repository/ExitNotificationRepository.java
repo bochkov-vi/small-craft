@@ -4,6 +4,8 @@ import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface ExitNotificationRepository extends JpaRepository<ExitNotification, Long>, JpaSpecificationExecutor<ExitNotification> {
-
+public interface ExitNotificationRepository extends JpaRepository<ExitNotification, Long>, JpaSpecificationExecutor<ExitNotification>, ExitNotificationSafeSaveRepository {
+    default ExitNotification safeSave(ExitNotification entity) {
+        return save(prepareSave(entity));
+    }
 }

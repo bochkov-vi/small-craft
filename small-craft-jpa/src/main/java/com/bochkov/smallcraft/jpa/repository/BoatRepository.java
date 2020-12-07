@@ -7,12 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 
-public interface BoatRepository extends JpaRepository<Boat, Long>, JpaSpecificationExecutor<Boat> {
+public interface BoatRepository extends JpaRepository<Boat, Long>, JpaSpecificationExecutor<Boat>, BoatSafeSaveRepository {
 
     List<Boat> findByTailNumber(String tailNumber);
 
@@ -36,11 +37,14 @@ public interface BoatRepository extends JpaRepository<Boat, Long>, JpaSpecificat
 
     Optional<Boat> findTopByOrderByRegistrationNumberDesc();
 
-   /* @Transactional
-    default Integer doInitSeq() {
-        Integer number = findTopByOrderByRegistrationNumberDesc().map(Boat::getRegistrationNumber).orElse(1001);
-        initSequence(number);
-        return number;
-    }*/
-
+    /* @Transactional
+     default Integer doInitSeq() {
+         Integer number = findTopByOrderByRegistrationNumberDesc().map(Boat::getRegistrationNumber).orElse(1001);
+         initSequence(number);
+         return number;
+     }*/
+    @Transactional
+    default Boat safeSave(Boat entity) {
+        return save(prepareSave(entity));
+    }
 }

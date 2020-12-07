@@ -42,7 +42,7 @@ public class Boat extends AbstractEntity<Long> {
     String pier;
 
     @ManyToOne
-    @JoinColumn(name = "id_person", nullable = false)
+    @JoinColumn(name = "id_person", nullable = false )
     Person person;
 
     @ManyToOne

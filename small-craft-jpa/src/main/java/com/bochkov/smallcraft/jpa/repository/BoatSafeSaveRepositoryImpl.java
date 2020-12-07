@@ -1,36 +1,35 @@
-package com.bochkov.smallcraft.jpa.service;
+package com.bochkov.smallcraft.jpa.repository;
 
 import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.LegalPerson;
 import com.bochkov.smallcraft.jpa.entity.Person;
-import com.bochkov.smallcraft.jpa.repository.BoatNumberSeqRepository;
-import com.bochkov.smallcraft.jpa.repository.BoatRepository;
-import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
-import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Persistable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 @Service
-public class BoatServiceImpl implements BoatService {
-
-
-    @Autowired
-    BoatNumberSeqRepository boatNumberSeqRepository;
+ class BoatSafeSaveRepositoryImpl implements BoatSafeSaveRepository {
 
     @Autowired
     PersonRepository personRepository;
 
     @Autowired
-    LegalPersonRepository legalPersonRepository;
+    BoatNumberSeqRepository boatNumberSeqRepository;
 
     @Autowired
-    BoatRepository boatRepository;
+    LegalPersonRepository legalPersonRepository;
+
+
+
+    @Autowired
+    UnitRepository unitRepository;
 
     @Transactional
     @Override
-    public Boat save(Boat entity) {
+    public Boat prepareSave(Boat entity) {
         Person person = entity.getPerson();
         if (person != null) {
             person = personRepository.save(person);
@@ -38,15 +37,20 @@ public class BoatServiceImpl implements BoatService {
 //            entity.setOwn(person);
         }
 
+        Optional.of(entity).map(Boat::getUnit).filter(Persistable::isNew).ifPresent(unit -> {
+            entity.setUnit(unitRepository.safeSave(unit));
+        });
+
         LegalPerson legalPerson = entity.getLegalPerson();
         if (legalPerson != null) {
             legalPerson = legalPersonRepository.save(legalPerson);
             entity.setLegalPerson(legalPerson);
         }
 
+
         if (entity != null && (entity.getRegistrationNumber() == null || entity.getRegistrationNumber() <= 0)) {
             entity.setRegistrationNumber(boatNumberSeqRepository.nextValue());
         }
-        return boatRepository.save(entity);
+        return entity;
     }
 }

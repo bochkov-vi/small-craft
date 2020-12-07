@@ -1,6 +1,6 @@
 package com.bochkov.smallcraft.jpa;
 
-import com.bochkov.smallcraft.jpa.service.BoatService;
+import com.bochkov.smallcraft.jpa.repository.BoatRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -16,7 +16,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class JpaApplication implements CommandLineRunner {
 
     @Autowired
-    BoatService dataSource;
+    BoatRepository dataSource;
 
 
     public static void main(String[] args) {

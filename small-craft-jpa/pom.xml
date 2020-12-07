@@ -13,10 +13,23 @@
     <version>0.0.1-SNAPSHOT</version>
     <artifactId>small-craft-jpa</artifactId>
 
-<properties>
-    <hibernate.version></hibernate.version>
-</properties>
-
+    <properties>
+        <hibernate.version></hibernate.version>
+    </properties>
+    <profiles>
+        <profile>
+            <id>locahostdb</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>
+                            src/main/dev-resources
+                        </directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+    </profiles>
     <dependencies>
         <dependency>
             <groupId>org.postgresql</groupId>

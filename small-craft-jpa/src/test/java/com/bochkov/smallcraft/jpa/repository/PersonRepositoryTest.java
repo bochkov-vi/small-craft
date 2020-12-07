@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -20,20 +21,27 @@ public class PersonRepositoryTest {
     @Autowired
     PersonRepository personRepository;
 
+    static public Passport newPassport() {
+        return new Passport().setData("test passport data").setSerial("0000").setNumber("000000").setDate(LocalDate.now().with(TemporalAdjusters.firstDayOfYear()));
+    }
+
+    static public Person newPerson() {
+        return new Person().setAddress("*").setPassport(newPassport()).setFirstName("Test").setLastName("Test").setMiddleName("Test").setPhone("00000000000");
+    }
+
+    public static LocalDate firstDateOfYear() {
+        return LocalDate.now().with(TemporalAdjusters.firstDayOfYear());
+    }
+
+    public static LocalDate lastDateOfYear() {
+        return LocalDate.now().with(TemporalAdjusters.lastDayOfYear());
+    }
+
     @Test
     public void testSave() {
-        Person person = new Person();
-        person.setFirstName("Александр")
-                .setMiddleName("Олегович")
-                .setLastName("Андриенков")
-                .setAddress("г. ПК, Ларина 8/3-28");
-        person.setPassport(new Passport()
-                .setSerial("3013")
-                .setNumber("516049")
-                .setDate(LocalDate.of(2020, 5, 14))
-                .setData("ТП УФМС России по КК в пос. Ключи")
-        );
-        personRepository.save(person);
+        Person person = newPerson();
+        person = personRepository.save(person);
+        personRepository.delete(person);
     }
 
     @Test

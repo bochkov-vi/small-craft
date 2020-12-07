@@ -5,7 +5,6 @@ import com.bochkov.smallcraft.jpa.repository.BoatNumberSeqRepository;
 import com.bochkov.smallcraft.jpa.repository.BoatRepository;
 import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
-import com.bochkov.smallcraft.jpa.service.BoatService;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -33,27 +32,24 @@ public class EditPage extends CrudEditPage<Boat, Long> {
     @SpringBean
     BoatNumberSeqRepository boatNumberSeqRepository;
 
-    @SpringBean
-    BoatService boatService;
-
-    @Override
-    public Boat save(Boat entity) {
-        return boatService.save(entity);
-    }
 
     public EditPage(PageParameters parameters) {
         super(Boat.class, parameters);
     }
 
-
     public EditPage(IModel<Boat> model) {
         super(Boat.class, model);
     }
+
 
     public EditPage() {
         super(Boat.class);
     }
 
+    @Override
+    public Boat save(Boat entity) {
+        return repository.safeSave(entity);
+    }
 
     @Override
     protected Component createInputPanel(String id, IModel<Boat> model) {
@@ -78,7 +74,6 @@ public class EditPage extends CrudEditPage<Boat, Long> {
         super.onInitialize();
         feedback.setEscapeModelStrings(false);
     }
-
 
 
     @Override

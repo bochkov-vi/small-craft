@@ -1,36 +1,29 @@
-package com.bochkov.smallcraft.jpa.service;
+package com.bochkov.smallcraft.jpa.repository;
 
 import com.bochkov.smallcraft.jpa.entity.Notification;
-import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
-import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
-import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Service
-public class NotificationServiceImpl implements NotificationService {
-
-    @Autowired
-    NotificationRepository repository;
+class NotificationSafeSaveRepositoryImpl implements NotificationSafeSaveRepository {
 
     @Autowired
     PersonRepository personRepository;
 
     @Autowired
-    BoatService boatService;
+    BoatRepository boatRepository;
 
     @Autowired
     LegalPersonRepository legalPersonRepository;
 
     @Override
-    public Notification save(Notification entity) {
+    public Notification preapreSave(Notification entity) {
         Optional<Notification> e = Optional.ofNullable(entity);
         e.map(Notification::getCaptain).ifPresent(
                 captain -> entity.setCaptain(personRepository.save(captain)));
         e.map(Notification::getBoat).ifPresent(
-                boat -> entity.setBoat(boatService.save(boat)));
-        return repository.save(entity);
+                boat -> entity.setBoat(boatRepository.save(boat)));
+        return entity;
     }
 }

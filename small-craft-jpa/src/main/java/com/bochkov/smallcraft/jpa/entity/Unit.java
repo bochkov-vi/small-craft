@@ -23,9 +23,12 @@ public class Unit extends AbstractEntity<Long> {
     @Column(name = "id_unit")
     @GeneratedValue(generator = "unit_seq")
     Long id;
-
     @Column(unique = true, nullable = false)
     String name;
+
+    public Unit(String name) {
+        this.name = name;
+    }
 
     @Override
     public String toString() {

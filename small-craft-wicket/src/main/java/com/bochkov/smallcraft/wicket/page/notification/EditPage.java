@@ -4,7 +4,6 @@ import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.Notification;
 import com.bochkov.smallcraft.jpa.repository.NotificationNumberSeqRepository;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
-import com.bochkov.smallcraft.jpa.service.NotificationService;
 import com.bochkov.smallcraft.wicket.page.crud.CrudEditPage;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
@@ -27,8 +26,6 @@ public class EditPage extends CrudEditPage<Notification, Long> {
     @SpringBean
     NotificationNumberSeqRepository notificationNumberSeqRepository;
 
-    @SpringBean
-    NotificationService service;
 
     public EditPage(PageParameters parameters) {
         super(Notification.class, parameters);
@@ -92,6 +89,6 @@ public class EditPage extends CrudEditPage<Notification, Long> {
 
     @Override
     public Notification save(Notification entity) {
-        return service.save(entity);
+        return repository.safeSave(entity);
     }
 }

@@ -2,6 +2,8 @@ package com.bochkov.smallcraft.jpa.repository;
 
 import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.Notification;
+import com.bochkov.smallcraft.jpa.entity.Unit;
+import com.google.common.collect.Sets;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,32 +12,51 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Optional;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
-public class NotificationRepositoryTest {
+public class NotificationRepositoryTest extends BoatRepositoryTest {
 
     @Autowired
-    NotificationRepository repository;
+    NotificationRepository notificationRepository;
 
-    @Autowired
-    BoatRepository boatRepository;
+    public static Notification newNnotification() {
+        return new Notification().setActivity("test activity")
+                .setBoat(newBoat())
+                .setCaptain(newPerson())
+                .setDate(LocalDate.now().with(TemporalAdjusters.firstDayOfYear()))
+                .setDateFrom(firstDateOfYear())
+                .setDateTo(lastDateOfYear())
+                .setRegion(Sets.newHashSet("region1","region2"))
+                .setTck(false)
+                .setTimeOfDay("light time of day")
+                .setUnit(new Unit("test unit 2"));
+    }
+
+    @Test
+    public void createAndSaveNotification() {
+
+    }
+
 
     @Test
     public void findPierByMask() {
-        repository.findRegionByMask("Авач", PageRequest.of(1, 10));
+        notificationRepository.findRegionByMask("Авач", PageRequest.of(1, 10));
     }
 
     @Test
     public void findTopByBoat() {
         Boat boat = boatRepository.getOne(29L);
-        Optional<Notification> n = repository.findTopByBoatOrderByNumberDesc(boat);
+        Optional<Notification> n = notificationRepository.findTopByBoatOrderByNumberDesc(boat);
         Assert.assertNotNull(n.orElse(null));
     }
 
     @Test
-    public void findReginByMask(){
-        repository.findRegionByMask("f",PageRequest.of(0,1));
+    public void findReginByMask() {
+        notificationRepository.findRegionByMask("f", PageRequest.of(0, 1));
     }
 }
