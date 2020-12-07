@@ -10,8 +10,7 @@ import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
-import com.bochkov.smallcraft.wicket.page.crud.DuplicateEntityValidator;
-import com.bochkov.smallcraft.wicket.page.crud.duplicate.FeedbackMessageComponent;
+import com.bochkov.smallcraft.wicket.page.crud.duplicate.DuplicateValidatorAjaxBehavior;
 import com.bochkov.smallcraft.wicket.page.legalPerson.FormComponentInput;
 import com.bochkov.smallcraft.wicket.page.unit.SelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
@@ -19,11 +18,9 @@ import com.bochkov.wicket.data.model.PersistableModel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
@@ -31,15 +28,14 @@ import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.AbstractLink;
-import org.apache.wicket.markup.html.panel.ComponentFeedbackPanel;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.RawValidationError;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -101,45 +97,21 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
     protected void onInitialize() {
         super.onInitialize();
         setOutputMarkupId(true);
-        FeedbackPanel tailNumberFeedback = new ComponentFeedbackPanel("tailNumberFeedback", tailNumber) {
-            @Override
-            protected Component newMessageDisplayComponent(String id, FeedbackMessage message) {
-                Component component = null;
-                if (message instanceof FeedbackMessageComponent) {
-                    component = ((FeedbackMessageComponent) message).createDisplayComponent(id);
-                } else {
-                    component = super.newMessageDisplayComponent(id, message);
-                }
-                return component;
-            }
-        };
-        tailNumberFeedback.setOutputMarkupId(true);
+
         add(id, selectBoat, tailNumber, model, type, pier, unit);
-        add(registrationDate, registrationNumber, expirationDate, tailNumberFeedback);
-        tailNumber.add(new DuplicateEntityValidator<Boat, String>(tailNumber, e -> PersistableModel.of(e, id -> boatRepository.findById(id))) {
-
+        add(registrationDate, registrationNumber, expirationDate);
+        tailNumber.add(new DuplicateValidatorAjaxBehavior<String>() {
             @Override
-            public List<Boat> findDuplicates(String value) {
-                return boatRepository.findByTailNumber(value);
+            public void validate(IValidatable<String> validatable) {
+                boatRepository.findByTailNumber(validatable.getValue()).stream().filter(duplicate -> !Objects.equals(getConvertedInput(), duplicate)).findFirst()
+                        .ifPresent(duplicate -> {
+                            validatable.error(new RawValidationError("<a href='' onclick='alert()' >" + duplicate + "</a>"));
+                        });
             }
 
             @Override
-            protected void onUpdate(AjaxRequestTarget target,Boat duplicate) {
-                setModelObject(duplicate);
-                target.add(FormComponentInputPanel.this);
-            }
-        });
-        tailNumber.add(new AjaxFormComponentUpdatingBehavior("change") {
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-                target.add(tailNumber);
-                target.add(tailNumberFeedback);
-            }
-
-            @Override
-            protected void onError(AjaxRequestTarget target, RuntimeException e) {
-                target.add(tailNumber);
-                target.add(tailNumberFeedback);
+            public void onAjaxAction(Optional<AjaxRequestTarget> targetOptional) {
+                targetOptional.ifPresent(target -> target.add(tailNumber));
             }
         });
         tailNumber.setOutputMarkupId(true);
