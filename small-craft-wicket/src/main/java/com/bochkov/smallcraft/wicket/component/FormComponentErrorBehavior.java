@@ -73,7 +73,8 @@ public class FormComponentErrorBehavior extends Behavior implements Predicate<Fe
     @Override
     public void renderHead(Component component, IHeaderResponse response) {
         if (message != null && component.isVisibleInHierarchy()) {
-            response.render(OnDomReadyHeaderItem.forScript(String.format("$('#%s').closest('.form-group').append(\"<span class='invalid-feedback'>%s</span>\")", component.getMarkupId(), String.valueOf(message.getMessage()))));
+            response.render(OnDomReadyHeaderItem.forScript(String.format("$('#%s').closest('.form-group').append(\"<div class='invalid-feedback'>%s</div>\")",
+                    component.getMarkupId(), String.valueOf(message.getMessage()))));
         }
     }
 
