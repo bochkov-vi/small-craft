@@ -3,25 +3,22 @@ package com.bochkov.smallcraft.wicket.component;
 import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.behavior.AbstractAjaxBehavior;
 import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.feedback.FeedbackMessage;
-import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.util.visit.IVisit;
 import org.apache.wicket.util.visit.IVisitor;
 
-import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class FormComponentErrorBehavior extends Behavior implements Predicate<FeedbackMessage> {
+public class FormComponentErrorBehavior extends Behavior {
 
-    FormComponent formComponent;
+    protected FormComponent formComponent;
 
-    FeedbackMessage message = null;
 
     public static void appendFormComponent(FormComponent... components) {
         Stream.of(components).forEach(cmp -> {
@@ -47,9 +44,8 @@ public class FormComponentErrorBehavior extends Behavior implements Predicate<Fe
         formComponent.add(new ClassAttributeModifier() {
             @Override
             protected Set<String> update(Set<String> oldClasses) {
-                if (message != null) {
+                if (formComponent.hasErrorMessage()) {
                     oldClasses.add("is-invalid");
-                    message = null;
                 }
                 return oldClasses;
             }
@@ -58,32 +54,20 @@ public class FormComponentErrorBehavior extends Behavior implements Predicate<Fe
 
     @Override
     public void onConfigure(Component component) {
-        message = getFirstFeedbackMessage();
-        if (message != null && !message.isRendered()) {
-            message.markRendered();
-        }
+        formComponent.getFeedbackMessages().forEach(FeedbackMessage::markRendered);
     }
-
-    @Override
-    public void onComponentTag(Component component, ComponentTag tag) {
-
-    }
-
 
     @Override
     public void renderHead(Component component, IHeaderResponse response) {
-        if (message != null && component.isVisibleInHierarchy()) {
-            response.render(OnDomReadyHeaderItem.forScript(String.format("$('#%s').closest('.form-group').append(\"<div class='invalid-feedback'>%s</div>\")",
-                    component.getMarkupId(), String.valueOf(message.getMessage()))));
+        if (formComponent.hasErrorMessage() && component.isVisibleInHierarchy()) {
+            for (FeedbackMessage message : formComponent.getFeedbackMessages().messages(FeedbackMessage::isError))
+                response.render(OnDomReadyHeaderItem.forScript(createJavaScript(message)));
         }
     }
 
-    @Override
-    public boolean test(FeedbackMessage message) {
-        return Objects.equals(message.getReporter(), formComponent) && (message.isWarning() || message.isError() || message.isFatal());
+    public String createJavaScript(FeedbackMessage message) {
+        return String.format("$('#%s').after('<div class=&quot;invalid-feedback&quot;>%s</div>')",
+                formComponent.getMarkupId(), String.valueOf(message.getMessage()));
     }
 
-    FeedbackMessage getFirstFeedbackMessage() {
-        return formComponent.getFeedbackMessages().toList().stream().filter(this).findFirst().orElse(null);
-    }
 }

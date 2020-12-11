@@ -10,6 +10,7 @@ import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
+import com.bochkov.smallcraft.wicket.component.duplicate.DuplicateBoatBehavior;
 import com.bochkov.smallcraft.wicket.page.legalPerson.FormComponentInput;
 import com.bochkov.smallcraft.wicket.page.unit.SelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
@@ -17,13 +18,9 @@ import com.bochkov.wicket.data.model.PersistableModel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.behavior.AbstractAjaxBehavior;
-import org.apache.wicket.behavior.Behavior;
-import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
@@ -34,11 +31,7 @@ import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.request.cycle.RequestCycle;
-import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.validation.IValidatable;
-import org.apache.wicket.validation.IValidator;
-import org.apache.wicket.validation.ValidationError;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -96,7 +89,6 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
     FormComponent<LegalPerson> legalPerson = new FormComponentInput("legalPerson", PersistableModel.of(id -> legalPersonRepository.findById(id))).setCanSelect(true);
 
 
-
     public FormComponentInputPanel(String id, IModel<Boat> model) {
         super(id, model);
     }
@@ -108,18 +100,8 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
 
         add(id, selectBoat, tailNumber, model, type, pier, unit);
         add(registrationDate, registrationNumber, expirationDate);
-        Behavior loadBoatListener = new AbstractAjaxBehavior() {
-            @Override
-            public void onRequest() {
-                RequestCycle.get();
-            }
 
-            @Override
-            public void renderHead(Component component, IHeaderResponse response) {
-                super.renderHead(component, response);
-            }
-        };
-        tailNumber.add(loadBoatListener);
+
         tailNumber.add(new AjaxFormComponentUpdatingBehavior("change") {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
@@ -131,7 +113,19 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
                 target.add(tailNumber);
             }
         });
-        tailNumber.add(new IValidator<String>() {
+        tailNumber.add(new DuplicateBoatBehavior<String, Boat>() {
+            @Override
+            public void onRequest() {
+                super.onRequest();
+            }
+
+            @Override
+            public void validate(IValidatable<String> validatable) {
+
+            }
+        });
+
+       /* tailNumber.add(new IValidator<String>() {
             @Override
             public void validate(IValidatable<String> validatable) {
                 boatRepository.findByTailNumber(validatable.getValue()).stream().filter(duplicate -> !Objects.equals(duplicate, tailNumber.getConvertedInput())).findFirst().ifPresent(
@@ -143,7 +137,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
                         }
                 );
             }
-        });
+        });*/
         tailNumber.setOutputMarkupId(true);
         Html5AttributesBehavior.append(this);
         FormComponentErrorBehavior.append(this);

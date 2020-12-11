@@ -23,15 +23,6 @@
                     <resource>
                         <directory>src/main/dev-resources</directory>
                     </resource>
-                    <resource>
-                        <directory>src/main/java</directory>
-                        <includes>
-                            <include>**</include>
-                        </includes>
-                        <excludes>
-                            <exclude>**/*.java</exclude>
-                        </excludes>
-                    </resource>
                 </resources>
             </build>
         </profile>
@@ -41,15 +32,6 @@
                 <resources>
                     <resource>
                         <directory>src/main/resources</directory>
-                    </resource>
-                    <resource>
-                        <directory>src/main/java</directory>
-                        <includes>
-                            <include>**</include>
-                        </includes>
-                        <excludes>
-                            <exclude>**/*.java</exclude>
-                        </excludes>
                     </resource>
                 </resources>
             </build>
@@ -188,9 +170,6 @@
     <build>
         <finalName>small-craft</finalName>
         <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
