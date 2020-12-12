@@ -10,7 +10,7 @@ import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
-import com.bochkov.smallcraft.wicket.component.duplicate.DuplicateBoatBehavior;
+import com.bochkov.smallcraft.wicket.component.duplicate.DuplicateEntityBehavior;
 import com.bochkov.smallcraft.wicket.page.legalPerson.FormComponentInput;
 import com.bochkov.smallcraft.wicket.page.unit.SelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
@@ -31,10 +31,10 @@ import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.validation.IValidatable;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -113,15 +113,16 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
                 target.add(tailNumber);
             }
         });
-        tailNumber.add(new DuplicateBoatBehavior<String, Boat>() {
+        tailNumber.add(new DuplicateEntityBehavior<String, Boat>(getModel(), Boat.class) {
             @Override
-            public void onRequest() {
-                super.onRequest();
+            public void resolveDuplicate(AjaxRequestTarget target, Boat entity) {
+                setModelObject(entity);
+                target.add(FormComponentInputPanel.this);
             }
 
             @Override
-            public void validate(IValidatable<String> validatable) {
-
+            public List<Boat> findDuplicates(String search) {
+                return boatRepository.findByTailNumber(search);
             }
         });
 
