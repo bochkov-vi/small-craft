@@ -30,7 +30,6 @@ import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.visit.IVisit;
 import org.apache.wicket.util.visit.IVisitor;
-import org.springframework.data.domain.Example;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -198,7 +197,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
 
             @Override
             public List<Person> findDuplicates(String search) {
-                return personRepository.findAll(firstName.getConvertedInput(), middleName.getConvertedInput(), lastName.getConvertedInput());
+                return personRepository.findAll(firstName.getModelObject(), middleName.getModelObject(), lastName.getConvertedInput());
             }
         });
         firstName.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
@@ -210,7 +209,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
 
             @Override
             public List<Person> findDuplicates(String search) {
-                return personRepository.findAll(Example.of(new Person().setLastName(lastName.getConvertedInput()).setFirstName(firstName.getConvertedInput()).setMiddleName(middleName.getConvertedInput())));
+                return personRepository.findAll(firstName.getConvertedInput(), middleName.getModelObject(), lastName.getModelObject());
             }
         });
         middleName.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
@@ -222,7 +221,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
 
             @Override
             public List<Person> findDuplicates(String search) {
-                return personRepository.findAll(Example.of(new Person().setLastName(lastName.getConvertedInput()).setFirstName(firstName.getConvertedInput()).setMiddleName(middleName.getConvertedInput())));
+                return personRepository.findAll(firstName.getModelObject(), middleName.getConvertedInput(), lastName.getModelObject());
             }
         });
 
@@ -237,7 +236,43 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             }
         });
 
+        passportSerial.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
+            @Override
+            public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
+                setModelObject(entity);
+                target.add(FormComponentInputPanel.this);
+            }
 
+            @Override
+            public List<Person> findDuplicates(String search) {
+                return personRepository.findByPassportSerialAndPassportNumber(passportSerial.getConvertedInput(), passportNumber.getModelObject());
+            }
+        });
+
+        passportNumber.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
+            @Override
+            public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
+                setModelObject(entity);
+                target.add(FormComponentInputPanel.this);
+            }
+
+            @Override
+            public List<Person> findDuplicates(String search) {
+                return personRepository.findByPassportSerialAndPassportNumber(passportSerial.getModelObject(), passportNumber.getConvertedInput());
+            }
+        });
+        phone.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
+            @Override
+            public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
+                setModelObject(entity);
+                target.add(FormComponentInputPanel.this);
+            }
+
+            @Override
+            public List<Person> findDuplicates(String search) {
+                return personRepository.findByPhone(search);
+            }
+        });
         Html5AttributesBehavior.append(this);
         FormComponentErrorBehavior.append(this);
     }

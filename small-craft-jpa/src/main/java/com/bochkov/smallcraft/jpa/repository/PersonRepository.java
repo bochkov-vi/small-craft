@@ -39,9 +39,10 @@ public interface PersonRepository extends JpaRepository<Person, Long>, JpaSpecif
     default Page<Person> findByMask(String expr, Pageable pageable) {
         return findByMask(Optional.ofNullable(expr).map(str -> String.format("%%%s%%", str)).orElse("%"), Optional.ofNullable(expr).orElse(""), pageable);
     }
+    List<Person> findByPassportSerialAndPassportNumber(String serial, String number);
 
-    Optional<Person> findByPassportSerialAndPassportNumber(String serial, String number);
+    List<Person> findByPhone(String phone);
 
-    @Query("SELECT o FROM Person o WHERE o.firstName=:firstName and o.middleName=:middleName and o.lastName=:lastName")
+    @Query("SELECT o FROM Person o WHERE lower(o.firstName)=lower(:firstName) and lower(o.middleName)=lower(:middleName) and lower(o.lastName)=lower(:lastName)")
     List<Person> findAll(@Param("firstName") String firstName, @Param("middleName") String middleName, @Param("lastName") String lastName);
 }

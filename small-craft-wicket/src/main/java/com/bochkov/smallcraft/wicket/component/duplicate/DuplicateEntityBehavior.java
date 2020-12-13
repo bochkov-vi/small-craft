@@ -81,7 +81,7 @@ public abstract class DuplicateEntityBehavior<T, E> extends AbstractDefaultAjaxB
 
     public CharSequence createCallbackAjaxFunction(E entity) {
         CharSequence url = getCallbackUrl(entity);
-        CharSequence func = Strings.escapeMarkup(String.format("Wicket.Ajax.get({'u':'%s'})", url));
+        CharSequence func = Strings.escapeMarkup(String.format("Wicket.Ajax.get({\"u\":\"%s\"})", url));
         return func;
     }
 
