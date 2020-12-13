@@ -69,7 +69,7 @@ public abstract class DuplicateEntityBehavior<T, E> extends AbstractDefaultAjaxB
     }
 
     public String newMessage(E duplicate) {
-        return String.format("В базе найден похожий объект %s чтобы загрузить нажмите %s", duplicate, createAjaxLink(duplicate));
+        return String.format("В базе найден похожий объект \"%s\" чтобы загрузить нажмите %s", duplicate, createAjaxLink(duplicate));
     }
 
 

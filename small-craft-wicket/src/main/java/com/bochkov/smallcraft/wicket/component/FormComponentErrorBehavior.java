@@ -66,7 +66,7 @@ public class FormComponentErrorBehavior extends Behavior {
     }
 
     public String createJavaScript(FeedbackMessage message) {
-        return String.format("$('#%s').after('<div class=&quot;invalid-feedback&quot;>%s</div>')",
+        return String.format("$('#%s').closest('.form-group').append('<div class=\"invalid-feedback\">%s</div>')",
                 formComponent.getMarkupId(), String.valueOf(message.getMessage()));
     }
 

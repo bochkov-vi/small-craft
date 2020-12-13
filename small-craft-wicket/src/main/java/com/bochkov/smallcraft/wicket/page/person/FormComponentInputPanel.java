@@ -5,6 +5,7 @@ import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
+import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
 import com.bochkov.smallcraft.wicket.page.person.component.Select2FirstName;
 import com.bochkov.smallcraft.wicket.page.person.component.Select2MiddleName;
 import com.bochkov.wicket.component.LocalDateTextField;
@@ -29,6 +30,7 @@ import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.visit.IVisit;
 import org.apache.wicket.util.visit.IVisitor;
+import org.springframework.data.domain.Example;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -186,6 +188,43 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
         add(phone);
         add(email);
         add(address);
+
+        lastName.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
+            @Override
+            public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
+                setModelObject(entity);
+                target.add(FormComponentInputPanel.this);
+            }
+
+            @Override
+            public List<Person> findDuplicates(String search) {
+                return personRepository.findAll(firstName.getConvertedInput(), middleName.getConvertedInput(), lastName.getConvertedInput());
+            }
+        });
+        firstName.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
+            @Override
+            public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
+                setModelObject(entity);
+                target.add(FormComponentInputPanel.this);
+            }
+
+            @Override
+            public List<Person> findDuplicates(String search) {
+                return personRepository.findAll(Example.of(new Person().setLastName(lastName.getConvertedInput()).setFirstName(firstName.getConvertedInput()).setMiddleName(middleName.getConvertedInput())));
+            }
+        });
+        middleName.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
+            @Override
+            public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
+                setModelObject(entity);
+                target.add(FormComponentInputPanel.this);
+            }
+
+            @Override
+            public List<Person> findDuplicates(String search) {
+                return personRepository.findAll(Example.of(new Person().setLastName(lastName.getConvertedInput()).setFirstName(firstName.getConvertedInput()).setMiddleName(middleName.getConvertedInput())));
+            }
+        });
 
         //add(new Label("select-label", new ResourceModel("person")));
         FormComponentInputPanel.this.streamChildren().filter(component -> component instanceof FormComponent).forEach(cmp -> cmp.setOutputMarkupId(true));

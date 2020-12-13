@@ -10,7 +10,7 @@ import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
-import com.bochkov.smallcraft.wicket.component.duplicate.DuplicateEntityBehavior;
+import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
 import com.bochkov.smallcraft.wicket.page.legalPerson.FormComponentInput;
 import com.bochkov.smallcraft.wicket.page.unit.SelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
@@ -102,18 +102,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
         add(registrationDate, registrationNumber, expirationDate);
 
 
-        tailNumber.add(new AjaxFormComponentUpdatingBehavior("change") {
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-                target.add(tailNumber);
-            }
-
-            @Override
-            protected void onError(AjaxRequestTarget target, RuntimeException e) {
-                target.add(tailNumber);
-            }
-        });
-        tailNumber.add(new DuplicateEntityBehavior<String, Boat>(getModel(), Boat.class) {
+        tailNumber.add(new OnChangeDuplicateBehavior<String, Boat>(getModel(), Boat.class) {
             @Override
             public void resolveDuplicate(AjaxRequestTarget target, Boat entity) {
                 setModelObject(entity);

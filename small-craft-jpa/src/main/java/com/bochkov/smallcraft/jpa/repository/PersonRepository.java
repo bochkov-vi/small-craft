@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PersonRepository extends JpaRepository<Person, Long>, JpaSpecificationExecutor<Person> {
@@ -40,4 +41,7 @@ public interface PersonRepository extends JpaRepository<Person, Long>, JpaSpecif
     }
 
     Optional<Person> findByPassportSerialAndPassportNumber(String serial, String number);
+
+    @Query("SELECT o FROM Person o WHERE o.firstName=:firstName and o.middleName=:middleName and o.lastName=:lastName")
+    List<Person> findAll(@Param("firstName") String firstName, @Param("middleName") String middleName, @Param("lastName") String lastName);
 }
