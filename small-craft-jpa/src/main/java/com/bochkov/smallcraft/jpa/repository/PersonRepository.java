@@ -43,6 +43,6 @@ public interface PersonRepository extends JpaRepository<Person, Long>, JpaSpecif
 
     List<Person> findByPhone(String phone);
 
-    @Query("SELECT o FROM Person o WHERE lower(o.firstName)=lower(:firstName) and lower(o.middleName)=lower(:middleName) and lower(o.lastName)=lower(:lastName)")
+    @Query(value = "SELECT * FROM person o WHERE lower(o.first_name)=lower(:firstName) and lower(o.middle_name)=lower(:middleName) and lower(o.last_name)=lower(:lastName)",nativeQuery = true)
     List<Person> findAll(@Param("firstName") String firstName, @Param("middleName") String middleName, @Param("lastName") String lastName);
 }

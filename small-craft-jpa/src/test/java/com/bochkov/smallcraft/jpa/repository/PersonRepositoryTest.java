@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -35,6 +36,11 @@ public class PersonRepositoryTest {
 
     public static LocalDate lastDateOfYear() {
         return LocalDate.now().with(TemporalAdjusters.lastDayOfYear());
+    }
+
+    @Test
+    public void findAllNames(){
+        List<Person> list = personRepository.findAll("А","А","Пупкин");
     }
 
     @Test
