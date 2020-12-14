@@ -3,12 +3,13 @@ package com.bochkov.smallcraft.wicket.component;
 import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
-import org.apache.wicket.behavior.AbstractAjaxBehavior;
 import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.feedback.FeedbackMessage;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.util.string.Strings;
 import org.apache.wicket.util.visit.IVisit;
 import org.apache.wicket.util.visit.IVisitor;
 
@@ -52,6 +53,7 @@ public class FormComponentErrorBehavior extends Behavior {
         });
     }
 
+
     @Override
     public void onConfigure(Component component) {
         formComponent.getFeedbackMessages().forEach(FeedbackMessage::markRendered);
@@ -60,14 +62,14 @@ public class FormComponentErrorBehavior extends Behavior {
     @Override
     public void renderHead(Component component, IHeaderResponse response) {
         if (formComponent.hasErrorMessage() && component.isVisibleInHierarchy()) {
-            for (FeedbackMessage message : formComponent.getFeedbackMessages().messages(FeedbackMessage::isError))
+            for (FeedbackMessage message : formComponent.getFeedbackMessages().messages(msg -> msg.isError() && !msg.isRendered()))
                 response.render(OnDomReadyHeaderItem.forScript(createJavaScript(message)));
         }
     }
 
     public String createJavaScript(FeedbackMessage message) {
-        return String.format("$('#%s').closest('.form-group').append('<div class=\"invalid-feedback\">%s</div>')",
-                formComponent.getMarkupId(), String.valueOf(message.getMessage()));
+        return String.format("$('#%s').closest('.form-group').append(\"<div class='invalid-feedback'>%s</div>\")",
+                formComponent.getMarkupId(), Strings.escapeMarkup(String.valueOf(message.getMessage())));
     }
 
 }

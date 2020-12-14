@@ -4,16 +4,23 @@ import org.apache.wicket.Component;
 import org.apache.wicket.IRequestListener;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.feedback.FeedbackMessage;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
+import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.request.IRequestParameters;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.apache.wicket.util.string.Strings;
 import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.IValidationError;
 import org.apache.wicket.validation.IValidator;
-import org.apache.wicket.validation.ValidationError;
+import org.apache.wicket.validation.RawValidationError;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -63,13 +70,15 @@ public abstract class DuplicateEntityBehavior<T, E> extends AbstractDefaultAjaxB
     public abstract List<E> findDuplicates(T search);
 
 
-    public ValidationError newError(E duplicate) {
-        ValidationError error = new ValidationError(newMessage(duplicate));
+    public IValidationError newError(E duplicate) {
+        IValidationError error = new RawValidationError(newMessage(duplicate));
         return error;
     }
 
-    public String newMessage(E duplicate) {
-        return String.format("В базе найден похожий объект \"%s\" чтобы загрузить нажмите %s", duplicate, createAjaxLink(duplicate));
+    public Serializable newMessage(E duplicate) {
+        String msg = String.format("В базе найден похожий объект \"%s\"", duplicate, createAjaxLink(duplicate));
+        DuplicateError message = new DuplicateError(getComponent(), msg, newModel(duplicate));
+        return message;
     }
 
 
@@ -81,7 +90,7 @@ public abstract class DuplicateEntityBehavior<T, E> extends AbstractDefaultAjaxB
 
     public CharSequence createCallbackAjaxFunction(E entity) {
         CharSequence url = getCallbackUrl(entity);
-        CharSequence func = Strings.escapeMarkup(String.format("Wicket.Ajax.get({\"u\":\"%s\"})", url));
+        CharSequence func = Strings.escapeMarkup(String.format("Wicket.Ajax.get({'u':'%s'})", url));
         return func;
     }
 
@@ -103,4 +112,25 @@ public abstract class DuplicateEntityBehavior<T, E> extends AbstractDefaultAjaxB
         entityModel.detach();
     }
 
+    @Override
+    public void renderHead(Component component, IHeaderResponse response) {
+        super.renderHead(component, response);
+        response.render(JavaScriptHeaderItem.forReference(new PackageResourceReference(DuplicateEntityBehavior.class, "DuplicateEntityBehavior.js")));
+        if (component.getFeedbackMessages().hasMessage(msg -> msg.getMessage() instanceof DuplicateError)) {
+
+            int i = 0;
+            for (FeedbackMessage msg : component.getFeedbackMessages().messages(msg -> msg.getMessage() instanceof DuplicateError)) {
+                DuplicateError<E> error = (DuplicateError) msg.getMessage();
+                E entity = error.getModel().getObject();
+                String cmpId = component.getMarkupId();
+                String msgId = cmpId + "feedback" + i;
+                String js = String.format("setupResolveDuplicate('%s', '%s','%s', '%s')", cmpId, msgId, getCallbackUrl(entity), error.getMessage());
+                response.render(OnDomReadyHeaderItem.forScript(js));
+                i++;
+            }
+        }
+
+    }
+
+    public abstract IModel<E> newModel(E entity);
 }

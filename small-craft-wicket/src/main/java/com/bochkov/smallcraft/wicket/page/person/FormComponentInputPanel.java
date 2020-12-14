@@ -199,6 +199,11 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             public List<Person> findDuplicates(String search) {
                 return personRepository.findAll(firstName.getModelObject(), middleName.getModelObject(), lastName.getConvertedInput());
             }
+
+            @Override
+            public IModel<Person> newModel(Person entity) {
+                return model(entity);
+            }
         });
         firstName.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
             @Override
@@ -211,6 +216,11 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             public List<Person> findDuplicates(String search) {
                 return personRepository.findAll(firstName.getConvertedInput(), middleName.getModelObject(), lastName.getModelObject());
             }
+
+            @Override
+            public IModel<Person> newModel(Person entity) {
+                return model(entity);
+            }
         });
         middleName.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
             @Override
@@ -222,6 +232,11 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             @Override
             public List<Person> findDuplicates(String search) {
                 return personRepository.findAll(firstName.getModelObject(), middleName.getConvertedInput(), lastName.getModelObject());
+            }
+
+            @Override
+            public IModel<Person> newModel(Person entity) {
+                return model(entity);
             }
         });
 
@@ -247,6 +262,11 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             public List<Person> findDuplicates(String search) {
                 return personRepository.findByPassportSerialAndPassportNumber(passportSerial.getConvertedInput(), passportNumber.getModelObject());
             }
+
+            @Override
+            public IModel<Person> newModel(Person entity) {
+                return model(entity);
+            }
         });
 
         passportNumber.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
@@ -260,12 +280,22 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             public List<Person> findDuplicates(String search) {
                 return personRepository.findByPassportSerialAndPassportNumber(passportSerial.getModelObject(), passportNumber.getConvertedInput());
             }
+
+            @Override
+            public IModel<Person> newModel(Person entity) {
+                return model(entity);
+            }
         });
         phone.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
             @Override
             public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
                 setModelObject(entity);
                 target.add(FormComponentInputPanel.this);
+            }
+
+            @Override
+            public IModel<Person> newModel(Person entity) {
+                return model(entity);
             }
 
             @Override
@@ -302,6 +332,10 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             selectPerson.setVisible(false);
             id.setVisible(true);
         }
+    }
+
+    IModel<Person> model(Person p) {
+        return PersistableModel.of(p, id -> personRepository.findById(id));
     }
 
     protected void onUpdate(AjaxRequestTarget target) {

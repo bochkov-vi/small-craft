@@ -113,6 +113,11 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
             public List<Boat> findDuplicates(String search) {
                 return boatRepository.findByTailNumber(search);
             }
+
+            @Override
+            public IModel<Boat> newModel(Boat entity) {
+                return PersistableModel.of(entity,id -> boatRepository.findById(id));
+            }
         });
 
        /* tailNumber.add(new IValidator<String>() {
