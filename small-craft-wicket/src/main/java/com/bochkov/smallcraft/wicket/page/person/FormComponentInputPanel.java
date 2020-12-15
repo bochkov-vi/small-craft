@@ -5,6 +5,7 @@ import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
+import com.bochkov.smallcraft.wicket.component.InputMaskBehavior;
 import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
 import com.bochkov.smallcraft.wicket.page.person.component.Select2FirstName;
 import com.bochkov.smallcraft.wicket.page.person.component.Select2MiddleName;
@@ -268,7 +269,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
                 return model(entity);
             }
         });
-
+        passportSerial.add(new InputMaskBehavior("9999"));
         passportNumber.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
             @Override
             public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
@@ -286,6 +287,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
                 return model(entity);
             }
         });
+        passportNumber.add(new InputMaskBehavior("999999"));
         phone.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
             @Override
             public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
@@ -303,6 +305,8 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
                 return personRepository.findByPhone(search);
             }
         });
+        phone.add(InputMaskBehavior.phone());
+        email.add(InputMaskBehavior.email());
         Html5AttributesBehavior.append(this);
         FormComponentErrorBehavior.append(this);
     }
@@ -310,7 +314,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
-        response.render(JavaScriptHeaderItem.forReference(new WebjarsJavaScriptResourceReference("jquery.inputmask/current/jquery.inputmask.bundle.js") {
+/*        response.render(JavaScriptHeaderItem.forReference(new WebjarsJavaScriptResourceReference("jquery.inputmask/current/jquery.inputmask.bundle.js") {
             @Override
             public List<HeaderItem> getDependencies() {
                 return Lists.newArrayList(JavaScriptHeaderItem.forReference(Application.get().getJavaScriptLibrarySettings().getJQueryReference()));
@@ -319,7 +323,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
         response.render(OnDomReadyHeaderItem.forScript(String.format("$('#%s').inputmask('+7(999) 999-99-99')", phone.getMarkupId())));
         response.render(OnDomReadyHeaderItem.forScript(String.format("$('#%s').inputmask('email')", email.getMarkupId())));
         response.render(OnDomReadyHeaderItem.forScript(String.format("$('#%s').inputmask('9999')", passportSerial.getMarkupId())));
-        response.render(OnDomReadyHeaderItem.forScript(String.format("$('#%s').inputmask('999999')", passportNumber.getMarkupId())));
+        response.render(OnDomReadyHeaderItem.forScript(String.format("$('#%s').inputmask('999999')", passportNumber.getMarkupId())));*/
     }
 
     @Override

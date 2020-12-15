@@ -116,6 +116,7 @@ public abstract class DuplicateEntityBehavior<T, E> extends AbstractDefaultAjaxB
     public void renderHead(Component component, IHeaderResponse response) {
         super.renderHead(component, response);
         response.render(JavaScriptHeaderItem.forReference(new PackageResourceReference(DuplicateEntityBehavior.class, "DuplicateEntityBehavior.js")));
+        response.render(OnDomReadyHeaderItem.forScript(String.format("clearFedbackMessages('%s')",getComponent().getMarkupId())));
         if (component.getFeedbackMessages().hasMessage(msg -> msg.getMessage() instanceof DuplicateError)) {
 
             int i = 0;
