@@ -3,6 +3,7 @@ package com.bochkov.smallcraft.wicket;
 import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
+import com.giffing.wicket.spring.boot.starter.app.WicketBootSecuredWebApplication;
 import com.giffing.wicket.spring.boot.starter.app.WicketBootStandardWebApplication;
 import org.apache.wicket.ConverterLocator;
 import org.apache.wicket.IConverterLocator;
@@ -20,7 +21,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Component
-public class WicketWebApplication extends WicketBootStandardWebApplication {
+public class WicketWebApplication extends WicketBootSecuredWebApplication {
 
     @Autowired
     PersonRepository personRepository;

@@ -1,9 +1,13 @@
 package com.bochkov.smallcraft.wicket;
 
 import com.bochkov.smallcraft.jpa.JpaApplication;
+import com.giffing.wicket.spring.boot.context.security.AuthenticatedWebSessionConfig;
+import com.giffing.wicket.spring.boot.starter.configuration.extensions.external.spring.security.SecureWebSession;
+import org.apache.wicket.authroles.authentication.AbstractAuthenticatedWebSession;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -21,5 +25,15 @@ public class WicketSpringBootApplication extends SpringBootServletInitializer {
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(WicketSpringBootApplication.class);
+    }
+    @Bean
+    public AuthenticatedWebSessionConfig authenticatedWebSessionConfig(){
+        return new AuthenticatedWebSessionConfig() {
+
+            @Override
+            public Class<? extends AbstractAuthenticatedWebSession> getAuthenticatedWebSessionClass() {
+                return SecureWebSession.class;
+            }
+        };
     }
 }

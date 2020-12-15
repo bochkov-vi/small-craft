@@ -3,7 +3,7 @@ package com.bochkov.smallcraft.wicket.page;
 import com.bochkov.bootstrap.ActiveLinkBehavior;
 import com.bochkov.bootstrap.BootstrapBehavior;
 import com.bochkov.fontawesome.FontAwesomeBehavior;
-import com.bochkov.smallcraft.wicket.page.boat.TablePage;
+import com.bochkov.smallcraft.wicket.page.store.boat.TablePage;
 import org.apache.wicket.Application;
 import org.apache.wicket.Session;
 import org.apache.wicket.markup.head.IHeaderResponse;
@@ -58,11 +58,11 @@ public class BasePage<T> extends GenericWebPage<T> {
         add(new FontAwesomeBehavior());
         add(new BookmarkablePageLink<Void>("home-link", HomePage.class).add(ActiveLinkBehavior.forBookmarkable()));
         add(new BookmarkablePageLink<Void>("boat-link", TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("person-link", com.bochkov.smallcraft.wicket.page.person.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("legal-person-link", com.bochkov.smallcraft.wicket.page.legalPerson.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("notification-link", com.bochkov.smallcraft.wicket.page.notification.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("exit-notification-link", com.bochkov.smallcraft.wicket.page.exitnotification.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("unit-link", com.bochkov.smallcraft.wicket.page.unit.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
+        add(new BookmarkablePageLink<Void>("person-link", com.bochkov.smallcraft.wicket.page.store.person.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
+        add(new BookmarkablePageLink<Void>("legal-person-link", com.bochkov.smallcraft.wicket.page.store.legalPerson.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
+        add(new BookmarkablePageLink<Void>("notification-link", com.bochkov.smallcraft.wicket.page.store.notification.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
+        add(new BookmarkablePageLink<Void>("exit-notification-link", com.bochkov.smallcraft.wicket.page.store.exitnotification.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
+        add(new BookmarkablePageLink<Void>("unit-link", com.bochkov.smallcraft.wicket.page.store.unit.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
     }
 
     @Override
