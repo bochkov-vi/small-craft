@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:panel>
+
+        <label wicket:for="login" class="sr-only">
+            <wicket:message key="login"/>
+        </label>
+        <input type="text" wicket:id="login" class="form-control" required autofocus>
+        <label for="password" class="sr-only">
+            <wicket:message key="password"/>
+        </label>
+        <input type="password" wicket:id="password" class="form-control" required>
+        <div class="checkbox mb-3">
+            <label>
+                <input wicket:id="remember-me" type="checkbox" value="remember-me">
+                <wicket:message key="remember-me"/>
+            </label>
+        </div>
+        <button class="btn btn-sm btn-primary btn-block" type="submit">
+            <wicket:message key="signin"/>
+        </button>
+</wicket:panel>
+</html>

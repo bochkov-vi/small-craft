@@ -9,6 +9,7 @@ import com.bochkov.smallcraft.wicket.page.crud.CrudTablePage;
 import com.google.common.base.Strings;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.Session;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.HeaderlessColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 @MountPath("boat")
+@AuthorizeInstantiation("USER")
 public class TablePage extends CrudTablePage<Boat, Long> {
 
     @Inject

@@ -26,14 +26,5 @@ public class WicketSpringBootApplication extends SpringBootServletInitializer {
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(WicketSpringBootApplication.class);
     }
-    @Bean
-    public AuthenticatedWebSessionConfig authenticatedWebSessionConfig(){
-        return new AuthenticatedWebSessionConfig() {
 
-            @Override
-            public Class<? extends AbstractAuthenticatedWebSession> getAuthenticatedWebSessionClass() {
-                return SecureWebSession.class;
-            }
-        };
-    }
 }

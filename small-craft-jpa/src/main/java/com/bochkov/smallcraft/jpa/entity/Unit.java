@@ -1,15 +1,14 @@
 package com.bochkov.smallcraft.jpa.entity;
 
+import com.bochkov.hierarchical.IHierarchical;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,7 +16,7 @@ import javax.persistence.Id;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Unit extends AbstractEntity<Long> {
+public class Unit extends AbstractEntity<Long> implements IHierarchical<Long, Unit> {
 
     @Id
     @Column(name = "id_unit")
@@ -25,6 +24,14 @@ public class Unit extends AbstractEntity<Long> {
     Long id;
     @Column(unique = true, nullable = false)
     String name;
+
+    @ManyToMany
+    @JoinTable(name = "unit_p", joinColumns = @JoinColumn(name = "id_unit_parent", referencedColumnName = "id_unit"),
+            inverseJoinColumns = @JoinColumn(name = "id_unit", referencedColumnName = "id_unit"))
+    List<Unit> parents;
+
+    @ManyToMany(mappedBy = "parents")
+    List<Unit> childs;
 
     public Unit(String name) {
         this.name = name;
