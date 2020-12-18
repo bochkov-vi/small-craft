@@ -37,6 +37,8 @@ public class ExitNotification extends AbstractEntity<Long> {
 
     String pier;
 
+    String activity;
+
     @ManyToOne
     @JoinColumn(name = "id_unit", nullable = false)
     Unit unit;

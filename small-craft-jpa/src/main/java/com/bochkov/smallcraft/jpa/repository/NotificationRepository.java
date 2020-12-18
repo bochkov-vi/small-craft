@@ -22,6 +22,21 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     default Page<String> findRegionByMask(@Param("mask") String mask, Pageable pg) {
         return findRegionByMask(Optional.ofNullable(mask).map(expr -> String.format("%%%s%%", expr)).orElse("%"), Optional.ofNullable(mask).orElse(""), pg);
     }
+    @Query(nativeQuery = true, value = "SELECT distinct activity FROM (SELECT activity FROM(SELECT n.activity FROM notification n WHERE n.activity ILIKE :mask) as t ORDER BY position(:sort in activity), length(activity), activity) as t",
+            countQuery = "SELECT count(distinct activity) FROM notification n WHERE activity ILIKE :mask AND :sort IS NOT NULL\n")
+    Page<String> findActivityByMask(@Param("mask") String mask, @Param("sort") String sort, Pageable pg);
+
+    default Page<String> findActivityByMask(@Param("mask") String mask, Pageable pg) {
+        return findActivityByMask(Optional.ofNullable(mask).map(expr -> String.format("%%%s%%", expr)).orElse("%"), Optional.ofNullable(mask).orElse(""), pg);
+    }
+
+    @Query(nativeQuery = true, value = "SELECT distinct time_of_day FROM (SELECT time_of_day FROM(SELECT n.time_of_day FROM notification n WHERE n.time_of_day ILIKE :mask) as t ORDER BY position(:sort in time_of_day), length(time_of_day), time_of_day) as t",
+            countQuery = "SELECT count(distinct time_of_day) FROM notification n WHERE time_of_day ILIKE :mask AND :sort IS NOT NULL\n")
+    Page<String> findTimeOfDayByMask(@Param("mask") String mask, @Param("sort") String sort, Pageable pg);
+
+    default Page<String> findTimeOfDayByMask(@Param("mask") String mask, Pageable pg) {
+        return findTimeOfDayByMask(Optional.ofNullable(mask).map(expr -> String.format("%%%s%%", expr)).orElse("%"), Optional.ofNullable(mask).orElse(""), pg);
+    }
 
     Optional<Notification> findTopByBoatOrderByNumberDesc(Boat boat);
 

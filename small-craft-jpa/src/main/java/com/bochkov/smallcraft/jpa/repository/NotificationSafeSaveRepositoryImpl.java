@@ -23,7 +23,7 @@ class NotificationSafeSaveRepositoryImpl implements NotificationSafeSaveReposito
         e.map(Notification::getCaptain).ifPresent(
                 captain -> entity.setCaptain(personRepository.save(captain)));
         e.map(Notification::getBoat).ifPresent(
-                boat -> entity.setBoat(boatRepository.save(boat)));
+                boat -> entity.setBoat(boatRepository.safeSave(boat)));
         return entity;
     }
 }

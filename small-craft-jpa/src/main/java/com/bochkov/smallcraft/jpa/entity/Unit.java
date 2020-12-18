@@ -26,11 +26,11 @@ public class Unit extends AbstractEntity<Long> implements IHierarchical<Long, Un
     String name;
 
     @ManyToMany
-    @JoinTable(name = "unit_p", joinColumns = @JoinColumn(name = "id_unit_parent", referencedColumnName = "id_unit"),
-            inverseJoinColumns = @JoinColumn(name = "id_unit", referencedColumnName = "id_unit"))
+    @JoinTable(name = "unit_p", joinColumns = @JoinColumn(name = "id_unit", referencedColumnName = "id_unit"),
+            inverseJoinColumns = @JoinColumn(name = "id_unit_parent", referencedColumnName = "id_unit"))
     List<Unit> parents;
 
-    @ManyToMany(mappedBy = "parents")
+    @ManyToMany(mappedBy = "parents", cascade = CascadeType.ALL)
     List<Unit> childs;
 
     public Unit(String name) {
