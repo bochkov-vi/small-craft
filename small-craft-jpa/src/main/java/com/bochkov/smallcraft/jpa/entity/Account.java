@@ -6,9 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -23,6 +21,10 @@ public class Account extends AbstractEntity<String> {
 
     @ElementCollection
     List<String> roles;
+
+    @ManyToOne
+    @JoinColumn(name = "id_unit")
+    Unit unit;
 
     String password;
 }

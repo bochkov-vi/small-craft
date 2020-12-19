@@ -1,6 +1,7 @@
 package com.bochkov.smallcraft.jpa.entity;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,7 +51,10 @@ public class Notification extends AbstractEntity<Long> {
 
     LocalDate dateTo;
 
-    String activity;
+    @ElementCollection
+    @Column(name = "activity")
+    @CollectionTable(joinColumns = @JoinColumn(name = "id_notification"))
+    Set<String> activities;
 
     String timeOfDay;
 
@@ -65,4 +69,12 @@ public class Notification extends AbstractEntity<Long> {
                 .add("date", date)
                 .toString();
     }
+
+    public Notification setActivity(String... activity) {
+        if (activity != null) {
+            setActivities(Sets.newHashSet(activity));
+        }
+        return this;
+    }
+
 }

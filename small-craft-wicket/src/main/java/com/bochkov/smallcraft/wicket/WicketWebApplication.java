@@ -4,14 +4,11 @@ import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.giffing.wicket.spring.boot.starter.app.WicketBootSecuredWebApplication;
-import com.giffing.wicket.spring.boot.starter.app.WicketBootStandardWebApplication;
 import org.apache.wicket.ConverterLocator;
 import org.apache.wicket.IConverterLocator;
 import org.apache.wicket.Session;
-import org.apache.wicket.SharedResources;
 import org.apache.wicket.request.Request;
 import org.apache.wicket.request.Response;
-import org.apache.wicket.request.resource.ResourceReferenceRegistry;
 import org.apache.wicket.util.convert.ConversionException;
 import org.apache.wicket.util.convert.IConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,9 +140,9 @@ public class WicketWebApplication extends WicketBootSecuredWebApplication {
                         .orElse(null);
             }
         });
+
         return locator;
     }
-
 
 
     @Override

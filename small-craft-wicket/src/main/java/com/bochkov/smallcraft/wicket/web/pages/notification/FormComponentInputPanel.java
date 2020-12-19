@@ -74,7 +74,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Notification> {
 
     FormComponent<LocalDate> dateTo = new LocalDateTextField("dateTo", Model.of(), getString("dateFormat")).setRequired(true);
 
-    FormComponent<String> activity = new SelectActivity("activity", Model.of());
+    FormComponent<Collection<String>> activities = new SelectActivity("activities", new CollectionModel<>());
 
     FormComponent<String> timeOfDay = new SelectTimeOfDay("timeOfDay", Model.of());
 
@@ -99,7 +99,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Notification> {
         super.onInitialize();
         captain.setOutputMarkupId(true);
         setOutputMarkupId(true);
-        add(region, captain, boat, legalPerson, date, dateFrom, dateTo, activity, timeOfDay, tck, id, number, year, unit);
+        add(region, captain, boat, legalPerson, date, dateFrom, dateTo, activities, timeOfDay, tck, id, number, year, unit);
         legalPerson.setVisible(false).setEnabled(false);
         tck.setOutputMarkupId(true);
         add(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {
@@ -137,7 +137,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Notification> {
         }
         entity.setDateTo(dateTo.getConvertedInput());
         entity.setDateFrom(dateFrom.getConvertedInput());
-        entity.setActivity(activity.getConvertedInput());
+        entity.setActivities(Optional.ofNullable(activities.getConvertedInput()).map(Sets::newHashSet).orElse(null));
         entity.setRegion(Optional.ofNullable(region.getConvertedInput()).map(Sets::newHashSet).orElse(null));
         entity.setTck(tck.getConvertedInput());
         entity.setTimeOfDay(timeOfDay.getConvertedInput());
@@ -157,7 +157,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Notification> {
         boat.setModelObject(e.getBoat());
         dateTo.setModelObject(e.getDateTo());
         dateFrom.setModelObject(e.getDateFrom());
-        activity.setModelObject(e.getActivity());
+        activities.setModelObject(Optional.ofNullable(e.getActivities()).map(Sets::newHashSet).orElse(null));
         region.setModelObject(Optional.ofNullable(e.getRegion()).map(Sets::newHashSet).orElse(null));
         tck.setModelObject(e.getTck());
         timeOfDay.setModelObject(e.getTimeOfDay());
