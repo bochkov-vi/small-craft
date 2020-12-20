@@ -5,6 +5,7 @@ import com.bochkov.smallcraft.wicket.web.HomePage;
 import com.giffing.wicket.spring.boot.context.scan.WicketSignInPage;
 import org.apache.wicket.authroles.authentication.AbstractAuthenticatedWebSession;
 import org.apache.wicket.authroles.authentication.AuthenticatedWebSession;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.RequiredTextField;
 import org.apache.wicket.markup.html.form.StatelessForm;
@@ -37,17 +38,21 @@ public class LoginPage extends BasePage<Void> {
 
         private String password;
 
+        private boolean rememberme = true;
+
         public LoginForm(String id) {
             super(id);
             setModel(new CompoundPropertyModel<>(this));
             add(new FeedbackPanel("feedback"));
             add(new RequiredTextField<String>("username"));
             add(new PasswordTextField("password"));
+            add(new CheckBox("rememberme"));
         }
 
         @Override
         protected void onSubmit() {
             AuthenticatedWebSession session = AuthenticatedWebSession.get();
+
             if (session.signIn(username, password)) {
                 setResponsePage(HomePage.class);
             } else {

@@ -37,7 +37,8 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
                 .authorizeRequests().antMatchers("/**").permitAll()
                 .and()
                 .logout()
-                .permitAll();
+                .permitAll()
+                .and().rememberMe();
         http.headers().frameOptions().disable();
     }
 
