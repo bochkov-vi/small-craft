@@ -10,6 +10,7 @@ import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -75,6 +76,10 @@ public class Notification extends AbstractEntity<Long> {
             setActivities(Sets.newHashSet(activity));
         }
         return this;
+    }
+
+    public boolean isValidExit(LocalDateTime dateTime) {
+        return dateTime.isAfter(dateFrom.atStartOfDay()) && dateTime.isBefore(dateTo.atStartOfDay().plusDays(1));
     }
 
 }
