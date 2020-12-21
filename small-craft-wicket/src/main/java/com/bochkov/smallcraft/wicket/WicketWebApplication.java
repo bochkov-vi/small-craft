@@ -3,12 +3,16 @@ package com.bochkov.smallcraft.wicket;
 import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
+import com.bochkov.smallcraft.wicket.security.WicketSecuredWebSession;
 import com.giffing.wicket.spring.boot.starter.app.WicketBootSecuredWebApplication;
 import org.apache.wicket.ConverterLocator;
 import org.apache.wicket.IConverterLocator;
 import org.apache.wicket.Session;
+import org.apache.wicket.request.IRequestHandler;
 import org.apache.wicket.request.Request;
 import org.apache.wicket.request.Response;
+import org.apache.wicket.request.cycle.IRequestCycleListener;
+import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.util.convert.ConversionException;
 import org.apache.wicket.util.convert.IConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,13 +45,25 @@ public class WicketWebApplication extends WicketBootSecuredWebApplication {
     @Override
     protected void init() {
         super.init();
+        getComponentInstantiationListeners().add(new Html5AttributesBehavior.InstantiationListener());
+        getRequestCycleListeners().add(new IRequestCycleListener() {
+            @Override
+            public void onBeginRequest(RequestCycle cycle) {
+                WicketSecuredWebSession.get().updateSignIn();
+            }
+
+            @Override
+            public IRequestHandler onException(RequestCycle cycle, Exception ex) {
+                return null;
+            }
+        });
     }
 
     @Override
     protected IConverterLocator newConverterLocator() {
         ConverterLocator locator = new ConverterLocator();
 
-        getComponentInstantiationListeners().add(new Html5AttributesBehavior.InstantiationListener());
+
         locator.set(Person.class, new IConverter<Person>() {
             @Override
             public Person convertToObject(String value, Locale locale) throws ConversionException {
@@ -149,4 +165,6 @@ public class WicketWebApplication extends WicketBootSecuredWebApplication {
     public Session newSession(Request request, Response response) {
         return super.newSession(request, response);
     }
+
+
 }

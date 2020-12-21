@@ -1,8 +1,10 @@
 package com.bochkov.smallcraft.wicket.security;
 
+import com.bochkov.smallcraft.jpa.entity.Account;
+import com.bochkov.smallcraft.jpa.repository.AccountRepository;
 import com.giffing.wicket.spring.boot.context.security.AuthenticatedWebSessionConfig;
-import com.giffing.wicket.spring.boot.starter.configuration.extensions.external.spring.security.SecureWebSession;
 import org.apache.wicket.authroles.authentication.AbstractAuthenticatedWebSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +14,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.authentication.NullRememberMeServices;
+import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 
 /**
  * Default Spring Boot Wicket security getting started configuration. Its only
@@ -28,17 +33,23 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
         return new BCryptPasswordEncoder();
     }
 
+    @Autowired
+    AccountRepository accountRepository;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                //.anonymous().disable()
                 .csrf().disable()
+
 //                .authorizeRequests().antMatchers("/boat/**","/person/**","/notification/**","/exit-notification/**","/unit/**").hasAnyRole("USER", "ADMIN")
 //                .and()
                 .authorizeRequests().antMatchers("/**").permitAll()
                 .and()
                 .logout()
                 .permitAll()
-                .and().rememberMe();
+                .and().rememberMe()
+        ;
         http.headers().frameOptions().disable();
     }
 
@@ -65,8 +76,16 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
 
             @Override
             public Class<? extends AbstractAuthenticatedWebSession> getAuthenticatedWebSessionClass() {
-                return SecureWebSession.class;
+                return WicketSecuredWebSession.class;
             }
         };
     }
+
+    @Bean
+    public RememberMeServices rememberMeServices(UserDetailsService userDetailsService) {
+        RememberMeServices services = new TokenBasedRememberMeServices("rmkey",userDetailsService);
+        return services;
+    }
+
+
 }

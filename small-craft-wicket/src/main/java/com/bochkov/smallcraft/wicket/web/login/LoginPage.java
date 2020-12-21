@@ -12,7 +12,14 @@ import org.apache.wicket.markup.html.form.StatelessForm;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.wicketstuff.annotation.mount.MountPath;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Default login page.
@@ -22,6 +29,9 @@ import org.wicketstuff.annotation.mount.MountPath;
 @WicketSignInPage
 @MountPath("login")
 public class LoginPage extends BasePage<Void> {
+
+    @Inject
+    RememberMeServices rememberMeServices;
 
     public LoginPage(PageParameters parameters) {
         super(parameters);
@@ -52,9 +62,12 @@ public class LoginPage extends BasePage<Void> {
         @Override
         protected void onSubmit() {
             AuthenticatedWebSession session = AuthenticatedWebSession.get();
-
             if (session.signIn(username, password)) {
                 setResponsePage(HomePage.class);
+                HttpServletRequest request = (HttpServletRequest) getRequest().getContainerRequest();
+                HttpServletResponse response = (HttpServletResponse) getResponse().getContainerResponse();
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                rememberMeServices.loginSuccess(request, response, authentication);
             } else {
                 error("Login failed");
             }
