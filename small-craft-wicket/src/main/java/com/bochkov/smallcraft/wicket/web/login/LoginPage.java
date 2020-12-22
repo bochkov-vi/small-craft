@@ -5,7 +5,6 @@ import com.bochkov.smallcraft.wicket.web.HomePage;
 import com.giffing.wicket.spring.boot.context.scan.WicketSignInPage;
 import org.apache.wicket.authroles.authentication.AbstractAuthenticatedWebSession;
 import org.apache.wicket.authroles.authentication.AuthenticatedWebSession;
-import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.RequiredTextField;
 import org.apache.wicket.markup.html.form.StatelessForm;
@@ -56,7 +55,7 @@ public class LoginPage extends BasePage<Void> {
             add(new FeedbackPanel("feedback"));
             add(new RequiredTextField<String>("username"));
             add(new PasswordTextField("password"));
-            add(new CheckBox("rememberme"));
+            // add(new CheckBox("rememberme").setMarkupId("remember-me"));
         }
 
         @Override

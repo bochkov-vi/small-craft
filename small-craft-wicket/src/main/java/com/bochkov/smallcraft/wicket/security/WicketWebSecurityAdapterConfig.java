@@ -1,22 +1,30 @@
 package com.bochkov.smallcraft.wicket.security;
 
-import com.bochkov.smallcraft.jpa.entity.Account;
 import com.bochkov.smallcraft.jpa.repository.AccountRepository;
 import com.giffing.wicket.spring.boot.context.security.AuthenticatedWebSessionConfig;
 import org.apache.wicket.authroles.authentication.AbstractAuthenticatedWebSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.ldap.core.DirContextAdapter;
+import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.authentication.NullRememberMeServices;
+import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 import org.springframework.security.web.authentication.RememberMeServices;
-import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+
+import java.util.Collection;
 
 /**
  * Default Spring Boot Wicket security getting started configuration. Its only
@@ -27,14 +35,47 @@ import org.springframework.security.web.authentication.rememberme.TokenBasedReme
  * @author Marc Giffing
  */
 @Configuration
+@Order(5)
+@EnableWebSecurity
 public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    AccountRepository accountRepository;
+
+    @Qualifier("userDetailsServiceImpl")
+    @Autowired
+    UserDetailsService userDetailsService;
+
+    @Autowired
+    PersistentTokenRepository persistentTokenRepository;
+
     @Bean
     public static BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Autowired
-    AccountRepository accountRepository;
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.ldapAuthentication()
+                .userSearchFilter("(sAMAccountName={0})")
+                .userDetailsContextMapper(new UserDetailsContextMapper() {
+                    @Override
+                    public UserDetails mapUserFromContext(DirContextOperations dirContextOperations, String s, Collection<? extends GrantedAuthority> collection) {
+                        return userDetailsService.loadUserByUsername(s);
+                    }
+
+                    @Override
+                    public void mapUserToContext(UserDetails userDetails, DirContextAdapter dirContextAdapter) {
+
+                    }
+                })
+                .contextSource()
+                .url("ldap://main.svpubo.fsb.ru:389/dc=9862,dc=svpubo,dc=fsb,dc=ru");
+       /* auth.inMemoryAuthentication()
+                .withUser("admin")
+                .password(passwordEncoder().encode("admin"))
+                .roles("USER", "ADMIN");*/
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -48,7 +89,7 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
                 .and()
                 .logout()
                 .permitAll()
-                .and().rememberMe()
+                .and().rememberMe().rememberMeServices(rememberMeServices()).userDetailsService(userDetailsService)
         ;
         http.headers().frameOptions().disable();
     }
@@ -56,20 +97,21 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
     @Bean(name = "authenticationManager")
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        manager.createUser(
-                User.withUsername("admin")
-                        .password(passwordEncoder().encode("admin"))
-                        .authorities("USER", "ADMIN")
-                        .build());
+        AuthenticationManager manager = super.authenticationManagerBean();
         return manager;
     }
 
+    /*  @Bean
+      public UserDetailsService userDetailsService() {
+          InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+          manager.createUser(
+                  User.withUsername("admin")
+                          .password(passwordEncoder().encode("admin"))
+                          .authorities("USER", "ADMIN")
+                          .build());
+          return manager;
+      }
+  */
     @Bean
     public AuthenticatedWebSessionConfig authenticatedWebSessionConfig() {
         return new AuthenticatedWebSessionConfig() {
@@ -82,8 +124,8 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
     }
 
     @Bean
-    public RememberMeServices rememberMeServices(UserDetailsService userDetailsService) {
-        RememberMeServices services = new TokenBasedRememberMeServices("rmkey",userDetailsService);
+    public RememberMeServices rememberMeServices() {
+        RememberMeServices services = new PersistentTokenBasedRememberMeServices("rmkey", userDetailsService, persistentTokenRepository);
         return services;
     }
 
