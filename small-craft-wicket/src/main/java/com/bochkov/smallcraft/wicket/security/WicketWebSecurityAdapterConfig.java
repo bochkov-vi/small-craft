@@ -90,6 +90,12 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
                 .logout()
                 .permitAll()
                 .and().rememberMe().rememberMeServices(rememberMeServices()).userDetailsService(userDetailsService)
+                .and()
+                .logout()
+                .logoutSuccessUrl("/")
+                .logoutUrl("/logout")
+                .deleteCookies("JSESSIONID")
+                .permitAll();
         ;
         http.headers().frameOptions().disable();
     }

@@ -10,7 +10,6 @@ import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.HeaderlessColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.ISortableDataProvider;
@@ -40,7 +39,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     WebMarkupContainer container = new WebMarkupContainer("container");
 
 
-    DataTable table = null;
+    EntityDataTable<T, ID> table = null;
 
 
     boolean ajax = false;
@@ -66,7 +65,13 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     protected void onInitialize() {
         super.onInitialize();
         exportFileName = new ResourceModel("exportFileName").wrapOnAssignment(getPage());
-        table = new EntityDataTable("table", columns(), provider());
+        table = new EntityDataTable("table", columns(), provider()) {
+
+            @Override
+            public void onRowCreated(Item row, String id, int index, IModel model) {
+                CrudTablePage.this.onRowCreated(table, row, id, index, model);
+            }
+        };
         exportExcel = new XLSXDataExportLink("export-excel", table, exportFileName.getObject());
         table.setOutputMarkupId(true);
         container.add(table);
@@ -226,5 +231,9 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     public void onDelete(AjaxRequestTarget target, IModel<T> model) {
         super.onDelete(target, model);
         target.add(table);
+    }
+
+    public void onRowCreated(EntityDataTable<T, ID> table, Item<T> item, final String id, final int index, final IModel<T> model) {
+
     }
 }

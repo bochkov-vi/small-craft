@@ -2,33 +2,40 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 <body>
 <wicket:panel>
-    <div wicket:enclosure="exitDate" class="badge badge-primary">
-        <span>
-            <wicket:message key="exit"/>:
-        </span>
-        <span wicket:id="exitDate"></span>
+    <div class="row">
+        <div class="col-10 p-0">
+            <div wicket:enclosure="exitDate" class="badge badge-primary">
+                <span>
+                    <wicket:message key="exit"/>:
+                </span>
+                <span wicket:id="exitDate"></span>
+            </div>
+            <div wicket:enclosure="returnDate" class="badge badge-success">
+                <span>
+                    <wicket:message key="return"/>:
+                </span>
+                <span wicket:id="returnDate"></span>
+            </div>
+        </div>
+        <div class="col-2 p-0">
+            <a wicket:id="btn-edit" class="btn btn-sm btn-outline-success">
+                <span class="fa fa-pencil"></span>
+            </a>
+        </div>
     </div>
-    <div wicket:enclosure="returnDate" class="badge badge-secondary">
-        <span>
-            <wicket:message key="return"/>:
-        </span>
-        <span wicket:id="returnDate"></span>
-    </div>
-    <a wicket:id="btn-edit" class="btn btn-sm btn-outline-success">
-        <span class="fa fa-pencil"></span>
-    </a>
     <a wicket:id="btn-exit" class="btn btn-sm btn-outline-primary">
         <span class="fa fa-sign-out"></span>
         <span>
             <wicket:message key="exit"/>
         </span>
     </a>
-    <a wicket:id="btn-return" class="btn btn-sm btn-outline-secondary">
+    <a wicket:id="btn-return" class="btn btn-sm btn-outline-success">
         <span class="fa fa-sign-in"></span>
         <span>
             <wicket:message key="return"/>
         </span>
     </a>
+    <div wicket:id="expired-label" class="badge-danger"></div>
 </wicket:panel>
 </body>
 </html>

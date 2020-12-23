@@ -2,12 +2,11 @@
 <html xmlns:wicket="http://wicket.apache.org">
 <wicket:head>
     <title>
-        <wicket:message key="home-page-title"/>
-    </title>
+        <wicket:message key="home-page-title"/> </title>
 </wicket:head>
 <wicket:extend>
     <div class="container">
-
+        <div wicket:id="dashboard"></div>
         <ul class="list-group m-2">
             <li class="list-group-item">
                 <a wicket:id="home" href="home"><i class="fa fa-home"/>
@@ -44,6 +43,7 @@
                     <wicket:message key="unit-page-title"/>
                 </a>
             </li>
+
         </ul>
     </div>
 

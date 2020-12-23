@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <version>0.0.1-SNAPSHOT</version>
     <artifactId>small-craft-jpa</artifactId>
-
+<properties><spring-boot.repackage.skip>true</spring-boot.repackage.skip></properties>
     <profiles>
         <profile>
             <id>locahostdb</id>

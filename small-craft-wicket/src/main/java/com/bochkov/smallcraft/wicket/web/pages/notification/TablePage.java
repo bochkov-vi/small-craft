@@ -5,7 +5,9 @@ import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
+import com.bochkov.smallcraft.wicket.web.crud.EntityDataTable;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.HeaderlessColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
@@ -21,9 +23,11 @@ import org.apache.wicket.request.resource.PackageResourceReference;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @MountPath("notification")
@@ -135,6 +139,34 @@ public class TablePage extends CrudTablePage<Notification, Long> {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
-        response.render(CssHeaderItem.forReference(new PackageResourceReference(TablePage.class,"TablePage.css")));
+        response.render(CssHeaderItem.forReference(new PackageResourceReference(TablePage.class, "TablePage.css")));
     }
+
+    @Override
+    public void onRowCreated(EntityDataTable<Notification, Long> table, Item<Notification> row, String id, int index, IModel<Notification> model) {
+        row.add(new ClassAttributeModifier() {
+            @Override
+            protected Set<String> update(Set<String> oldClasses) {
+                if (model.map(n -> n.isExpiredDate(LocalDateTime.now())).orElse(false).getObject()) {
+                    oldClasses.add("expired-row");
+                }
+                return oldClasses;
+            }
+        });
+    }
+
+    /* @Override
+    protected Item<Notification> onRowCreated(EntityDataTable<Notification, Long> table, String id, int index, IModel<Notification> model) {
+
+        row.add(new ClassAttributeModifier() {
+            @Override
+            protected Set<String> update(Set<String> oldClasses) {
+                if (model.map(n -> !n.isValidExit(LocalDateTime.now())).orElse(false).getObject()) {
+                    oldClasses.add("expired-row");
+                }
+                return oldClasses;
+            }
+        });
+        return row;
+    }*/
 }

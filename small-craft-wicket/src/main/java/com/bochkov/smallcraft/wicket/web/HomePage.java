@@ -1,10 +1,14 @@
 package com.bochkov.smallcraft.wicket.web;
 
 import com.bochkov.smallcraft.wicket.web.pages.boat.TablePage;
+import com.bochkov.smallcraft.wicket.web.pages.dashboard.DashBoardPanel;
 import com.giffing.wicket.spring.boot.context.scan.WicketHomePage;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
+import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.wicketstuff.annotation.mount.MountPath;
+
+import java.time.LocalDate;
 
 @MountPath("home")
 @WicketHomePage
@@ -30,5 +34,6 @@ public class HomePage extends BasePage<Void> {
         add(new BookmarkablePageLink<Void>("notification", com.bochkov.smallcraft.wicket.web.pages.notification.TablePage.class));
         add(new BookmarkablePageLink<Void>("exit-notification", com.bochkov.smallcraft.wicket.web.pages.notification.TablePage.class));
         add(new BookmarkablePageLink<Void>("unit", com.bochkov.smallcraft.wicket.web.pages.unit.TablePage.class));
+        add(new DashBoardPanel("dashboard", LoadableDetachableModel.of(LocalDate::now)));
     }
 }

@@ -81,5 +81,15 @@ public class Notification extends AbstractEntity<Long> {
     public boolean isValidExit(LocalDateTime dateTime) {
         return dateTime.isAfter(dateFrom.atStartOfDay()) && dateTime.isBefore(dateTo.atStartOfDay().plusDays(1));
     }
+    public boolean isValidExit(){
+        return isValidExit(LocalDateTime.now());
+    }
+
+    public boolean isExpiredDate(LocalDateTime dateTime){
+        return !dateTime.isBefore(dateTo.atStartOfDay().plusDays(1));
+    }
+    public boolean isExpired(){
+        return isExpiredDate(LocalDateTime.now());
+    }
 
 }

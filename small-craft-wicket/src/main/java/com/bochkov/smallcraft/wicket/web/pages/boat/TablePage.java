@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Optional;
 
 @MountPath("boat")
-@AuthorizeInstantiation({"ROLE_USER", "ROLE_ADMIN"})
 public class TablePage extends CrudTablePage<Boat, Long> {
 
     @Inject

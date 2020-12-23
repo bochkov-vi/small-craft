@@ -46,7 +46,7 @@ public class WicketWebApplication extends WicketBootSecuredWebApplication {
     protected void init() {
         super.init();
         getComponentInstantiationListeners().add(new Html5AttributesBehavior.InstantiationListener());
-        getRequestCycleListeners().add(new IRequestCycleListener() {
+       /* getRequestCycleListeners().add(new IRequestCycleListener() {
             @Override
             public void onBeginRequest(RequestCycle cycle) {
                 WicketSecuredWebSession.get().updateSignIn();
@@ -56,7 +56,7 @@ public class WicketWebApplication extends WicketBootSecuredWebApplication {
             public IRequestHandler onException(RequestCycle cycle, Exception ex) {
                 return null;
             }
-        });
+        });*/
     }
 
     @Override
@@ -163,7 +163,10 @@ public class WicketWebApplication extends WicketBootSecuredWebApplication {
 
     @Override
     public Session newSession(Request request, Response response) {
-        return super.newSession(request, response);
+        WicketSecuredWebSession session = (WicketSecuredWebSession) super.newSession(request, response);
+        session.updateSignIn();
+        return session;
+
     }
 
 

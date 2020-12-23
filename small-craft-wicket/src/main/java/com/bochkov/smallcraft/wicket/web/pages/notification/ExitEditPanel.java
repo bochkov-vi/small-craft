@@ -12,19 +12,25 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.GenericPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
+import org.apache.wicket.model.ResourceModel;
 
 import javax.inject.Inject;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class ExitEditPanel extends GenericPanel<Notification> {
+
     Component exitDate;
 
     @Inject
     ExitNotificationRepository exitNotificationRepository;
+
     private Label returnDate;
+
     private AjaxLink<Notification> btnExit;
+
     private AjaxLink<Notification> btnReturn;
+
     private AjaxLink<ExitNotification> btnEdit;
 
     public ExitEditPanel(String id) {
@@ -61,7 +67,7 @@ public class ExitEditPanel extends GenericPanel<Notification> {
             @Override
             protected void onConfigure() {
                 super.onConfigure();
-                setVisible(getModelObject().isValidExit(LocalDateTime.now()) && exitNotificationIModel.getObject().getReturnDateTime() != null);
+                setVisible(getModel().map(n -> n.isValidExit(LocalDateTime.now())).orElse(false).getObject() && exitNotificationIModel.map(n -> n.getReturnDateTime() != null).orElse(true).getObject());
             }
 
             @Override
@@ -104,6 +110,13 @@ public class ExitEditPanel extends GenericPanel<Notification> {
             public void onClick(AjaxRequestTarget target) {
                 exitNotificationRepository.addReturn(getModelObject());
                 target.add(ExitEditPanel.this);
+            }
+        });
+        add(new Label("expired-label", new ResourceModel("expired")) {
+            @Override
+            protected void onConfigure() {
+                super.onConfigure();
+                setVisible(ExitEditPanel.this.getModel().map(Notification::isExpired).getObject());
             }
         });
     }
