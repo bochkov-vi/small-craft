@@ -16,7 +16,6 @@ import org.apache.wicket.model.ResourceModel;
 
 import javax.inject.Inject;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 public class ExitEditPanel extends GenericPanel<Notification> {
 
@@ -72,7 +71,7 @@ public class ExitEditPanel extends GenericPanel<Notification> {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                exitNotificationRepository.addCallExit(exitNotificationIModel.getObject(),getModelObject(), LocalDateTime.now());
+                exitNotificationRepository.addCallExit(exitNotificationIModel.getObject(), getModelObject(), LocalDateTime.now());
                 target.add(ExitEditPanel.this);
             }
         });
@@ -87,14 +86,8 @@ public class ExitEditPanel extends GenericPanel<Notification> {
             public void onClick(AjaxRequestTarget target) {
                 EditPage editPage = new EditPage(PersistableModel.of(exitNotificationIModel.getObject(), id -> {
                     return exitNotificationRepository.findById(id);
-                })) {
-                    @Override
-                    public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<ExitNotification> model) {
-                        super.onAfterSave(target, model);
-                        setResponsePage(ExitEditPanel.this.getPage());
-                    }
-                };
-
+                }));
+                editPage.setBackPage(ExitEditPanel.this.getPage());
                 setResponsePage(editPage);
             }
         });
