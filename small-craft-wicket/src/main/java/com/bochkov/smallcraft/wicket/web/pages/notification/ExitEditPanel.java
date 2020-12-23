@@ -72,7 +72,7 @@ public class ExitEditPanel extends GenericPanel<Notification> {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                exitNotificationRepository.addCallExit(getModelObject(), LocalDateTime.now());
+                exitNotificationRepository.addCallExit(exitNotificationIModel.getObject(),getModelObject(), LocalDateTime.now());
                 target.add(ExitEditPanel.this);
             }
         });

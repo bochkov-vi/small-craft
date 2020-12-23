@@ -47,8 +47,15 @@ public interface ExitNotificationRepository extends JpaRepository<ExitNotificati
 
     @Transactional
     default ExitNotification addCallExit(Notification notification, LocalDateTime callExitDate) {
+        return addCallExit(new ExitNotification(), notification, callExitDate);
+    }
+
+    @Transactional
+    default ExitNotification addCallExit(ExitNotification exitNotification, Notification notification, LocalDateTime callExitDate) {
+        if (exitNotification == null) {
+            exitNotification = new ExitNotification();
+        }
         if (notification.isValidExit(callExitDate)) {
-            ExitNotification exitNotification = new ExitNotification();
             exitNotification.setBoat(notification.getBoat());
             exitNotification.setCaptain(notification.getCaptain());
             exitNotification.setRegion(notification.getRegion());

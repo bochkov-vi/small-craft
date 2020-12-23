@@ -69,7 +69,9 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     protected List<? extends IColumn> columns() {
         List<IColumn> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("id"), "id", "id"));
-        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("boat"), "boat", n -> Optional.ofNullable(n).map(ExitNotification::getBoat).map(Boat::toString).orElse(null)));
+        columns.add(new PropertyColumn(new ResourceModel("type"), "type", "boat.type"));
+        columns.add(new PropertyColumn(new ResourceModel("model"), "model", "boat.model"));
+        columns.add(new PropertyColumn(new ResourceModel("tailNumber"), "tailNumber", "boat.tailNumber"));
         columns.add(new PropertyColumn(new ResourceModel("pier"), "pier", "pier"));
         columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("region"), "region", row -> Optional.ofNullable(row).map(ExitNotification::getRegion).map(set -> set.stream().collect(Collectors.joining("; "))).orElse(null)));
         columns.add(new PropertyColumn(new ResourceModel("captain"), "captain", "captain.fio"));
