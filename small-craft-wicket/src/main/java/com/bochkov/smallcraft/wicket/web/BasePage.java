@@ -119,6 +119,6 @@ public class BasePage<T> extends GenericWebPage<T> {
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
         String contextPath = WebApplication.get().getServletContext().getContextPath();
-        response.render(MetaDataHeaderItem.forLinkTag("icon", contextPath + "/res/img/boat-icon.png"));
+        response.render(MetaDataHeaderItem.forLinkTag("icon", contextPath + "/res/img/fishing-boat-icon-3.jpeg"));
     }
 }

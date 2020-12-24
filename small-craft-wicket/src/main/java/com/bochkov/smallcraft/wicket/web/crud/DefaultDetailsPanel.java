@@ -41,8 +41,10 @@ public class DefaultDetailsPanel<T> extends GenericPanel<T> {
     protected void onInitialize() {
         super.onInitialize();
         List<String> properties = Lists.newArrayList(BeanUtils.getPropertyDescriptors(entityClass)).stream()
+                .filter(pd -> pd.getReadMethod() != null)
                 .map(FeatureDescriptor::getName)
                 .filter(name -> !"class".equalsIgnoreCase(name))
+
                 .collect(Collectors.toList());
         ListView list = new ListView<String>("list", properties) {
             @Override
