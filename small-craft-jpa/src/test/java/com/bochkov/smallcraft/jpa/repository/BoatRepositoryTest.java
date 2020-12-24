@@ -23,6 +23,8 @@ public class BoatRepositoryTest extends PersonRepositoryTest {
     @Autowired
     UnitRepository unitRepository;
 
+
+
     public static Boat newBoat() {
         Boat boat = new Boat();
         boat.setPerson(newPerson()).setPier("test").setModel("test model").setType("МЛ").setRegistrationDate(LocalDate.now().with(TemporalAdjusters.firstDayOfYear()))

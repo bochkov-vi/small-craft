@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:panel>
+
+        <form wicket:id="form" >
+            <div class="input-group ">
+
+                <input wicket:id="phone" pattern="\+7[ -]*\([0-9]{3}\)[- ]*[0-9]{3}[- ][0-9]{2}[- ]*[0-9]{2}"
+                       class="form-control">
+                <div class="input-group-append">
+                    <div wicket:id="btn-add" class="input-group-text">
+                        <i class="fa fa-plus"></i>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+        <div wicket:id="phones-conatiner" class="list-group">
+            <div wicket:id="phones" class="list-group-item">
+                <span wicket:id="label"></span>
+                <span wicket:id="btn-remove" class="btn btn-outline-danger">
+                <span class="fa fa-close"></span>
+            </span>
+            </div>
+        </div>
+</wicket:panel>
+</body>
+</html>

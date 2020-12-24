@@ -1,5 +1,7 @@
 package com.bochkov.smallcraft.jpa.entity;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +10,7 @@ import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.util.Optional;
+import java.util.Set;
 
 
 @Entity
@@ -32,8 +35,9 @@ public class Person extends AbstractEntity<Long> {
     @Column(nullable = false)
     String lastName;
 
-    @Column(nullable = false)
-    String phone;
+    @Column(name = "phone", nullable = false)
+    @ElementCollection
+    Set<String> phones;
 
     String email;
 
@@ -52,5 +56,9 @@ public class Person extends AbstractEntity<Long> {
                 .map(s -> s.charAt(0) + ".")
                 .map(fn -> Optional.ofNullable(middleName).map(s -> fn + s.charAt(0) + ".").orElse(null))
                 .orElse(null);
+    }
+
+    public Person setPhone(String... s) {
+        return setPhones(Sets.newLinkedHashSet(Lists.newArrayList(s)));
     }
 }

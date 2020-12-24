@@ -1,7 +1,7 @@
 package com.bochkov.smallcraft.wicket.web.crud;
 
+import com.bochkov.smallcraft.wicket.component.duplicate.DuplicateError;
 import com.bochkov.smallcraft.wicket.web.BasePage;
-import com.bochkov.smallcraft.wicket.web.crud.duplicate.FeedbackPanelWithComponentMessage;
 import com.bochkov.wicket.data.model.PersistableModel;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,10 +38,10 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
 
     protected org.slf4j.Logger log;
 
-    protected FeedbackPanel feedback = new FeedbackPanelWithComponentMessage("feedback", new IFeedbackMessageFilter() {
+    protected FeedbackPanel feedback = new FeedbackPanel("feedback", new IFeedbackMessageFilter() {
         @Override
         public boolean accept(FeedbackMessage message) {
-            return !message.isRendered();
+            return !message.isRendered() && !(message.getMessage() instanceof DuplicateError);
         }
     });
 

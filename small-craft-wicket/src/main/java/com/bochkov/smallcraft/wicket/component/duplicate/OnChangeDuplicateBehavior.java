@@ -13,6 +13,7 @@ public abstract class OnChangeDuplicateBehavior<S, E> extends DuplicateEntityBeh
     @Override
     protected void onBind() {
         super.onBind();
+        formComponent.setOutputMarkupId(true);
         getComponent().add(new AjaxFormComponentUpdatingBehavior("change") {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {

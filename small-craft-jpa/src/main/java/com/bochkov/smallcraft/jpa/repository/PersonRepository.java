@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +42,8 @@ public interface PersonRepository extends JpaRepository<Person, Long>, JpaSpecif
     }
     List<Person> findByPassportSerialAndPassportNumber(String serial, String number);
 
-    List<Person> findByPhone(String phone);
+    List<Person> findByPhones(String phone);
+    List<Person> findByPhonesIn(Collection<String> phones);
 
     @Query(value = "SELECT * FROM person o WHERE lower(o.first_name)=lower((?1)::::varchar) and lower(o.middle_name)=lower((?2)::::varchar) and lower(o.last_name)=lower((?3)::::varchar)",nativeQuery = true)
     List<Person> findAll(String firstName, String middleName,  String lastName);

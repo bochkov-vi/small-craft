@@ -7,11 +7,13 @@ import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.bochkov.smallcraft.wicket.component.InputMaskBehavior;
 import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
+import com.bochkov.smallcraft.wicket.component.phone.PhonesInput;
 import com.bochkov.smallcraft.wicket.web.pages.person.component.Select2FirstName;
 import com.bochkov.smallcraft.wicket.web.pages.person.component.Select2MiddleName;
 import com.bochkov.wicket.component.LocalDateTextField;
 import com.bochkov.wicket.data.model.PersistableModel;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -24,6 +26,7 @@ import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.util.CollectionModel;
 import org.apache.wicket.util.visit.IVisit;
 import org.apache.wicket.util.visit.IVisitor;
 
@@ -44,12 +47,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
     @Setter
     boolean canSelect = false;
 
-    FormComponent<String> phone = (FormComponent<String>) new TextField<String>("phone", Model.of(), String.class) {
-        @Override
-        protected String[] getInputTypes() {
-            return new String[]{"tel"};
-        }
-    }.setRequired(true);
+    PhonesInput phones = (PhonesInput) new PhonesInput("phone", new CollectionModel<>()).setRequired(true);
 
     FormComponent<String> email = new TextField<String>("email", Model.of(), String.class) {
         @Override
@@ -101,7 +99,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             //if (!Objects.equals(person, selectPerson.getModelObject())) {
             selectPerson.setModelObject(person);
             id.setModelObject(person);
-            phone.setModelObject(getModel().map(Person::getPhone).getObject());
+            phones.setModelObject(getModel().map(Person::getPhones).map(Sets::newHashSet).getObject());
             email.setModelObject(getModel().map(Person::getEmail).getObject());
             firstName.setModelObject(getModel().map(Person::getFirstName).getObject());
             middleName.setModelObject(getModel().map(Person::getMiddleName).getObject());
@@ -142,7 +140,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
         } else {
             person = Optional.ofNullable(id.getConvertedInput()).orElse(new Person());
         }
-        person.setPhone(phone.getConvertedInput());
+        person.setPhones(Sets.newHashSet(phones.getConvertedInput()));
         person.setAddress(address.getConvertedInput());
         person.setEmail(email.getConvertedInput());
         person.setFirstName(firstName.getConvertedInput());
@@ -169,7 +167,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
     protected void onInitialize() {
         super.onInitialize();
         setOutputMarkupId(true);
-        phone.setOutputMarkupId(true);
+        phones.setOutputMarkupId(true);
         add(selectPerson, id);
         add(firstName);
         add(middleName);
@@ -180,7 +178,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
         add(passportNumber);
         add(passportDate);
         add(passportData);
-        add(phone);
+        add(phones);
         add(email);
         add(address);
 
@@ -283,7 +281,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             }
         });
         passportNumber.add(new InputMaskBehavior("999999"));
-        phone.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
+        phones.getPhoneInput().add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
             @Override
             public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
                 setModelObject(entity);
@@ -291,16 +289,16 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             }
 
             @Override
-            public IModel<Person> newModel(Person entity) {
-                return model(entity);
+            public List<Person> findDuplicates(String search) {
+                return personRepository.findByPhones(search);
             }
 
             @Override
-            public List<Person> findDuplicates(String search) {
-                return personRepository.findByPhone(search);
+            public IModel<Person> newModel(Person entity) {
+                return model(entity);
             }
         });
-        phone.add(InputMaskBehavior.phone());
+
         email.add(InputMaskBehavior.email());
         Html5AttributesBehavior.append(this);
         FormComponentErrorBehavior.append(this);

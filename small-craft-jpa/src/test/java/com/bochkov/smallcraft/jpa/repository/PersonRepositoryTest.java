@@ -52,8 +52,14 @@ public class PersonRepositoryTest {
 
     @Test
     public void testFindByMask() {
-        personRepository.findByMask(null, PageRequest.of(0, 10));
+        Page page = personRepository.findByMask(null, PageRequest.of(0, 10));
 
+    }
+
+    @Test
+    public void findBy(){
+        List<Person> people = personRepository.findByPhones("+7(000) 000-00-00");
+        Assert.assertTrue(people.isEmpty());
     }
 
     @Test

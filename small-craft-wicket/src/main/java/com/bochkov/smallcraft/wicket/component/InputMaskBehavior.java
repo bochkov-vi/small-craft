@@ -15,12 +15,22 @@ import org.apache.wicket.markup.html.form.FormComponent;
 import java.util.List;
 
 public class InputMaskBehavior extends Behavior {
+
     FormComponent formComponent;
+
     @Getter
     String mask;
 
     public InputMaskBehavior(String mask) {
         this.mask = mask;
+    }
+
+    public static InputMaskBehavior phone() {
+        return new InputMaskBehavior("+7(999) 999-99-99");
+    }
+
+    public static InputMaskBehavior email() {
+        return new InputMaskBehavior("email");
     }
 
     @Override
@@ -39,15 +49,12 @@ public class InputMaskBehavior extends Behavior {
                 return Lists.newArrayList(JavaScriptHeaderItem.forReference(Application.get().getJavaScriptLibrarySettings().getJQueryReference()));
             }
         }));
-        response.render(OnDomReadyHeaderItem.forScript(String.format("$('#%s').inputmask('%s')", formComponent.getMarkupId(), mask)));
+
+        response.render(OnDomReadyHeaderItem.forScript(jsCreate()));
     }
 
-    public static InputMaskBehavior phone(){
-        return new InputMaskBehavior("+7(999) 999-99-99");
-    }
-
-    public static InputMaskBehavior email(){
-        return new InputMaskBehavior("email");
+    public String jsCreate() {
+        return String.format("$('#%s').inputmask('%s')", formComponent.getMarkupId(), mask);
     }
 
 }

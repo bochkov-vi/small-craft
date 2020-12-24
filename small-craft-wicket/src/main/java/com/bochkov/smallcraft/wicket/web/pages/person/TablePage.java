@@ -41,7 +41,7 @@ public class TablePage extends CrudTablePage<Person, Long> {
         columns.add(new PropertyColumn(new ResourceModel("passport.number"), "passport.number", "passport.number"));
         columns.add(new PropertyColumn(new ResourceModel("passport.date"), "passport.date", "passport.date"));
         columns.add(new PropertyColumn(new ResourceModel("passport.data"), "passport.data", "passport.data"));
-        columns.add(new PropertyColumn(new ResourceModel("phone"), "phone", "phone"));
+        columns.add(new PropertyColumn(new ResourceModel("phones"), "phones", "phones"));
         columns.add(new PropertyColumn(new ResourceModel("email"), "email", "email"));
         columns.add(new PropertyColumn(new ResourceModel("address"), "address", "address"));
         columns.add(createEditColumn());
