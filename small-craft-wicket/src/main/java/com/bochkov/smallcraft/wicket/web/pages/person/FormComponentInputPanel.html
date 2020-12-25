@@ -29,7 +29,7 @@
         </div>
     </div>
 
-    <div class="form-row">
+    <div class="form-row border border-dark rounded">
         <div class="form-group col-md-2">
             <label wicket:for="passport.serial">
                 <wicket:message key="passport.serial"/>
@@ -61,9 +61,22 @@
             <label wicket:for="phone">
                 <wicket:message key="phone"/>
             </label>
-            <div wicket:id="phone"  ></div>
+            <div wicket:id="phone"></div>
         </div>
         <div class="form-group col-md-4">
+            <label wicket:for="address">
+                <wicket:message key="address"/>
+            </label>
+            <textarea wicket:id="address" type="text" class="form-control" required>
+            </textarea>
+        </div>
+        <div class="form-group col-md-2">
+            <label wicket:for="birthDate">
+                <wicket:message key="birthDate"/>
+            </label>
+            <input wicket:id="birthDate" type="text" class="form-control">
+        </div>
+        <div class="form-group col-md-2">
             <label wicket:for="email">
                 <wicket:message key="email"/>
             </label>
@@ -73,13 +86,7 @@
                 </div>
                 <input wicket:id="email" type="email" class="form-control"></div>
         </div>
-        <div class="form-group col-md-4">
-            <label wicket:for="address">
-                <wicket:message key="address"/>
-            </label>
-            <textarea wicket:id="address" type="text" class="form-control" required>
-            </textarea>
-        </div>
+
     </div>
 </wicket:panel>
 </body>

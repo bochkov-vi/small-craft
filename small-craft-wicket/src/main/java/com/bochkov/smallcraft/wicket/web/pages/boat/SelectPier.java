@@ -22,7 +22,11 @@ public class SelectPier extends AbstractPageableSelect2String {
         super(id, model);
         setAddQueryToResult(true);
     }
-
+    @Override
+    protected void onInitialize() {
+        getSettings().setPlaceholder(getString("pier")).setCloseOnSelect(true).setAllowClear(true).setTheme("bootstrap4");
+        super.onInitialize();
+    }
     @Override
     public Page<String> query(String term, Pageable pageable) {
         return repository.findPierByMask(term, pageable);

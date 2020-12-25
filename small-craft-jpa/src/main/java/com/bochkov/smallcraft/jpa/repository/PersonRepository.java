@@ -34,17 +34,24 @@ public interface PersonRepository extends JpaRepository<Person, Long>, JpaSpecif
         return findMiddleNameByMask(Optional.ofNullable(expr).map(str -> String.format("%%%s%%", str)).orElse("%"), Optional.ofNullable(expr).orElse(""), pageable);
     }
 
-    @Query(value = "SELECT p.* FROM person p LEFT JOIN legal_person lp on p.id_person = lp.id_person WHERE last_name ILIKE :expr OR lp.name ILIKE :expr ORDER BY position(:sort in last_name), length(last_name), last_name, position(:sort in lp.name), length(lp.name),    lp.name", nativeQuery = true)
+    @Query(value = "SELECT p.* FROM person p LEFT JOIN notification n on p.id_person = n.id_person " +
+            "LEFT JOIN boat b on p.id_person = b.id_person " +
+            "LEFT JOIN legal_person lp on b.id_legal_person = lp.id_legal_person " +
+            "WHERE last_name ILIKE :expr OR lp.name ILIKE :expr " +
+            "OR lp.name ILIKE :expr " +
+            "ORDER BY position(:sort in last_name), length(last_name), last_name, position(:sort in lp.name), length(lp.name),    lp.name", nativeQuery = true)
     Page<Person> findByMask(@Param("expr") String expr, @Param("sort") String sort, Pageable pageable);
 
     default Page<Person> findByMask(String expr, Pageable pageable) {
         return findByMask(Optional.ofNullable(expr).map(str -> String.format("%%%s%%", str)).orElse("%"), Optional.ofNullable(expr).orElse(""), pageable);
     }
+
     List<Person> findByPassportSerialAndPassportNumber(String serial, String number);
 
     List<Person> findByPhones(String phone);
+
     List<Person> findByPhonesIn(Collection<String> phones);
 
-    @Query(value = "SELECT * FROM person o WHERE lower(o.first_name)=lower((?1)::::varchar) and lower(o.middle_name)=lower((?2)::::varchar) and lower(o.last_name)=lower((?3)::::varchar)",nativeQuery = true)
-    List<Person> findAll(String firstName, String middleName,  String lastName);
+    @Query(value = "SELECT * FROM person o WHERE lower(o.first_name)=lower((?1)::::varchar) and lower(o.middle_name)=lower((?2)::::varchar) and lower(o.last_name)=lower((?3)::::varchar)", nativeQuery = true)
+    List<Person> findAll(String firstName, String middleName, String lastName);
 }

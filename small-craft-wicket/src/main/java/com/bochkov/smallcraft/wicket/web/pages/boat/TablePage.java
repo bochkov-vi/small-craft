@@ -9,7 +9,6 @@ import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.google.common.base.Strings;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.Session;
-import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.HeaderlessColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
@@ -72,6 +71,8 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         columns.add(new PropertyColumn(new ResourceModel("type"), "type", "type"));
         columns.add(new PropertyColumn(new ResourceModel("model"), "model", "model"));
         columns.add(new PropertyColumn(new ResourceModel("pier"), "pier", "pier"));
+        columns.add(new PropertyColumn(new ResourceModel("serialNumber"), "serialNumber", "serialNumber"));
+        columns.add(new PropertyColumn(new ResourceModel("buildYear"), "buildYear", "buildYear"));
         columns.add(new LambdaColumn<Boat, String>(new ResourceModel("person"), "person.lastName", row -> Optional.ofNullable(row).map(Boat::getPerson).map(Person::toString).orElse(null)));
         columns.add(new LambdaColumn<Boat, String>(new ResourceModel("legalPerson"), "legalPerson.name", row -> Optional.ofNullable(row).map(Boat::getLegalPerson).map(Object::toString).orElse(null)));
         columns.add(new PropertyColumn(new ResourceModel("expirationDate"), "expirationDate", "expirationDate"));

@@ -4,7 +4,6 @@ import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
-import com.google.common.base.Joiner;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.LambdaColumn;
@@ -44,8 +43,9 @@ public class TablePage extends CrudTablePage<Person, Long> {
         columns.add(new PropertyColumn(new ResourceModel("passport.date"), "passport.date", "passport.date"));
         columns.add(new PropertyColumn(new ResourceModel("passport.data"), "passport.data", "passport.data"));
         columns.add(new LambdaColumn<Person, String>(new ResourceModel("phones"), "phones", p -> p.getPhones().stream().collect(Collectors.joining("; "))));
-        columns.add(new PropertyColumn(new ResourceModel("email"), "email", "email"));
         columns.add(new PropertyColumn(new ResourceModel("address"), "address", "address"));
+        columns.add(new PropertyColumn(new ResourceModel("birthDate"), "birthDate", "birthDate"));
+        columns.add(new PropertyColumn(new ResourceModel("email"), "email", "email"));
         columns.add(createEditColumn());
         columns.add(createDeleteColumn());
         return columns;

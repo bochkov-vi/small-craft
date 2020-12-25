@@ -8,13 +8,14 @@ import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.wicketstuff.annotation.mount.MountPath;
 
+import java.time.LocalDate;
 import java.util.Optional;
+
 @MountPath("boat/edit")
 public class EditPage extends CrudEditPage<Boat, Long> {
 
@@ -75,6 +76,10 @@ public class EditPage extends CrudEditPage<Boat, Long> {
         feedback.setEscapeModelStrings(false);
     }
 
+    @Override
+    public Boat newEntityInstance() {
+        return super.newEntityInstance().setBuildYear(LocalDate.now().getYear());
+    }
 
     @Override
     public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<Boat> model) {

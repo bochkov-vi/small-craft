@@ -23,10 +23,7 @@ import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.FormComponent;
-import org.apache.wicket.markup.html.form.FormComponentPanel;
-import org.apache.wicket.markup.html.form.HiddenField;
-import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
@@ -76,6 +73,10 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
 
     FormComponent<String> type = new SelectType("type", Model.of());
 
+    FormComponent<String> serialNumber = new TextField<>("serialNumber", Model.of(), String.class);
+
+    FormComponent<Integer> buildYear = new NumberTextField<>("buildYear", Model.of(), Integer.class);
+
     FormComponent<String> pier = new SelectPier("pier", Model.of());
 
     FormComponent<String> model = new TextField<>("model", Model.of());
@@ -98,7 +99,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
         super.onInitialize();
         setOutputMarkupId(true);
 
-        add(id, selectBoat, tailNumber, model, type, pier, unit);
+        add(id, selectBoat, tailNumber, model, type, pier, unit, buildYear, serialNumber);
         add(registrationDate, registrationNumber, expirationDate);
 
 
@@ -116,7 +117,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
 
             @Override
             public IModel<Boat> newModel(Boat entity) {
-                return PersistableModel.of(entity,id -> boatRepository.findById(id));
+                return PersistableModel.of(entity, id -> boatRepository.findById(id));
             }
         });
 
@@ -207,6 +208,8 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
         boat.setExpirationDate(expirationDate.getConvertedInput());
         boat.setRegistrationNumber(registrationNumber.getConvertedInput());
         boat.setUnit(unit.getConvertedInput());
+        boat.setSerialNumber(serialNumber.getConvertedInput());
+        boat.setBuildYear(buildYear.getConvertedInput());
         setConvertedInput(boat);
     }
 
@@ -215,6 +218,8 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
         Optional<Boat> boat = Optional.ofNullable(getModelObject());
         selected.setObject(boat.orElse(null));
         tailNumber.setModelObject(boat.map(Boat::getTailNumber).orElse(null));
+        serialNumber.setModelObject(boat.map(Boat::getSerialNumber).orElse(null));
+        buildYear.setModelObject(boat.map(Boat::getBuildYear).orElse(null));
         unit.setModelObject(boat.map(Boat::getUnit).orElse(null));
         type.setModelObject(boat.map(Boat::getType).orElse(null));
         pier.setModelObject(boat.map(Boat::getPier).orElse(null));

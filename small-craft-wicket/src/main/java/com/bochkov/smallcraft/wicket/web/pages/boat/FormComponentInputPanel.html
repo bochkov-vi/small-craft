@@ -18,13 +18,13 @@
             <label wicket:for="unit">
                 <wicket:message key="unit"/>
             </label>
-            <select wicket:id="unit" class="form-control" ></select>
+            <select wicket:id="unit" class="form-control"></select>
         </div>
         <div class="form-group col-md-3">
             <label wicket:for="registrationDate">
                 <wicket:message key="registrationDate"/>
             </label>
-            <input wicket:id="registrationDate" class="form-control" >
+            <input wicket:id="registrationDate" class="form-control">
         </div>
         <div class="form-group col-md-3">
             <label wicket:for="expirationDate">
@@ -35,32 +35,45 @@
     </div>
     <div class="form-row">
         <div class="form-group col-md-4">
-            <label wicket:for="tailNumber">
-                <wicket:message key="tailNumber"/>
+            <label wicket:for="type">
+                <wicket:message key="type"/>
             </label>
-            <input wicket:id="tailNumber" type="text" class="form-control" >
+            <select wicket:id="type" class="form-control"></select>
         </div>
         <div class="form-group col-md-4">
             <label wicket:for="model">
                 <wicket:message key="model"/>
             </label>
-            <input wicket:id="model" type="text" class="form-control" >
+            <input wicket:id="model" type="text" class="form-control">
+        </div>
+
+        <div class="form-group col-md-4">
+            <label wicket:for="tailNumber">
+                <wicket:message key="tailNumber"/>
+            </label>
+            <input wicket:id="tailNumber" type="text" class="form-control">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-4">
+            <label wicket:for="buildYear">
+                <wicket:message key="buildYear"/>
+            </label>
+            <input wicket:id="buildYear" type="number" class="form-control">
         </div>
         <div class="form-group col-md-4">
-            <label wicket:for="type">
-                <wicket:message key="type"/>
+            <label wicket:for="serialNumber">
+                <wicket:message key="serialNumber"/>
             </label>
-            <select wicket:id="type" class="form-control" ></select>
+            <input wicket:id="serialNumber" type="text" class="form-control">
         </div>
-
+        <div class="form-group col-md-4">
+            <label wicket:for="pier">
+                <wicket:message key="pier"/>
+            </label>
+            <select wicket:id="pier" class="form-control"></select>
+        </div>
     </div>
-    <div class="form-group">
-        <label wicket:for="pier">
-            <wicket:message key="pier"/>
-        </label>
-        <select wicket:id="pier" class="form-control" ></select>
-    </div>
-
     <div class="card border-primary">
         <div class="card-header bg-primary text-white">
             <label wicket:for="person">

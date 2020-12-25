@@ -68,6 +68,8 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
 
     FormComponent<LocalDate> passportDate = new LocalDateTextField("passport.date", Model.of(), getString("dateFormat")).setRequired(true);
 
+    FormComponent<LocalDate> birthDate = new LocalDateTextField("birthDate", Model.of(), getString("dateFormat")).setRequired(false);
+
     FormComponent<String> passportData = new TextField<String>("passport.data", Model.of()).setRequired(true);
 
     FormComponent<String> address = new TextArea<String>("address", Model.of()).setRequired(true);
@@ -109,6 +111,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
             passportDate.setModelObject(getModel().map(Person::getPassport).map(Passport::getDate).getObject());
             passportData.setModelObject(getModel().map(Person::getPassport).map(Passport::getData).getObject());
             address.setModelObject(getModel().map(Person::getAddress).getObject());
+            birthDate.setModelObject(getModel().map(Person::getBirthDate).getObject());
         } else {
             visitChildren(FormComponent.class, (IVisitor<FormComponent, Object>) (cmp, visit) -> {
                 if (cmp.getConvertedInput() != null) {
@@ -155,6 +158,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
         passport.setDate(passportDate.getConvertedInput());
         passport.setNumber(passportNumber.getConvertedInput());
         passport.setSerial(passportSerial.getConvertedInput());
+        person.setBirthDate(birthDate.getConvertedInput());
         setConvertedInput(person);
     }
 
@@ -172,7 +176,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
         add(firstName);
         add(middleName);
 
-
+        add(birthDate);
         add(lastName);
         add(passportSerial);
         add(passportNumber);

@@ -9,6 +9,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 
@@ -45,6 +46,8 @@ public class Person extends AbstractEntity<Long> {
 
     @Embedded
     Passport passport;
+
+    LocalDate birthDate;
 
     @Override
     public String toString() {

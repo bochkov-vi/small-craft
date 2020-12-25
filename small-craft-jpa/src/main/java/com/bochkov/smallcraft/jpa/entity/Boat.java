@@ -41,6 +41,10 @@ public class Boat extends AbstractEntity<Long> {
 
     String pier;
 
+    Integer buildYear;
+
+    String serialNumber;
+
     @ManyToOne
     @JoinColumn(name = "id_person", nullable = false )
     Person person;

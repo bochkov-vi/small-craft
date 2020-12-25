@@ -127,8 +127,9 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     }
 
     public void onClone(Optional<AjaxRequestTarget> target, IModel<T> model) {
-        success("Object cloned!!!");
         target.ifPresent(t -> t.add(feedback));
+        CrudEditPage<T, ID> editPage = BeanUtils.instantiateClass(getClass());
+
     }
 
     public void onAddRow(Optional<AjaxRequestTarget> target) {
@@ -184,6 +185,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
             button = createSimpleCloneButton(id, model);
         }
         button.add(new DisabledAttributeBehavior());
+        button.setVisible(false).setEnabled(false);
         return button;
     }
 

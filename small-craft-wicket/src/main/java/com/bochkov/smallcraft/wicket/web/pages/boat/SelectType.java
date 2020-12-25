@@ -22,7 +22,11 @@ public class SelectType extends AbstractPageableSelect2String {
         super(id, model);
         setAddQueryToResult(true);
     }
-
+    @Override
+    protected void onInitialize() {
+        getSettings().setPlaceholder(getString("type")).setCloseOnSelect(true).setAllowClear(true).setTheme("bootstrap4");
+        super.onInitialize();
+    }
     @Override
     public Page<String> query(String term, Pageable pageable) {
         return repository.findTypeByMask(term, pageable);
