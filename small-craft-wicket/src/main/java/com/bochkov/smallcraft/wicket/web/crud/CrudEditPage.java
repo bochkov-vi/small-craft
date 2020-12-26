@@ -134,7 +134,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
 
     public void onAddRow(Optional<AjaxRequestTarget> target) {
         CrudEditPage<T, ID> page = BeanUtils.instantiateClass(this.getClass());
-        page.setBackPage(this);
+        page.setBackPage(getBackPage());
         setResponsePage(page);
     }
 

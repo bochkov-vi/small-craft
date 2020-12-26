@@ -42,7 +42,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
     protected FeedbackPanel feedback = new FeedbackPanel("feedback", new IFeedbackMessageFilter() {
         @Override
         public boolean accept(FeedbackMessage message) {
-            return !message.isRendered() && !(message.getMessage() instanceof DuplicateError) && message.getReporter()!=null &&message.getReporter().getBehaviors().stream().noneMatch(b -> b instanceof FormComponentErrorBehavior);
+            return !message.isRendered() && !(message.getMessage() instanceof DuplicateError) && !FormComponentErrorBehavior.canRender(message);
         }
     });
 

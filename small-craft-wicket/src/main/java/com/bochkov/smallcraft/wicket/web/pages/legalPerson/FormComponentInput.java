@@ -4,6 +4,7 @@ import com.bochkov.smallcraft.jpa.entity.LegalPerson;
 import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
+import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.wicket.data.model.PersistableModel;
 import com.google.common.collect.Lists;
 import de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference;
@@ -17,7 +18,10 @@ import org.apache.wicket.markup.head.HeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
-import org.apache.wicket.markup.html.form.*;
+import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.HiddenField;
+import org.apache.wicket.markup.html.form.TextArea;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
@@ -27,7 +31,7 @@ import javax.inject.Inject;
 import java.util.List;
 
 @Accessors(chain = true)
-public class FormComponentInput extends FormComponentPanel<LegalPerson> {
+public class FormComponentInput extends CompositeInputPanel<LegalPerson> {
 
     @Inject
     LegalPersonRepository repository;
@@ -76,14 +80,13 @@ public class FormComponentInput extends FormComponentPanel<LegalPerson> {
     }
 
     @Override
-    protected void onBeforeRender() {
+    protected void initBeforeRenderer() {
         LegalPerson legalPerson = getModelObject();
         select.setModelObject(legalPerson);
         inn.setModelObject(getModel().map(LegalPerson::getInn).getObject());
         inn.add(new PatternValidator("[0-9]{10,12}"));
         name.setModelObject(getModel().map(LegalPerson::getName).getObject());
         address.setModelObject(getModel().map(LegalPerson::getAddress).getObject());
-        super.onBeforeRender();
     }
 
     @Override

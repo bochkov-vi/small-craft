@@ -1,12 +1,12 @@
 package com.bochkov.smallcraft.wicket.component.phone;
 
 import com.bochkov.smallcraft.wicket.component.InputMaskBehavior;
+import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
 import lombok.Getter;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.head.IHeaderResponse;
@@ -14,7 +14,6 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
-import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -29,8 +28,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PhonesInput extends FormComponentPanel<Collection<String>> {
-@Getter
+public class PhonesInput extends CompositeInputPanel<Collection<String>> {
+
+    @Getter
     FormComponent<String> phoneInput = new TextField<String>("phone", Model.of(), String.class);
 
     Form form = new Form<Void>("form");
@@ -95,14 +95,11 @@ public class PhonesInput extends FormComponentPanel<Collection<String>> {
     }
 
     @Override
-    protected void onBeforeRender() {
-
+    protected void initBeforeRenderer() {
         String phone = getModel().orElseGet(ImmutableList::of).getObject().stream().filter(Objects::nonNull).findFirst().orElse(null);
         List<String> phones = getModel().orElseGet(ImmutableList::of).getObject().stream().filter(Objects::nonNull).skip(1).collect(Collectors.toList());
-
         phoneInput.setModelObject(phone);
         additionalPhones.setObject(phones);
-        super.onBeforeRender();
     }
 
     @Override

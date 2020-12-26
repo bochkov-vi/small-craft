@@ -8,6 +8,7 @@ import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.bochkov.smallcraft.wicket.component.InputMaskBehavior;
 import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
 import com.bochkov.smallcraft.wicket.component.phone.PhonesInput;
+import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.pages.person.component.Select2FirstName;
 import com.bochkov.smallcraft.wicket.web.pages.person.component.Select2MiddleName;
 import com.bochkov.wicket.component.LocalDateTextField;
@@ -22,7 +23,10 @@ import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.feedback.IFeedbackMessageFilter;
 import org.apache.wicket.markup.head.IHeaderResponse;
-import org.apache.wicket.markup.html.form.*;
+import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.HiddenField;
+import org.apache.wicket.markup.html.form.TextArea;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
@@ -37,7 +41,7 @@ import java.util.Optional;
 
 @Accessors(chain = true)
 
-public class FormComponentInputPanel extends FormComponentPanel<Person> {
+public class FormComponentInputPanel extends CompositeInputPanel<Person> {
 
 
     @Inject
@@ -94,7 +98,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
     }
 
     @Override
-    protected void onBeforeRender() {
+    protected void initBeforeRenderer() {
         List<FeedbackMessage> messages = collectErrorMessages();
         if (messages.isEmpty()) {
             Person person = getModel().getObject();
@@ -120,7 +124,6 @@ public class FormComponentInputPanel extends FormComponentPanel<Person> {
                 }
             });
         }
-        super.onBeforeRender();
     }
 
     public List<FeedbackMessage> collectErrorMessages() {

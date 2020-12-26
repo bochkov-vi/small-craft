@@ -72,7 +72,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
                     cellItem.setVisible(false);
                 }
                 cellItem.add(new AttributeModifier("colspan",
-                        rowModel.filter(Boat::isNotRegistable).map(b -> 3).orElse(0)
+                        rowModel.filter(Boat::isNotRegistable).map(b -> 3).orElse(1)
                 ));
 
             }
@@ -90,7 +90,9 @@ public class TablePage extends CrudTablePage<Boat, Long> {
                 if (rowModel.map(Boat::isNotRegistable).getObject()) {
                     item.setVisible(false);
                 }
-
+                item.add(new AttributeModifier("colspan",
+                        rowModel.filter(Boat::isNotRegistable).map(b -> 1).orElse(2)
+                ));
             }
         });
         columns.add(new PropertyColumn<Boat, String>(new ResourceModel("registrationDate"), "registrationDate", "registrationDate") {

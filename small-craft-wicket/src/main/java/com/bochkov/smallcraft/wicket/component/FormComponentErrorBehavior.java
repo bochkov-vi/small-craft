@@ -22,10 +22,18 @@ public class FormComponentErrorBehavior extends Behavior {
 
     public static void appendFormComponent(FormComponent... components) {
         Stream.of(components).forEach(cmp -> {
-            if (cmp.getBehaviors().stream().noneMatch(b -> b instanceof FormComponentErrorBehavior)) {
+            if (!isHasFormComponentErrorBehavior(cmp)) {
                 cmp.add(new FormComponentErrorBehavior());
             }
         });
+    }
+
+    public static boolean isHasFormComponentErrorBehavior(Component cmp) {
+        return cmp != null && cmp.getBehaviors().stream().anyMatch(b -> b instanceof FormComponentErrorBehavior);
+    }
+
+    public static boolean canRender(FeedbackMessage msg) {
+        return msg != null && msg.isError() && isHasFormComponentErrorBehavior(msg.getReporter());
     }
 
     public static void append(MarkupContainer container) {

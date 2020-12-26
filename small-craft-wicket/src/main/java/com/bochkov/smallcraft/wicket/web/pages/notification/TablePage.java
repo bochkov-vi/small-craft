@@ -80,6 +80,9 @@ public class TablePage extends CrudTablePage<Notification, Long> {
                 if (rowModel.map(Notification::getBoat).map(Boat::isNotRegistable).getObject()) {
                     item.setVisible(false);
                 }
+                item.add(new AttributeModifier("colspan",
+                        rowModel.map(Notification::getBoat).filter(Boat::isNotRegistable).map(b -> 1).orElse(2)
+                ));
             }
         });
         columns.add(new PropertyColumn<Notification, String>(new ResourceModel("registrationDate"), "boat.registrationDate", "boat.registrationDate") {
@@ -107,7 +110,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
         columns.add(new PropertyColumn(new ResourceModel("pier"), "boat.pier", "boat.pier") {
             @Override
             public String getCssClass() {
-                return "d-none d-lg-table-cell";
+                return "d-none d-xl-table-cell";
             }
         });
         columns.add(new PropertyColumn(new ResourceModel("dateFrom"), "dateFrom", "dateFrom"));
@@ -122,7 +125,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
         columns.add(new LambdaColumn<Notification, String>(new ResourceModel("region"), "region", row -> Optional.ofNullable(row).map(Notification::getRegion).map(set -> set.stream().distinct().collect(Collectors.joining("; "))).orElse(null)) {
             @Override
             public String getCssClass() {
-                return "d-none d-lg-table-cell";
+                return "d-none d-xl-table-cell";
             }
         });
         columns.add(new PropertyColumn(new ResourceModel("timeOfDay"), "timeOfDay", "timeOfDay") {

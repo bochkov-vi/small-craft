@@ -3,6 +3,7 @@ package com.bochkov.smallcraft.wicket.web.pages.exitnotification;
 import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.LocalDateTimeTextFieldCalendar;
+import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.pages.boat.SelectPier;
 import com.bochkov.smallcraft.wicket.web.pages.notification.SelectRegion;
 import com.bochkov.smallcraft.wicket.web.pages.unit.SelectUnit;
@@ -14,7 +15,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
-import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
@@ -29,7 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Accessors(chain = true)
-public class FormComponentInputPanel extends FormComponentPanel<ExitNotification> {
+public class FormComponentInputPanel extends CompositeInputPanel<ExitNotification> {
 
     @Inject
     ExitNotificationRepository exitNotificationRepository;
@@ -125,7 +125,7 @@ public class FormComponentInputPanel extends FormComponentPanel<ExitNotification
     }
 
     @Override
-    protected void onBeforeRender() {
+    protected void initBeforeRenderer() {
         id.setModelObject(getModelObject());
         boat.setModelObject(getModel().map(ExitNotification::getBoat).orElse(null).getObject());
         unit.setModelObject(getModel().map(ExitNotification::getUnit).getObject());

@@ -2,6 +2,9 @@ package com.bochkov.smallcraft.wicket.web.pages.notification;
 
 import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
+import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
+import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
+import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.pages.legalPerson.FormComponentInput;
 import com.bochkov.smallcraft.wicket.web.pages.unit.SelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
@@ -23,7 +26,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Optional;
 
-public class FormComponentInputPanel extends FormComponentPanel<Notification> {
+public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     @Inject
     PersonRepository personRepository;
@@ -57,7 +60,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Notification> {
         public void onUpdate(AjaxRequestTarget target) {
             Boat b = getModelObject();
             if (b != null) {
-                if (captain.getModelObject() == null) {
+                if (captain.getModelObject() == null && captain.isEnabledInHierarchy() && captain.isVisibleInHierarchy()) {
                     captain.setModelObject(Optional.ofNullable(b.getPerson()).orElse(null));
                     target.add(captain);
                 }
@@ -97,6 +100,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Notification> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        FormComponentErrorBehavior.append(this);
         captain.setOutputMarkupId(true);
         setOutputMarkupId(true);
         add(region, captain, boat, legalPerson, date, dateFrom, dateTo, activities, timeOfDay, tck, id, number, year, unit);
@@ -146,7 +150,7 @@ public class FormComponentInputPanel extends FormComponentPanel<Notification> {
     }
 
     @Override
-    protected void onBeforeRender() {
+    protected void initBeforeRenderer() {
         Notification e = getModelObject();
         id.setModelObject(e);
         unit.setModelObject(e.getUnit());
@@ -161,7 +165,6 @@ public class FormComponentInputPanel extends FormComponentPanel<Notification> {
         region.setModelObject(Optional.ofNullable(e.getRegion()).map(Sets::newHashSet).orElse(null));
         tck.setModelObject(e.getTck());
         timeOfDay.setModelObject(e.getTimeOfDay());
-        super.onBeforeRender();
     }
 
     @Override
