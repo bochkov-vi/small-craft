@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.select2.ChoiceProvider;
 import org.wicketstuff.select2.Select2Choice;
 
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
@@ -45,7 +46,7 @@ public class SelectPerson extends Select2Choice<Person> {
             @Override
             public Path createPathForProperty(Root<Person> root, String expression) {
                 if ("phones".equals(expression)) {
-                    Path maskedProperty = root.join("phones");
+                    Path maskedProperty = root.join("phones", JoinType.LEFT);
                     return maskedProperty;
                 }
                 return super.createPathForProperty(root, expression);
