@@ -156,12 +156,6 @@
             <artifactId>wicket-bootstrap</artifactId>
             <version>1.0</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.webjars.npm</groupId>
-            <artifactId>select2-bootstrap4-theme</artifactId>
-            <version>1.0.0</version>
-        </dependency>
     </dependencies>
     <build>
         <finalName>small-craft</finalName>

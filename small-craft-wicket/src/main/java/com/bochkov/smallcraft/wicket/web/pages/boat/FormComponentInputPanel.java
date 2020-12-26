@@ -4,10 +4,7 @@ import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.LegalPerson;
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.entity.Unit;
-import com.bochkov.smallcraft.jpa.repository.BoatRepository;
-import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
-import com.bochkov.smallcraft.jpa.repository.PersonRepository;
-import com.bochkov.smallcraft.jpa.repository.UnitRepository;
+import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
@@ -28,6 +25,8 @@ import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.util.visit.IVisit;
+import org.apache.wicket.util.visit.IVisitor;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -46,6 +45,9 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
 
     @Inject
     LegalPersonRepository legalPersonRepository;
+
+    @Inject
+    BoatNumberSeqRepository boatNumberSeqRepository;
 
     @Inject
     UnitRepository unitRepository;
@@ -77,11 +79,11 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
 
     FormComponent<Integer> buildYear = new NumberTextField<>("buildYear", Model.of(), Integer.class);
 
-    FormComponent<String> pier = new SelectPier("pier", Model.of());
+    FormComponent<String> pier = new SelectPier("pier", Model.of()).setRequired(true);
 
     FormComponent<String> model = new TextField<>("model", Model.of());
 
-    FormComponent<LocalDate> registrationDate = new LocalDateTextField("registrationDate", Model.of(), getString("dateFormat"));
+    FormComponent<LocalDate> registrationDate = new LocalDateTextField("registrationDate", Model.of(), getString("dateFormat")).setRequired(true);
 
     FormComponent<LocalDate> expirationDate = new LocalDateTextField("expirationDate", Model.of(), getString("dateFormat"));
 
@@ -89,6 +91,15 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
 
     FormComponent<LegalPerson> legalPerson = new FormComponentInput("legalPerson", PersistableModel.of(id -> legalPersonRepository.findById(id))).setCanSelect(true);
 
+    FormComponent<Boolean> notRegistable = new CheckBox("notRegistable", Model.of(false));
+
+    WebMarkupContainer registrationPanel = new WebMarkupContainer("registrationPanel") {
+        @Override
+        protected void onConfigure() {
+            super.onConfigure();
+            registrationPanel.setVisible(!notRegistable.getModelObject());
+        }
+    };
 
     public FormComponentInputPanel(String id, IModel<Boat> model) {
         super(id, model);
@@ -98,9 +109,11 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
     protected void onInitialize() {
         super.onInitialize();
         setOutputMarkupId(true);
-
-        add(id, selectBoat, tailNumber, model, type, pier, unit, buildYear, serialNumber);
-        add(registrationDate, registrationNumber, expirationDate);
+        add(registrationPanel);
+        registrationPanel.setOutputMarkupId(true);
+        registrationPanel.add(registrationDate, registrationNumber, expirationDate, pier, unit, buildYear, serialNumber);
+        add(id, selectBoat, tailNumber, model, type);
+        add(notRegistable);
 
 
         tailNumber.add(new OnChangeDuplicateBehavior<String, Boat>(getModel(), Boat.class) {
@@ -166,8 +179,25 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
         };
         btnAddLegal.add(new Label("btn-add-legal-person-label", legalPersonExists.map(val -> getString("enableLegalPerson." + !val))));
         legalPersonPanel.add(btnAddLegal, legalPerson);
-
+        registrationNumber.setOutputMarkupId(true);
+        registrationPanel.add(new AjaxLink<Void>("generateNewNumber") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                target.add(registrationNumber);
+                registrationNumber.setModelObject(boatNumberSeqRepository.nextValue());
+            }
+        });
+        notRegistable.add(new AjaxFormComponentUpdatingBehavior("change") {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(FormComponentInputPanel.this);
+                if (getModelObject() != null) {
+                    getModelObject().setNotRegistable(notRegistable.getModelObject());
+                }
+            }
+        });
     }
+
 
     @Override
     protected void onConfigure() {
@@ -183,6 +213,16 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
             selectBoat.setEnabled(false);
             id.setEnabled(true);
         }
+
+
+//        if (!notRegistable.getModelObject()) {
+//            registrationNumber.setRequired(true);
+//            registrationDate.setRequired(true);
+//        } else {
+//            registrationNumber.setRequired(false);
+//            registrationDate.setRequired(false);
+//        }
+
         legalPersonExists.setObject(getModel().map(Boat::getLegalPerson).filter(Objects::nonNull).map(lp -> true).orElse(false).getObject());
 
     }
@@ -210,25 +250,37 @@ public class FormComponentInputPanel extends FormComponentPanel<Boat> {
         boat.setUnit(unit.getConvertedInput());
         boat.setSerialNumber(serialNumber.getConvertedInput());
         boat.setBuildYear(buildYear.getConvertedInput());
+        boat.setNotRegistable(notRegistable.getConvertedInput());
         setConvertedInput(boat);
     }
 
     @Override
     protected void onBeforeRender() {
-        Optional<Boat> boat = Optional.ofNullable(getModelObject());
-        selected.setObject(boat.orElse(null));
-        tailNumber.setModelObject(boat.map(Boat::getTailNumber).orElse(null));
-        serialNumber.setModelObject(boat.map(Boat::getSerialNumber).orElse(null));
-        buildYear.setModelObject(boat.map(Boat::getBuildYear).orElse(null));
-        unit.setModelObject(boat.map(Boat::getUnit).orElse(null));
-        type.setModelObject(boat.map(Boat::getType).orElse(null));
-        pier.setModelObject(boat.map(Boat::getPier).orElse(null));
-        model.setModelObject(boat.map(Boat::getModel).orElse(null));
-        registrationDate.setModelObject(boat.map(Boat::getRegistrationDate).orElse(null));
-        expirationDate.setModelObject(boat.map(Boat::getExpirationDate).orElse(null));
-        registrationNumber.setModelObject(boat.map(Boat::getRegistrationNumber).orElse(null));
-        person.setModelObject(boat.map(Boat::getPerson).orElse(null));
-        legalPerson.setModelObject(boat.map(Boat::getLegalPerson).orElse(null));
+        boolean hasErrorMessage = Optional.ofNullable(visitChildren(FormComponent.class, new IVisitor<FormComponent, Boolean>() {
+            @Override
+            public void component(FormComponent object, IVisit<Boolean> visit) {
+                if (object.hasErrorMessage()) {
+                    visit.stop(true);
+                }
+            }
+        })).orElse(false);
+        if(!hasErrorMessage) {
+            Optional<Boat> boat = Optional.ofNullable(getModelObject());
+            selected.setObject(boat.orElse(null));
+            tailNumber.setModelObject(boat.map(Boat::getTailNumber).orElse(null));
+            serialNumber.setModelObject(boat.map(Boat::getSerialNumber).orElse(null));
+            buildYear.setModelObject(boat.map(Boat::getBuildYear).orElse(null));
+            unit.setModelObject(boat.map(Boat::getUnit).orElse(null));
+            type.setModelObject(boat.map(Boat::getType).orElse(null));
+            pier.setModelObject(boat.map(Boat::getPier).orElse(null));
+            model.setModelObject(boat.map(Boat::getModel).orElse(null));
+            registrationDate.setModelObject(boat.map(Boat::getRegistrationDate).orElse(null));
+            expirationDate.setModelObject(boat.map(Boat::getExpirationDate).orElse(null));
+            registrationNumber.setModelObject(boat.map(Boat::getRegistrationNumber).orElse(null));
+            person.setModelObject(boat.map(Boat::getPerson).orElse(null));
+            legalPerson.setModelObject(boat.map(Boat::getLegalPerson).orElse(null));
+            notRegistable.setModelObject(boat.map(Boat::isNotRegistable).orElseGet(() -> notRegistable.getModelObject()));
+        }
         super.onBeforeRender();
 
     }

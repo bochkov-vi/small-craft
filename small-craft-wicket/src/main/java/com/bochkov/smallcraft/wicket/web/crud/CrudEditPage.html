@@ -2,7 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 <body>
 <wicket:extend>
-
+    <style>
+        label {
+            text-overflow: clip;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    </style>
     <div wicket:id="container" class="container">
         <form wicket:id="form">
             <div class="p-3">

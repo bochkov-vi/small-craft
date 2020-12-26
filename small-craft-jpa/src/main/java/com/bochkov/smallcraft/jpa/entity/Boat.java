@@ -46,12 +46,15 @@ public class Boat extends AbstractEntity<Long> {
     String serialNumber;
 
     @ManyToOne
-    @JoinColumn(name = "id_person", nullable = false )
+    @JoinColumn(name = "id_person", nullable = false)
     Person person;
 
     @ManyToOne
-    @JoinColumn(name = "id_unit", nullable = false)
+    @JoinColumn(name = "id_unit")
     Unit unit;
+
+    @Column(nullable = false)
+    boolean notRegistable;
 
     @ManyToOne
     @JoinColumn(name = "id_legal_person")

@@ -2,6 +2,7 @@ package com.bochkov.smallcraft.jpa.repository;
 
 import com.bochkov.smallcraft.jpa.entity.BoatNumberSeq;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import javax.transaction.Transactional;
 import java.util.Optional;
@@ -13,6 +14,10 @@ public interface BoatNumberSeqRepository extends JpaRepository<BoatNumberSeq, In
     default BoatNumberSeq findTop() {
         return findById(0).orElseGet(() -> saveAndFlush(new BoatNumberSeq(0, 1000)));
     }
+
+    @Transactional
+    @Query("SELECT MAX(o.registrationNumber) FROM Boat o ")
+    Optional<Integer> getMaxBoatRegistrationNumber();
 
     @Transactional
     default Integer nextValue() {

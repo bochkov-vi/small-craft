@@ -96,12 +96,13 @@ public class PhonesInput extends FormComponentPanel<Collection<String>> {
 
     @Override
     protected void onBeforeRender() {
-        super.onBeforeRender();
+
         String phone = getModel().orElseGet(ImmutableList::of).getObject().stream().filter(Objects::nonNull).findFirst().orElse(null);
-        List<String> phones = getModel().orElseGet(ImmutableList::of).getObject().stream().skip(1).collect(Collectors.toList());
+        List<String> phones = getModel().orElseGet(ImmutableList::of).getObject().stream().filter(Objects::nonNull).skip(1).collect(Collectors.toList());
 
         phoneInput.setModelObject(phone);
         additionalPhones.setObject(phones);
+        super.onBeforeRender();
     }
 
     @Override

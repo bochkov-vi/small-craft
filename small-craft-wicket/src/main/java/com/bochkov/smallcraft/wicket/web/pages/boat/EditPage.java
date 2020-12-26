@@ -81,10 +81,4 @@ public class EditPage extends CrudEditPage<Boat, Long> {
         return super.newEntityInstance().setBuildYear(LocalDate.now().getYear());
     }
 
-    @Override
-    public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<Boat> model) {
-//        if (model.map(Boat::getPerson).filter(Objects::nonNull).map(person -> Boolean.TRUE).orElse(Boolean.FALSE).getObject()) {
-//            super.onAfterSave(target, model);
-//        }
-    }
 }

@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.wicket.web.pages.notification;
 
+import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.Notification;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
@@ -7,14 +8,13 @@ import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.smallcraft.wicket.web.crud.EntityDataTable;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.HeaderlessColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.LambdaColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
@@ -58,8 +58,40 @@ public class TablePage extends CrudTablePage<Notification, Long> {
                 return "d-none d-lg-table-cell";
             }
         });
-        columns.add(new PropertyColumn(new ResourceModel("registrationNumber"), "boat.registrationNumber", "boat.registrationNumber"));
-        columns.add(new PropertyColumn(new ResourceModel("registrationDate"), "boat.registrationDate", "boat.registrationDate"));
+        columns.add(new AbstractColumn<Notification, String>(null, "boat.notRegistable") {
+            @Override
+            public void populateItem(Item<ICellPopulator<Notification>> cellItem, String componentId, IModel<Notification> rowModel) {
+                cellItem.add(new Label(componentId, new ResourceModel("boat.notRegistable")));
+                if (rowModel.map(Notification::getBoat).map(Boat::isNotRegistable).map(bol -> !bol).getObject()) {
+                    cellItem.setVisible(false);
+                }
+                cellItem.add(new AttributeModifier("colspan",
+                        rowModel.map(Notification::getBoat).filter(Boat::isNotRegistable).map(b -> 3).orElse(0)
+                ));
+
+            }
+
+
+        });
+        columns.add(new PropertyColumn<Notification, String>(new ResourceModel("registrationNumber"), "boat.registrationNumber", "boat.registrationNumber") {
+            @Override
+            public void populateItem(Item<ICellPopulator<Notification>> item, String componentId, IModel<Notification> rowModel) {
+                super.populateItem(item, componentId, rowModel);
+                if (rowModel.map(Notification::getBoat).map(Boat::isNotRegistable).getObject()) {
+                    item.setVisible(false);
+                }
+            }
+        });
+        columns.add(new PropertyColumn<Notification, String>(new ResourceModel("registrationDate"), "boat.registrationDate", "boat.registrationDate") {
+            @Override
+            public void populateItem(Item<ICellPopulator<Notification>> item, String componentId, IModel<Notification> rowModel) {
+                super.populateItem(item, componentId, rowModel);
+                if (rowModel.map(Notification::getBoat).map(Boat::isNotRegistable).getObject()) {
+                    item.setVisible(false);
+                }
+
+            }
+        });
         columns.add(new PropertyColumn(new ResourceModel("number"), "number", "number"));
         columns.add(new PropertyColumn(new ResourceModel("date"), "date", "date"));
 
@@ -83,7 +115,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
         columns.add(new LambdaColumn<Notification, String>(new ResourceModel("activities"), "activities", e -> Optional.ofNullable(e.getActivities()).map(c -> c.stream().map(Objects::toString).collect(Collectors.joining("; "))).orElse(null)) {
             @Override
             public String getCssClass() {
-                return "d-none d-lg-table-cell";
+                return "d-none d-xl-table-cell";
             }
 
         });
@@ -96,13 +128,13 @@ public class TablePage extends CrudTablePage<Notification, Long> {
         columns.add(new PropertyColumn(new ResourceModel("timeOfDay"), "timeOfDay", "timeOfDay") {
             @Override
             public String getCssClass() {
-                return "d-none d-lg-table-cell";
+                return "d-none d-xl-table-cell";
             }
         });
         columns.add(new PropertyColumn(new ResourceModel("tck"), "tck", "tck") {
             @Override
             public String getCssClass() {
-                return "d-none d-lg-table-cell";
+                return "d-none d-xl-table-cell";
             }
         });
         columns.add(new PropertyColumn(new ResourceModel("unit"), "unit.name", "unit.name") {

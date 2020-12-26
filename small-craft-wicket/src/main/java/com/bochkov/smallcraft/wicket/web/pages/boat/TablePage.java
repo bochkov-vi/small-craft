@@ -8,12 +8,11 @@ import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.google.common.base.Strings;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Session;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.HeaderlessColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.LambdaColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextField;
@@ -65,8 +64,45 @@ public class TablePage extends CrudTablePage<Boat, Long> {
     protected List<? extends IColumn> columns() {
         List<IColumn> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("id"), "id", "id"));
-        columns.add(new PropertyColumn(new ResourceModel("registrationNumber"), "registrationNumber", "registrationNumber"));
-        columns.add(new PropertyColumn(new ResourceModel("registrationDate"), "registrationDate", "registrationDate"));
+        columns.add(new AbstractColumn<Boat, String>(null, "notRegistable") {
+            @Override
+            public void populateItem(Item<ICellPopulator<Boat>> cellItem, String componentId, IModel<Boat> rowModel) {
+                cellItem.add(new Label(componentId, new ResourceModel("notRegistable")));
+                if (rowModel.map(Boat::isNotRegistable).map(bol -> !bol).getObject()) {
+                    cellItem.setVisible(false);
+                }
+                cellItem.add(new AttributeModifier("colspan",
+                        rowModel.filter(Boat::isNotRegistable).map(b -> 3).orElse(0)
+                ));
+
+            }
+
+            /*@Override
+            public void populateItem(Item cellItem, String componentId, IModel<Boat> rowModel) {
+
+            }*/
+        });
+
+        columns.add(new PropertyColumn<Boat, String>(new ResourceModel("registrationNumber"), "registrationNumber", "registrationNumber") {
+            @Override
+            public void populateItem(Item<ICellPopulator<Boat>> item, String componentId, IModel<Boat> rowModel) {
+                super.populateItem(item, componentId, rowModel);
+                if (rowModel.map(Boat::isNotRegistable).getObject()) {
+                    item.setVisible(false);
+                }
+
+            }
+        });
+        columns.add(new PropertyColumn<Boat, String>(new ResourceModel("registrationDate"), "registrationDate", "registrationDate") {
+            @Override
+            public void populateItem(Item<ICellPopulator<Boat>> item, String componentId, IModel<Boat> rowModel) {
+                super.populateItem(item, componentId, rowModel);
+                if (rowModel.map(Boat::isNotRegistable).getObject()) {
+                    item.setVisible(false);
+                }
+               
+            }
+        });
         columns.add(new PropertyColumn(new ResourceModel("tailNumber"), "tailNumber", "tailNumber"));
         columns.add(new PropertyColumn(new ResourceModel("type"), "type", "type"));
         columns.add(new PropertyColumn(new ResourceModel("model"), "model", "model"));
@@ -111,6 +147,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         String search = searchInput.getModelObject();
         if (search != null && !Strings.isNullOrEmpty(search)) {
             list.add((r, q, b) -> b.like(b.lower(r.get("registrationNumber").as(String.class)), "%" + search.toLowerCase() + "%"));
+            list.add((r, q, b) -> b.like(b.lower(r.get("tailNumber").as(String.class)), "%" + search.toLowerCase() + "%"));
             list.add((r, q, b) -> b.like(b.lower(r.get("person").get("lastName").as(String.class)), "%" + search.toLowerCase() + "%"));
             list.add((r, q, b) -> {
                 Join<Boat, LegalPerson> lp = r.join("legalPerson", JoinType.LEFT);
