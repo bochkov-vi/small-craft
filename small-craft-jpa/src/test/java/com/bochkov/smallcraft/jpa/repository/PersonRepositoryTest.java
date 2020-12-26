@@ -39,8 +39,8 @@ public class PersonRepositoryTest {
     }
 
     @Test
-    public void findAllNames(){
-        List<Person> list = personRepository.findAll("А","А","Пупкин");
+    public void findAllNames() {
+        List<Person> list = personRepository.findAll("А", "А", "Пупкин");
     }
 
     @Test
@@ -53,11 +53,11 @@ public class PersonRepositoryTest {
     @Test
     public void testFindByMask() {
         Page page = personRepository.findByMask(null, PageRequest.of(0, 10));
-
+        Assert.assertNotNull(page);
     }
 
     @Test
-    public void findBy(){
+    public void findBy() {
         List<Person> people = personRepository.findByPhones("+7(000) 000-00-00");
         Assert.assertTrue(people.isEmpty());
     }

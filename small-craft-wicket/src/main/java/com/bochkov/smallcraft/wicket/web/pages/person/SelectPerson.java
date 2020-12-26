@@ -45,10 +45,10 @@ public class SelectPerson extends Select2Choice<Person> {
 
             @Override
             public Path createPathForProperty(Root<Person> root, String expression) {
-                if ("phones".equals(expression)) {
+               /* if ("phones".equals(expression)) {
                     Path maskedProperty = root.join("phones", JoinType.LEFT);
                     return maskedProperty;
-                }
+                }*/
                 return super.createPathForProperty(root, expression);
             }
 
