@@ -86,6 +86,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
                     getRepository().delete(model.getObject());
                     deletePanel.hide(target);
                     info(MessageFormat.format(getString("delete.success"), entity));
+                    onAfterDelete(target);
                 } catch (Exception e) {
                     String message = MessageFormat.format(getString("delete.error"), entity);
                     error(((NestedRuntimeException) e).getMostSpecificCause());
@@ -95,6 +96,10 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
                 error(getString(MessageFormat.format("delete.empty.error", entity)));
             }
         }
+    }
+
+    public void onAfterDelete(AjaxRequestTarget target) {
+
     }
 
     @Override

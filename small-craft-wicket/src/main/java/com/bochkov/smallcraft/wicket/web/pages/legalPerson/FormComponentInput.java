@@ -75,7 +75,6 @@ public class FormComponentInput extends CompositeInputPanel<LegalPerson> {
         add(address);
         add(select, id);
         add(inn);
-        Html5AttributesBehavior.append(this);
         FormComponentErrorBehavior.append(this);
     }
 

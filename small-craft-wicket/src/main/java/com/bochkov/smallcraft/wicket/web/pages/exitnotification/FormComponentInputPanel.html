@@ -17,8 +17,8 @@
             <input wicket:id="exitDateTime" class="form-control">
         </div>
         <div class="form-group col-md-4">
-            <label wicket:for="region">
-                <wicket:message key="region"/>
+            <label wicket:for="pier">
+                <wicket:message key="pier"/>
             </label>
             <select wicket:id="pier" class="form-control"></select>
         </div>
@@ -43,12 +43,26 @@
             </label>
             <input wicket:id="returnDateTime" class="form-control">
         </div>
-        <div class="form-group col-md-8">
-            <label wicket:for="region">
-                <wicket:message key="region"/>
+        <div class="form-group col-md-4">
+            <label wicket:for="regions">
+                <wicket:message key="regions"/>
             </label>
-            <select wicket:id="region" class="form-control"></select>
+            <select wicket:id="regions" class="form-control"></select>
         </div>
+        <div class="form-group col-md-4">
+            <label wicket:for="activities">
+                <wicket:message key="activities"/>
+            </label>
+            <select wicket:id="activities" class="form-control"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label wicket:for="notification">
+            <wicket:message key="notification"/>
+        </label>
+
+        <select wicket:id="notification" class="form-control"></select>
+
     </div>
     <div class="card border-success">
         <div class="card-header bg-success">
@@ -59,7 +73,7 @@
 
         <div class="card-body" wicket:id="boat"></div>
     </div>
-    <div class="card border-info mt-3">
+    <div wicket:id="captain-container" class="card border-info mt-3">
         <div class="card-header bg-info">
             <label wicket:for="captain">
                 <wicket:message key="captain"/>

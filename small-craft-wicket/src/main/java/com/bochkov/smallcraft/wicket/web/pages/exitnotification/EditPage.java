@@ -1,6 +1,8 @@
 package com.bochkov.smallcraft.wicket.web.pages.exitnotification;
 
+import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
+import com.bochkov.smallcraft.jpa.entity.Notification;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import org.apache.wicket.Component;
@@ -8,22 +10,22 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
-import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.wicketstuff.annotation.mount.MountPath;
 
+import javax.inject.Inject;
 import java.util.Optional;
 
 @MountPath("exit-notification/edit")
 public class EditPage extends CrudEditPage<ExitNotification, Long> {
 
-    @SpringBean
+    @Inject
     ExitNotificationRepository repository;
-
 
     public EditPage(PageParameters parameters) {
         super(ExitNotification.class, parameters);
 
     }
+
 
     public EditPage(IModel<ExitNotification> model) {
         super(ExitNotification.class, model);
@@ -55,9 +57,8 @@ public class EditPage extends CrudEditPage<ExitNotification, Long> {
 
     @Override
     public ExitNotification newEntityInstance() {
-        ExitNotification notification = super.newEntityInstance();
-
-        return notification;
+        ExitNotification exit = super.newEntityInstance();
+        return exit;
     }
 
 

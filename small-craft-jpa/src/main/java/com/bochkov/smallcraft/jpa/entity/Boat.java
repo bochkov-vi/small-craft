@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,6 +63,6 @@ public class Boat extends AbstractEntity<Long> {
 
     @Override
     public String toString() {
-        return Stream.of(type, model, tailNumber, person, legalPerson).filter(Objects::nonNull).map(Object::toString).collect(Collectors.joining(" "));
+        return Stream.of(type, model, tailNumber, person, legalPerson, Optional.ofNullable(registrationNumber).map(n -> String.format("(%s)", n)).orElse(null)).filter(Objects::nonNull).map(Object::toString).collect(Collectors.joining(" "));
     }
 }

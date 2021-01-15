@@ -105,7 +105,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
             //if (!Objects.equals(person, selectPerson.getModelObject())) {
             selectPerson.setModelObject(person);
             id.setModelObject(person);
-            phones.setModelObject(getModel().map(Person::getPhones).map(Sets::newHashSet).getObject());
+            phones.setModelObject(getModel().map(Person::getPhones).map(Sets::newHashSet).orElseGet(Sets::newHashSet).getObject());
             email.setModelObject(getModel().map(Person::getEmail).getObject());
             firstName.setModelObject(getModel().map(Person::getFirstName).getObject());
             middleName.setModelObject(getModel().map(Person::getMiddleName).getObject());
@@ -307,7 +307,6 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
         });
 
         email.add(InputMaskBehavior.email());
-        Html5AttributesBehavior.append(this);
         FormComponentErrorBehavior.append(this);
     }
 

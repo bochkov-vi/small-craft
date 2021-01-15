@@ -31,7 +31,7 @@ public class NotificationRepositoryTest extends BoatRepositoryTest {
                 .setDate(LocalDate.now().with(TemporalAdjusters.firstDayOfYear()))
                 .setDateFrom(firstDateOfYear())
                 .setDateTo(lastDateOfYear())
-                .setRegion(Sets.newHashSet("region1","region2"))
+                .setRegions(Sets.newHashSet("region1","region2"))
                 .setTck(false)
                 .setTimeOfDay("light time of day")
                 .setUnit(new Unit("test unit 2"));

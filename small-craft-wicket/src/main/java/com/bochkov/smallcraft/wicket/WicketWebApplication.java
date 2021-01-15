@@ -4,15 +4,14 @@ import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.bochkov.smallcraft.wicket.security.WicketSecuredWebSession;
+import com.bochkov.smallcraft.wicket.web.pages.boat.BoatFilter;
 import com.giffing.wicket.spring.boot.starter.app.WicketBootSecuredWebApplication;
+import com.google.common.base.Strings;
 import org.apache.wicket.ConverterLocator;
 import org.apache.wicket.IConverterLocator;
 import org.apache.wicket.Session;
-import org.apache.wicket.request.IRequestHandler;
 import org.apache.wicket.request.Request;
 import org.apache.wicket.request.Response;
-import org.apache.wicket.request.cycle.IRequestCycleListener;
-import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.util.convert.ConversionException;
 import org.apache.wicket.util.convert.IConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,6 +153,17 @@ public class WicketWebApplication extends WicketBootSecuredWebApplication {
                         .map(Boat::getId)
                         .map(pk -> locator.getConverter(Long.class).convertToString(pk, Session.get().getLocale()))
                         .orElse(null);
+            }
+        });
+        locator.set(BoatFilter.Expirated.class, new IConverter<BoatFilter.Expirated>() {
+            @Override
+            public BoatFilter.Expirated convertToObject(String value, Locale locale) throws ConversionException {
+                return Optional.ofNullable(value).filter(s -> !Strings.isNullOrEmpty(s)).map(BoatFilter.Expirated::valueOf).orElse(null);
+            }
+
+            @Override
+            public String convertToString(BoatFilter.Expirated value, Locale locale) {
+                return Optional.ofNullable(value).map(Enum::toString).orElse(null);
             }
         });
 

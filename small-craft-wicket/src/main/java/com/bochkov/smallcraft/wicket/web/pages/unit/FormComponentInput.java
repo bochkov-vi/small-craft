@@ -3,7 +3,6 @@ package com.bochkov.smallcraft.wicket.web.pages.unit;
 import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
-import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.bochkov.wicket.data.model.PersistableModel;
 import com.bochkov.wicket.data.model.nonser.CollectionModel;
 import com.google.common.collect.Lists;
@@ -40,7 +39,7 @@ public class FormComponentInput extends FormComponentPanel<Unit> {
     FormComponent<String> name = new TextField<>("name", Model.of(), String.class).setRequired(true);
 
 
-    FormComponent<Unit> select = new SelectUnit("select", selectedEntity);
+    FormComponent<Unit> select = new SessionSelectUnit("select", selectedEntity);
 
     FormComponent<Unit> id = new HiddenField<Unit>("id", selectedEntity, Unit.class);
 
@@ -67,7 +66,6 @@ public class FormComponentInput extends FormComponentPanel<Unit> {
         });
         add(name);
         add(select, id, parents);
-        Html5AttributesBehavior.append(this);
         FormComponentErrorBehavior.append(this);
     }
 

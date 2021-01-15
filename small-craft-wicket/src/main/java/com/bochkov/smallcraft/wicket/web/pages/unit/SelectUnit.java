@@ -33,22 +33,6 @@ public class SelectUnit extends Select2Choice<Unit> {
 
     @Override
     protected void onInitialize() {
-        setOutputMarkupId(true);
-        add(new AjaxFormComponentUpdatingBehavior("change") {
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-                getForm().visitFormComponents(new IVisitor<FormComponent<?>, Object>() {
-                    @Override
-                    public void component(FormComponent<?> cmp, IVisit<Object> visit) {
-                        if (cmp instanceof SelectUnit) {
-                            if (cmp.getOutputMarkupId()) {
-                                target.add(cmp);
-                            }
-                        }
-                    }
-                });
-            }
-        });
         getSettings().setPlaceholder(getString("unit"))
                 .setCloseOnSelect(true)
                 .setAllowClear(true)
@@ -58,40 +42,11 @@ public class SelectUnit extends Select2Choice<Unit> {
     }
 
 
-    @Override
-    protected void onModelChanged() {
-        Unit unit = getModelObject();
-        if (unit != null && unit.getId() != null) {
-            Session.get().setAttribute("id_unit", unit.getId());
-            setAllFormModels(unit);
-        }
-    }
 
-    public void setAllFormModels(Unit unit) {
-        getForm().visitFormComponents(new IVisitor<FormComponent<?>, Object>() {
-            @Override
-            public void component(FormComponent<?> cmp, IVisit<Object> visit) {
-                if (cmp instanceof SelectUnit) {
-                    cmp.setDefaultModelObject(unit);
-                }
-            }
-        });
-    }
 
     ChoiceProvider<Unit> provider() {
         ChoiceProvider<Unit> provider = PersistableChoiceProvider.of(Unit.class, (s, p) -> repository.findAll(s, p), "name", "id");
         return provider;
     }
 
-    @Override
-    protected void onBeforeRender() {
-        super.onBeforeRender();
-        if (getModel() != null) {
-            if (!getModel().isPresent().getObject()) {
-                Unit unit = Optional.ofNullable((Long) Session.get().getAttribute("id_unit"))
-                        .flatMap(id -> repository.findById(id)).orElse(null);
-                setModelObject(unit);
-            }
-        }
-    }
 }

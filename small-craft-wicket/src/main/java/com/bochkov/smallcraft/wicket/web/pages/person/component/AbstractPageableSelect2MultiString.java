@@ -40,6 +40,12 @@ public abstract class AbstractPageableSelect2MultiString extends AbstractSelect2
         response.setHasMore(pg.getTotalPages() > page);
     }
 
+    @Override
+    protected void onInitialize() {
+        getSettings().setTheme("bootstrap4");
+        super.onInitialize();
+    }
+
     public abstract Page<String> query(String term, Pageable pageable);
 
 

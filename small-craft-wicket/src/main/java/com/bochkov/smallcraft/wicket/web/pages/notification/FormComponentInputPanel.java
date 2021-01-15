@@ -3,10 +3,9 @@ package com.bochkov.smallcraft.wicket.web.pages.notification;
 import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
-import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.pages.legalPerson.FormComponentInput;
-import com.bochkov.smallcraft.wicket.web.pages.unit.SelectUnit;
+import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
 import com.bochkov.wicket.data.model.PersistableModel;
 import com.google.common.collect.Sets;
@@ -43,7 +42,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
     @Inject
     UnitRepository unitRepository;
 
-    FormComponent<Unit> unit = new SelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id))).setRequired(true);
+    FormComponent<Unit> unit = new SessionSelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id))).setRequired(true);
 
     FormComponent<Notification> id = new HiddenField<>("id", PersistableModel.of(ntpk -> notificationRepository.findById(ntpk)), Notification.class);
 
@@ -51,7 +50,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     FormComponent<Integer> number = new TextField<>("number", Model.of(), Integer.class);
 
-    FormComponent<Collection<String>> region = new SelectRegion("region", new CollectionModel<String>());
+    FormComponent<Collection<String>> regions = new SelectRegion("regions", new CollectionModel<String>());
 
     FormComponent<Person> captain = new CaptainPanel("captain", PersistableModel.of(id -> personRepository.findById(id))).setCanSelect(true);
 
@@ -103,7 +102,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
         FormComponentErrorBehavior.append(this);
         captain.setOutputMarkupId(true);
         setOutputMarkupId(true);
-        add(region, captain, boat, legalPerson, date, dateFrom, dateTo, activities, timeOfDay, tck, id, number, year, unit);
+        add(regions, captain, boat, legalPerson, date, dateFrom, dateTo, activities, timeOfDay, tck, id, number, year, unit);
         legalPerson.setVisible(false).setEnabled(false);
         tck.setOutputMarkupId(true);
         add(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {
@@ -142,7 +141,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
         entity.setDateTo(dateTo.getConvertedInput());
         entity.setDateFrom(dateFrom.getConvertedInput());
         entity.setActivities(Optional.ofNullable(activities.getConvertedInput()).map(Sets::newHashSet).orElse(null));
-        entity.setRegion(Optional.ofNullable(region.getConvertedInput()).map(Sets::newHashSet).orElse(null));
+        entity.setRegions(Optional.ofNullable(regions.getConvertedInput()).map(Sets::newHashSet).orElse(null));
         entity.setTck(tck.getConvertedInput());
         entity.setTimeOfDay(timeOfDay.getConvertedInput());
         entity.setUnit(unit.getConvertedInput());
@@ -162,7 +161,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
         dateTo.setModelObject(e.getDateTo());
         dateFrom.setModelObject(e.getDateFrom());
         activities.setModelObject(Optional.ofNullable(e.getActivities()).map(Sets::newHashSet).orElse(null));
-        region.setModelObject(Optional.ofNullable(e.getRegion()).map(Sets::newHashSet).orElse(null));
+        regions.setModelObject(Optional.ofNullable(e.getRegions()).map(Sets::newHashSet).orElse(null));
         tck.setModelObject(e.getTck());
         timeOfDay.setModelObject(e.getTimeOfDay());
     }

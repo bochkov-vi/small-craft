@@ -1,6 +1,5 @@
 package com.bochkov.smallcraft.wicket.web.pages.exitnotification;
 
-import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
@@ -73,7 +72,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
         columns.add(new PropertyColumn(new ResourceModel("model"), "model", "boat.model"));
         columns.add(new PropertyColumn(new ResourceModel("tailNumber"), "tailNumber", "boat.tailNumber"));
         columns.add(new PropertyColumn(new ResourceModel("pier"), "pier", "pier"));
-        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("region"), "region", row -> Optional.ofNullable(row).map(ExitNotification::getRegion).map(set -> set.stream().collect(Collectors.joining("; "))).orElse(null)));
+        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("regions"), "regions", row -> Optional.ofNullable(row).map(ExitNotification::getRegions).map(set -> set.stream().collect(Collectors.joining("; "))).orElse(null)));
         columns.add(new PropertyColumn(new ResourceModel("captain"), "captain", "captain.fio"));
         columns.add(new PropertyColumn(new ResourceModel("exitDateTime"), "exitDateTime", "exitDateTime"));
         columns.add(new PropertyColumn(new ResourceModel("returnDateTime"), "returnDateTime", "returnDateTime"));

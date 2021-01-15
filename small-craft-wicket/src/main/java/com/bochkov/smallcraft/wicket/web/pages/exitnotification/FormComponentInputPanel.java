@@ -5,14 +5,18 @@ import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.LocalDateTimeTextFieldCalendar;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.pages.boat.SelectPier;
+import com.bochkov.smallcraft.wicket.web.pages.notification.SelectActivity;
+import com.bochkov.smallcraft.wicket.web.pages.notification.SelectNotification;
 import com.bochkov.smallcraft.wicket.web.pages.notification.SelectRegion;
-import com.bochkov.smallcraft.wicket.web.pages.unit.SelectUnit;
+import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnit;
 import com.bochkov.wicket.data.model.PersistableModel;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import lombok.experimental.Accessors;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.HiddenField;
@@ -50,17 +54,19 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
 
     FormComponent<LocalDateTime> exitCallDateTime = new LocalDateTimeTextFieldCalendar("exitCallDateTime", Model.of(), "dd.MM.yyyy HH:mm");
 
-    FormComponent<LocalDateTime> exitDateTime = new LocalDateTimeTextFieldCalendar("exitDateTime", Model.of(), "dd.MM.yyyy HH:mm");
+    FormComponent<LocalDateTime> exitDateTime = new LocalDateTimeTextFieldCalendar("exitDateTime", Model.of(), "dd.MM.yyyy HH:mm").setRequired(true);
 
     FormComponent<LocalDateTime> returnDateTime = new LocalDateTimeTextFieldCalendar("returnDateTime", Model.of(), "dd.MM.yyyy HH:mm");
 
     FormComponent<LocalDateTime> returnCallDateTime = new LocalDateTimeTextFieldCalendar("returnCallDateTime", Model.of(), "dd.MM.yyyy HH:mm");
 
-    FormComponent<Collection<String>> region = new SelectRegion("region", new CollectionModel<>());
+    FormComponent<Collection<String>> regions = new SelectRegion("regions", new CollectionModel<>());
 
-    FormComponent<Unit> unit = new SelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id))).setRequired(true);
+    FormComponent<Unit> unit = new SessionSelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id))).setRequired(true);
 
     FormComponent<String> pier = new SelectPier("pier", Model.of());
+
+    FormComponent<Collection<String>> activities = new SelectActivity("activities", new CollectionModel<>());
 
     FormComponent<Boat> boat = new com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel("boat", PersistableModel.of(id -> boatRepository.findById(id))) {
         public void onUpdate(AjaxRequestTarget target) {
@@ -70,20 +76,27 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
                     b.map(Boat::getPier).ifPresent(p -> pier.setModelObject(p));
                     target.add(pier);
                 }
-                if (!region.getModel().isPresent().getObject() || region.getModel().map(Collection::isEmpty).getObject()) {
+                if (!regions.getModel().isPresent().getObject() || regions.getModel().map(Collection::isEmpty).getObject()) {
                     Optional<Notification> n = notificationRepository.findTopByBoatOrderByNumberDesc(b.get());
-                    n.map(Notification::getRegion).map(Sets::newHashSet).ifPresent(rg -> region.setModelObject(rg));
-                    target.add(region);
+                    n.map(Notification::getRegions).map(Sets::newHashSet).ifPresent(rg -> regions.setModelObject(rg));
+                    target.add(regions);
                 }
             }
         }
     }.setCanSelect(true);
 
-    FormComponent<Notification> notification;
 
-    FormComponent<Person> captain = new com.bochkov.smallcraft.wicket.web.pages.person.FormComponentInputPanel("captain", PersistableModel.of(id -> personRepository.findById(id))).setCanSelect(true);
+    FormComponent<Person> captain = new com.bochkov.smallcraft.wicket.web.pages.person.FormComponentInputPanel("captain", PersistableModel.of(id -> personRepository.findById(id))){
+        @Override
+        protected void onConfigure() {
+            super.onConfigure();
+            setVisible(!captainEqOwner.getObject()).setEnabled(!captainEqOwner.getObject());
+        }
+    }.setCanSelect(true);
 
     IModel<Boolean> captainEqOwner = Model.of(true);
+
+    FormComponent<Notification> notification = new SelectNotification("notification", PersistableModel.of(id -> notificationRepository.findById(id))).setRequired(true);
 
     public FormComponentInputPanel(String id) {
         super(id);
@@ -110,9 +123,10 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
 //        e.setNotification(notification.getConvertedInput());
         e.setUnit(unit.getConvertedInput());
         e.setPier(pier.getConvertedInput());
-        e.setRegion(Optional.ofNullable(region.getConvertedInput()).map(Sets::newHashSet).orElse(null));
+        e.setRegions(Optional.ofNullable(regions.getConvertedInput()).map(Sets::newHashSet).orElse(null));
         e.setReturnCallDateTime(returnCallDateTime.getConvertedInput());
         e.setReturnDateTime(returnDateTime.getConvertedInput());
+        e.setActivities(activities.getConvertedInput() != null ? Sets.newHashSet(activities.getConvertedInput()) : null);
         if (captainEqOwner.getObject()) {
             Person cap = Optional.ofNullable(boat.getConvertedInput()).map(Boat::getPerson).orElse(null);
             if (cap != null) {
@@ -134,35 +148,47 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
         exitDateTime.setModelObject(getModel().map(ExitNotification::getExitDateTime).orElse(null).getObject());
 //        notification.setModelObject(getModel().map(ExitNotification::getNotification).orElse(null).getObject());
         pier.setModelObject(getModel().map(ExitNotification::getPier).orElse(null).getObject());
-        region.setModelObject(getModel().map(ExitNotification::getRegion).map(Sets::newHashSet).orElse(null).getObject());
+        regions.setModelObject(getModel().map(ExitNotification::getRegions).map(Sets::newHashSet).orElseGet(Sets::newHashSet).getObject());
+        activities.setModelObject(getModel().map(ExitNotification::getActivities).map(Sets::newHashSet).orElseGet(Sets::newHashSet).getObject());
         returnCallDateTime.setModelObject(getModel().map(ExitNotification::getReturnCallDateTime).orElse(null).getObject());
         returnDateTime.setModelObject(getModel().map(ExitNotification::getReturnDateTime).orElse(null).getObject());
-        super.onBeforeRender();
+
     }
 
     @Override
     protected void onConfigure() {
-        captain.setVisible(!captainEqOwner.getObject()).setEnabled(!captainEqOwner.getObject());
+
         super.onConfigure();
     }
 
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        notification.add(new AjaxFormComponentUpdatingBehavior("change") {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                getModelObject().putData(notification.getModelObject());
+                target.add(FormComponentInputPanel.this);
+            }
+        });
         pier.setOutputMarkupId(true);
-        region.setOutputMarkupId(true);
+        regions.setOutputMarkupId(true);
         setOutputMarkupId(true);
         Optional<ExitNotification> entity = Optional.ofNullable(getModelObject());
         captainEqOwner.setObject(Objects.equals(entity.map(ExitNotification::getBoat).map(Boat::getPerson).orElse(null), entity.map(ExitNotification::getCaptain).orElse(null)));
-        add(id, exitCallDateTime, exitDateTime, returnCallDateTime, returnDateTime, pier, region, boat, captain, unit);
-        add(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {
+        add(id, exitCallDateTime, exitDateTime, returnCallDateTime, returnDateTime, pier, regions, boat, unit, activities, notification);
+        WebMarkupContainer captainConteiner = new WebMarkupContainer("captain-container");
+        add(captainConteiner.setOutputMarkupId(true));
+        captainConteiner.add(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 captainEqOwner.setObject(!captainEqOwner.getObject());
-                target.add(FormComponentInputPanel.this);
+                target.add(captainConteiner);
             }
         }.add(new Label("btn-captain-eq-owner-label", new StringResourceModel("btn-captain-eq-owner.${captainEqOwner}", Model.of(this)).setParameters(captainEqOwner.getObject()))));
 
+
+        captainConteiner.add(captain);
     }
 
     @Override

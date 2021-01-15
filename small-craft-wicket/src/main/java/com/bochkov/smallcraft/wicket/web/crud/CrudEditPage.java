@@ -249,6 +249,14 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     }
 
     @Override
+    public void onAfterDelete(AjaxRequestTarget target) {
+        super.onAfterDelete(target);
+        if (backPage != null) {
+            setResponsePage(backPage);
+        }
+    }
+
+    @Override
     public IModelComparator getModelComparator() {
         return IModelComparator.ALWAYS_FALSE;
     }

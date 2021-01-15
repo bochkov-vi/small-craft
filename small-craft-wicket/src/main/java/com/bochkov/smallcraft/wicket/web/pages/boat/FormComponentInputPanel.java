@@ -10,7 +10,7 @@ import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.pages.legalPerson.FormComponentInput;
-import com.bochkov.smallcraft.wicket.web.pages.unit.SelectUnit;
+import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
 import com.bochkov.wicket.data.model.PersistableModel;
 import lombok.Getter;
@@ -69,7 +69,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
 
     FormComponent<String> tailNumber = new TextField<>("tailNumber", Model.of());
 
-    FormComponent<Unit> unit = new SelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id))).setRequired(true);
+    FormComponent<Unit> unit = new SessionSelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id))).setRequired(true);
 
     FormComponent<String> type = new SelectType("type", Model.of()).setRequired(true);
 
@@ -146,7 +146,6 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
             }
         });*/
         tailNumber.setOutputMarkupId(true);
-        Html5AttributesBehavior.append(this);
         FormComponentErrorBehavior.append(this);
         add(person);
         setOutputMarkupId(true);

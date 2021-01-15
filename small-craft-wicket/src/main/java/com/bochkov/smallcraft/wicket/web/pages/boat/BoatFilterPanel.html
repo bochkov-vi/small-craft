@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:head>
+    <script>
+        function clearForm(f) {
+            console.debug("очистка формы поиска")
+            const form = $(f).closest("form");
+            form.find('.form-control').val('');
+            form.submit();
+        }
+    </script>
+</wicket:head>
+<wicket:panel>
+    <form wicket:id="form">
+        <div class="form-group">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <button type="button" onclick="clearForm(this)" class="btn btn-outline-secondary">
+                        <span class="fa fa-ban"></span>
+                    </button>
+                </div>
+                <input wicket:id="search" type="text" class="form-control">
+                <div class="input-group-append">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <span class="fa fa-search"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label wicket:for="unit" class="col-2 col-form-label">
+                <wicket:message key="unit"/>
+            </label>
+            <div class="col-10"><select wicket:id="unit" class="form-control"></select></div>
+        </div>
+        <div class="form-group row">
+            <label wicket:for="expire" class="col-2 col-form-label">
+                <wicket:message key="expire"/>
+            </label>
+            <div class="col-10"><select wicket:id="expire" class="form-control"></select></div>
+        </div>
+        <button type="submit" class="btn btn-outline-primary">
+            <i class="fa fa-search"/>
+            <wicket:message key="search"/>
+        </button>
+    </form>
+</wicket:panel>
+</body>
+</html>

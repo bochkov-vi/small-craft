@@ -1,12 +1,14 @@
 package com.bochkov.smallcraft.wicket.web.pages.notification;
 
 import com.bochkov.smallcraft.jpa.entity.Boat;
+import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Notification;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.smallcraft.wicket.web.crud.EntityDataTable;
+import com.bochkov.wicket.data.model.PersistableModel;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ClassAttributeModifier;
@@ -15,6 +17,9 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.AbstractLink;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
@@ -122,7 +127,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
             }
 
         });
-        columns.add(new LambdaColumn<Notification, String>(new ResourceModel("region"), "region", row -> Optional.ofNullable(row).map(Notification::getRegion).map(set -> set.stream().distinct().collect(Collectors.joining("; "))).orElse(null)) {
+        columns.add(new LambdaColumn<Notification, String>(new ResourceModel("regions"), "regions", row -> Optional.ofNullable(row).map(Notification::getRegions).map(set -> set.stream().distinct().collect(Collectors.joining("; "))).orElse(null)) {
             @Override
             public String getCssClass() {
                 return "d-none d-xl-table-cell";
@@ -152,13 +157,46 @@ public class TablePage extends CrudTablePage<Notification, Long> {
 
             @Override
             public String getCssClass() {
-                return "exit-cell";
+                return "";
             }
 
             @Override
             public void populateItem(Item<ICellPopulator<Notification>> cellItem, String componentId, IModel<Notification> rowModel) {
-                ExitEditPanel link = new ExitEditPanel(componentId, rowModel);
-                cellItem.add(link);
+                Fragment fragment = new Fragment(componentId, "exit-link", getPage()){
+                    @Override
+                    protected void onConfigure() {
+                        setVisible(rowModel.map(n -> n.isExpired()).map(b->!b).getObject());
+                        super.onConfigure();
+                    }
+                };
+
+                AbstractLink link = new Link<Notification>("link", rowModel) {
+                    @Override
+                    public void onClick() {
+                        com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage editPage = new com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage(PersistableModel.of(
+                                id -> exitNotificationRepository.findById(id),
+                                () -> getModel().map(n -> ExitNotification.of(n)).getObject()
+                        ));
+                        editPage.setBackPage(getPage());
+                        setResponsePage(editPage);
+                    }
+                };
+                link.add(new ClassAttributeModifier() {
+                    @Override
+                    protected Set<String> update(Set<String> oldClasses) {
+                        oldClasses.addAll(com.google.common.collect.Lists.newArrayList("btn", "btn-outline-success"));
+                        return oldClasses;
+                    }
+                });
+                fragment.add(link);
+                cellItem.add(fragment);
+                fragment.add(new Label("expired", new ResourceModel("expired")) {
+                    @Override
+                    protected void onConfigure() {
+                        setVisible(rowModel.map(n -> n.isExpired()).getObject());
+                        super.onConfigure();
+                    }
+                });
             }
         });
         columns.add(createEditColumn());
@@ -183,7 +221,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
             @Override
             protected Set<String> update(Set<String> oldClasses) {
                 if (model.map(n -> n.isExpiredDate(LocalDateTime.now())).orElse(false).getObject()) {
-                    oldClasses.add("expired-row");
+                    // oldClasses.add("expired-row");
                 }
                 return oldClasses;
             }

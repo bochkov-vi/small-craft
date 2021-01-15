@@ -1,6 +1,5 @@
 package com.bochkov.smallcraft.jpa.entity;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +10,10 @@ import lombok.experimental.Accessors;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
 @Getter
@@ -28,7 +30,7 @@ public class Notification extends AbstractEntity<Long> {
 
     @ElementCollection
     @CollectionTable(name = "notification_region", joinColumns = @JoinColumn(name = "id_notification"))
-    Set<String> region;
+    Set<String> regions;
 
     @ManyToOne
     @JoinColumn(name = "id_captain", nullable = false)
@@ -54,7 +56,7 @@ public class Notification extends AbstractEntity<Long> {
 
     @ElementCollection
     @Column(name = "activity")
-    @CollectionTable(joinColumns = @JoinColumn(name = "id_notification"))
+    @CollectionTable(name = "notification_activity", joinColumns = @JoinColumn(name = "id_notification"))
     Set<String> activities;
 
     String timeOfDay;
@@ -63,12 +65,7 @@ public class Notification extends AbstractEntity<Long> {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("id", id)
-                .add("captain", captain)
-                .add("boat", boat)
-                .add("date", date)
-                .toString();
+        return Stream.of(number, boat, captain, unit).filter(Objects::nonNull).map(Objects::toString).collect(Collectors.joining(" "));
     }
 
     public Notification setActivity(String... activity) {
@@ -81,14 +78,16 @@ public class Notification extends AbstractEntity<Long> {
     public boolean isValidExit(LocalDateTime dateTime) {
         return dateTime.isAfter(dateFrom.atStartOfDay()) && dateTime.isBefore(dateTo.atStartOfDay().plusDays(1));
     }
-    public boolean isValidExit(){
+
+    public boolean isValidExit() {
         return isValidExit(LocalDateTime.now());
     }
 
-    public boolean isExpiredDate(LocalDateTime dateTime){
+    public boolean isExpiredDate(LocalDateTime dateTime) {
         return !dateTime.isBefore(dateTo.atStartOfDay().plusDays(1));
     }
-    public boolean isExpired(){
+
+    public boolean isExpired() {
         return isExpiredDate(LocalDateTime.now());
     }
 

@@ -54,15 +54,16 @@ public class Html5AttributesBehavior extends HTML5Attributes {
         if (input.isRequired()) {
             tag.put("required", "required");
         }
+        if (Strings.isNullOrEmpty(tag.getAttribute("placeholder"))) {
+            IModel<String> label = input.getLabel();
+            if (label != null && label.getObject() != null) {
+                tag.put("placeholder", label.getObject());
+            }
 
-        IModel<String> label = input.getLabel();
-        if (label != null && label.getObject() != null) {
-            tag.put("placeholder", label.getObject());
-        }
-
-        String labelValue = input.getDefaultLabel();
-        if (!Strings.isNullOrEmpty(labelValue)) {
-            tag.put("placeholder", labelValue);
+            String labelValue = input.getDefaultLabel();
+            if (!Strings.isNullOrEmpty(labelValue)) {
+                tag.put("placeholder", labelValue);
+            }
         }
         for (IValidator<?> validator : input.getValidators()) {
             while (validator instanceof ValidatorAdapter) {

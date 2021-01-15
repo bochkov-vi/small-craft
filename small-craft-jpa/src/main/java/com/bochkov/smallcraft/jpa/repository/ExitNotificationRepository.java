@@ -58,7 +58,7 @@ public interface ExitNotificationRepository extends JpaRepository<ExitNotificati
         if (notification.isValidExit(callExitDate)) {
             exitNotification.setBoat(notification.getBoat());
             exitNotification.setCaptain(notification.getCaptain());
-            exitNotification.setRegion(notification.getRegion());
+            exitNotification.setRegions(notification.getRegions());
             exitNotification.setPier(notification.getBoat().getPier());
             exitNotification.setUnit(notification.getBoat().getUnit());
             exitNotification.setExitCallDateTime(callExitDate);

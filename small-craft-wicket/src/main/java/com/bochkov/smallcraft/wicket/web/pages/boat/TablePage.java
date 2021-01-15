@@ -1,34 +1,27 @@
 package com.bochkov.smallcraft.wicket.web.pages.boat;
 
 import com.bochkov.smallcraft.jpa.entity.Boat;
-import com.bochkov.smallcraft.jpa.entity.LegalPerson;
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.BoatRepository;
+import com.bochkov.smallcraft.wicket.model.CompositeEntityModel;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
-import com.google.common.base.Strings;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Session;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.FormComponent;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,9 +31,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
     @Inject
     BoatRepository repository;
 
-    Form form = new Form("form");
-
-    FormComponent<String> searchInput = new TextField<>("search-text", Model.of());
+    BoatFilterPanel filterPanel = new BoatFilterPanel("filter", new CompositeEntityModel(new BoatFilter(), BoatFilter.class));
 
     public TablePage(PageParameters parameters) {
         super(Boat.class, parameters);
@@ -49,8 +40,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
-        add(form);
-        form.add(searchInput);
+        add(filterPanel);
 
     }
 
@@ -102,7 +92,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
                 if (rowModel.map(Boat::isNotRegistable).getObject()) {
                     item.setVisible(false);
                 }
-               
+
             }
         });
         columns.add(new PropertyColumn(new ResourceModel("tailNumber"), "tailNumber", "tailNumber"));
@@ -113,6 +103,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         columns.add(new PropertyColumn(new ResourceModel("buildYear"), "buildYear", "buildYear"));
         columns.add(new LambdaColumn<Boat, String>(new ResourceModel("person"), "person.lastName", row -> Optional.ofNullable(row).map(Boat::getPerson).map(Person::toString).orElse(null)));
         columns.add(new LambdaColumn<Boat, String>(new ResourceModel("legalPerson"), "legalPerson.name", row -> Optional.ofNullable(row).map(Boat::getLegalPerson).map(Object::toString).orElse(null)));
+        columns.add(new LambdaColumn<Boat, String>(new ResourceModel("unit"), "unit.name", row -> Optional.ofNullable(row).map(Boat::getUnit).map(Object::toString).orElse(null)));
         columns.add(new PropertyColumn(new ResourceModel("expirationDate"), "expirationDate", "expirationDate"));
 
         columns.add(new HeaderlessColumn<Boat, String>() {
@@ -145,6 +136,11 @@ public class TablePage extends CrudTablePage<Boat, Long> {
 
     @Override
     protected Specification<Boat> specification() {
+        return Specification.where(super.specification()).and(filterPanel.specification());
+    }
+
+    /* @Override
+    protected Specification<Boat> specification() {
         List<Specification<Boat>> list = Lists.newArrayList();
         String search = searchInput.getModelObject();
         if (search != null && !Strings.isNullOrEmpty(search)) {
@@ -166,5 +162,5 @@ public class TablePage extends CrudTablePage<Boat, Long> {
             }
         }
         return result;
-    }
+    }*/
 }

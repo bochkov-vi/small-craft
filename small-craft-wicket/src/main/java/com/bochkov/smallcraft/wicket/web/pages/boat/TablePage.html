@@ -2,42 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 <body>
 <wicket:extend>
-    <script>
-        function clearForm() {
-            const form = $("form[id='search-form']")
-            form.find('.form-control').val('');
-            form.submit();
-        }
-    </script>
     <div class="container">
-        <div class="row">
-            <form wicket:id="form" id="search-form" class="form-text">
-                <div class="form-group">
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <button type="button" onclick="clearForm(this)" class="input-group-text btn btn-outline-primary">
-                                <span class="fa fa-ban"></span>
-                            </button>
-                        </div>
-                        <input wicket:id="search-text" type="text" class="form-control">
-                        <div class="input-group-append">
-                            <button type="submit" class="input-group-text btn btn-outline-primary">
-                                <span class="fa fa-search"></span>
-                            </button>
-                        </div>
-                    </div>
+        <div wicket:id="filter">
 
-                </div>
-            </form>
         </div>
     </div>
-    <script>
-        $(document).on('keyup', function (event) {
-            if (event.key == "Escape") {
-                clearForm()
-            }
-        });
-    </script>
+
     <wicket:fragment wicket:id="not-link">
         <span class="btn btn-outline-success">
             <a wicket:id="link" href="#"><span class="fa fa-sticky-note"></span></a>
