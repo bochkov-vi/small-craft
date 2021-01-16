@@ -29,7 +29,7 @@ public class BoatFilterPanel extends GenericPanel<Filter<Boat>> {
     protected void onInitialize() {
         Form<Filter<Boat>> form = new Form<>("form", new CompoundPropertyModel<>(getModel()));
         add(form);
-        form.add(new TextField<>("search", String.class));
+        form.add(new TextField<>("quickSearch", String.class));
         form.add(new SessionSelectUnit("unit"));
         DropDownChoice<BoatFilter.Expirated> expiratedDropDownChoice = (DropDownChoice<BoatFilter.Expirated>) new DropDownChoice<BoatFilter.Expirated>("expire", Lists.newArrayList(BoatFilter.Expirated.values()),
                 new EnumChoiceRenderer<>(getPage()))

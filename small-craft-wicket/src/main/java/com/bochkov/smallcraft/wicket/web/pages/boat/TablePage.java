@@ -1,11 +1,14 @@
 package com.bochkov.smallcraft.wicket.web.pages.boat;
 
 import com.bochkov.smallcraft.jpa.entity.Boat;
+import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.BoatRepository;
+import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.wicket.model.CompositeEntityModel;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
+import com.bochkov.wicket.data.model.PersistableModel;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Session;
@@ -22,6 +25,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +36,9 @@ public class TablePage extends CrudTablePage<Boat, Long> {
     BoatRepository repository;
 
     BoatFilterPanel filterPanel = new BoatFilterPanel("filter", new CompositeEntityModel(new BoatFilter(), BoatFilter.class));
+
+    @Inject
+    ExitNotificationRepository exitNotificationRepository;
 
     public TablePage(PageParameters parameters) {
         super(Boat.class, parameters);
@@ -118,6 +125,34 @@ public class TablePage extends CrudTablePage<Boat, Long> {
                         com.bochkov.smallcraft.wicket.web.pages.notification.EditPage notificationPage = new com.bochkov.smallcraft.wicket.web.pages.notification.EditPage(parameters);
                         notificationPage.setBackPage(getPage());
                         setResponsePage(notificationPage);
+                    }
+                };
+                cellItem.add(fragment);
+                fragment.add(link);
+            }
+        });
+        columns.add(new HeaderlessColumn<Boat, String>() {
+            @Override
+            public void populateItem(Item<ICellPopulator<Boat>> cellItem, String componentId, IModel<Boat> rowModel) {
+                Fragment fragment = new Fragment(componentId, "exit-link", getPage());
+                Link<Boat> link = new Link<Boat>("link", rowModel) {
+                    @Override
+                    public void onClick() {
+
+                        com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage editPage = new com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage(
+                                PersistableModel.of(id -> exitNotificationRepository.findById(id),
+                                        () -> {
+                                            return new ExitNotification()
+                                                    .setBoat(rowModel.getObject())
+                                                    .setUnit(rowModel.map(Boat::getUnit).getObject())
+                                                    .setPier(rowModel.map(Boat::getPier).getObject())
+                                                    .setCaptain(rowModel.map(Boat::getPerson).getObject())
+                                                    .setExitCallDateTime(LocalDateTime.now())
+                                                    .setExitDateTime(LocalDateTime.now().plusHours(2));
+                                        })
+                        );
+                        editPage.setBackPage(getPage());
+                        setResponsePage(editPage);
                     }
                 };
                 cellItem.add(fragment);

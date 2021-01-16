@@ -38,6 +38,7 @@ public class Person extends AbstractEntity<Long> {
 
     @Column(name = "phone", nullable = false)
     @ElementCollection
+    @CollectionTable(name = "person_phone", joinColumns = @JoinColumn(name = "id_person", referencedColumnName = "id_person"))
     Set<String> phones;
 
     String email;

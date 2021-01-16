@@ -29,6 +29,7 @@ public class Notification extends AbstractEntity<Long> {
     Long id;
 
     @ElementCollection
+    @Column(name = "region")
     @CollectionTable(name = "notification_region", joinColumns = @JoinColumn(name = "id_notification"))
     Set<String> regions;
 

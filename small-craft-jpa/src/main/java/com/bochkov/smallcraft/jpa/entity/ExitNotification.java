@@ -35,6 +35,7 @@ public class ExitNotification extends AbstractEntity<Long> {
     LocalDateTime returnCallDateTime;
 
     @ElementCollection
+    @Column(name = "region")
     @CollectionTable(name = "exit_notification_region", joinColumns = @JoinColumn(name = "id_notification"))
     Set<String> regions;
 

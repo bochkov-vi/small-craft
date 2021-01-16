@@ -20,7 +20,7 @@
                         <span class="fa fa-ban"></span>
                     </button>
                 </div>
-                <input wicket:id="search" type="text" class="form-control">
+                <input wicket:id="quickSearch" type="text" class="form-control">
                 <div class="input-group-append">
                     <button type="submit" class="btn btn-outline-primary">
                         <span class="fa fa-search"></span>
@@ -28,17 +28,21 @@
                 </div>
             </div>
         </div>
-        <div class="form-group row">
-            <label wicket:for="unit" class="col-2 col-form-label">
-                <wicket:message key="unit"/>
-            </label>
-            <div class="col-10"><select wicket:id="unit" class="form-control"></select></div>
-        </div>
-        <div class="form-group row">
-            <label wicket:for="expire" class="col-2 col-form-label">
-                <wicket:message key="expire"/>
-            </label>
-            <div class="col-10"><select wicket:id="expire" class="form-control"></select></div>
+        <div class="row">
+            <div class="form-group col-6">
+                <label wicket:for="unit">
+                    <wicket:message key="unit"/>
+                </label>
+                <select wicket:id="unit" class="form-control"></select>
+            </div>
+            <div class="form-group col-6">
+                <label wicket:for="expire">
+                    <wicket:message key="expire"/>
+                </label>
+                <div>
+                    <select wicket:id="expire" class="form-control"></select>
+                </div>
+            </div>
         </div>
         <button type="submit" class="btn btn-outline-primary">
             <i class="fa fa-search"/>
