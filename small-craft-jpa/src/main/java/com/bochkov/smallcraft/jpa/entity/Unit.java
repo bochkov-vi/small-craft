@@ -22,8 +22,11 @@ public class Unit extends AbstractEntity<Long> implements IHierarchical<Long, Un
     @Column(name = "id_unit")
     @GeneratedValue(generator = "unit_seq")
     Long id;
+
     @Column(unique = true, nullable = false)
     String name;
+
+    String phone;
 
     @ManyToMany
     @JoinTable(name = "unit_p", joinColumns = @JoinColumn(name = "id_unit", referencedColumnName = "id_unit"),

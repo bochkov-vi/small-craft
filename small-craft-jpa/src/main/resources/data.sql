@@ -1,0 +1,1 @@
+ALTER SEQUENCE boat_seq RESTART (SELECT COALESCE(max(id_boat),0)+1 FROM boat);
