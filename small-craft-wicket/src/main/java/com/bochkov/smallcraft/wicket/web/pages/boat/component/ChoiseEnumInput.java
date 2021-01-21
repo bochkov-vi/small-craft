@@ -1,6 +1,9 @@
 package com.bochkov.smallcraft.wicket.web.pages.boat.component;
 
 import com.google.common.collect.Lists;
+import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.ClassAttributeModifier;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.Radio;
@@ -12,12 +15,17 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.util.lang.Classes;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 
 public class ChoiseEnumInput<T extends Enum> extends FormComponentPanel<T> {
 
-    private Class<T> enumClass;
+    IModel<T> selected = new Model<T>();
 
+    RadioGroup<T> group = new RadioGroup<T>("group", selected);
+
+    private Class<T> enumClass;
 
     public ChoiseEnumInput(String id, Class<T> enumClass) {
         super(id);
@@ -33,25 +41,44 @@ public class ChoiseEnumInput<T extends Enum> extends FormComponentPanel<T> {
     protected void onInitialize() {
         super.onInitialize();
         List<T> values = Lists.newArrayList(enumClass.getEnumConstants());
-        IModel<T> selected = new Model<T>();
-        RadioGroup<T> group = new RadioGroup<T>("group", selected);
+
         group.add(new ListView<T>("choice", Lists.newArrayList(enumClass.getEnumConstants())) {
             protected void populateItem(ListItem<T> it) {
                 it.add(new Radio("radio", it.getModel()));
                 it.add(new Label("label", it.getModel().map(t -> getDisplayValue(t))));
+                it.add(new ClassAttributeModifier() {
+                    @Override
+                    protected Set<String> update(Set<String> oldClasses) {
+                        if(Objects.equals(it.getModelObject(), group.getModelObject())){
+                            oldClasses.add("active");
+                        }
+                        return oldClasses;
+                    }
+                });
             }
         });
+        add(new ClassAttributeModifier() {
+            @Override
+            protected Set<String> update(Set<String> oldClasses) {
+                oldClasses.add("btn-group-toggle");
+                return oldClasses;
+            }
+        });
+        add(new AttributeModifier("data-toggle", "buttons"));
         add(group);
     }
 
     @Override
     protected void onBeforeRender() {
+        if (getModel() != null) {
+            group.setModelObject(getModelObject());
+        }
         super.onBeforeRender();
     }
 
     @Override
     public void convertInput() {
-        super.convertInput();
+        setConvertedInput(group.getConvertedInput());
     }
 
     public Object getDisplayValue(T object) {
