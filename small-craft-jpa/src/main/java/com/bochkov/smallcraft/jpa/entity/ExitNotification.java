@@ -23,7 +23,7 @@ public class ExitNotification extends AbstractEntity<Long> {
 
     @Id
     @Column(name = "id_exit_notification")
-    @GeneratedValue(generator = "exit_notification_seq")
+    @GeneratedValue(generator = "exit_notification_seq",strategy = GenerationType.IDENTITY)
     Long id;
 
     LocalDateTime exitCallDateTime;
@@ -33,6 +33,8 @@ public class ExitNotification extends AbstractEntity<Long> {
     LocalDateTime returnDateTime;
 
     LocalDateTime returnCallDateTime;
+
+    LocalDateTime estimatedReturnDateTime;
 
     @ElementCollection
     @Column(name = "region")

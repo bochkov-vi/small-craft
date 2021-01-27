@@ -54,6 +54,8 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
 
     FormComponent<LocalDateTime> exitCallDateTime = new LocalDateTimeTextFieldCalendar("exitCallDateTime", Model.of(), "dd.MM.yyyy HH:mm");
 
+    FormComponent<LocalDateTime> estimatedReturnDateTime = new LocalDateTimeTextFieldCalendar("estimatedReturnDateTime", Model.of(), "dd.MM.yyyy HH:mm");
+
     FormComponent<LocalDateTime> exitDateTime = new LocalDateTimeTextFieldCalendar("exitDateTime", Model.of(), "dd.MM.yyyy HH:mm").setRequired(true);
 
     FormComponent<LocalDateTime> returnDateTime = new LocalDateTimeTextFieldCalendar("returnDateTime", Model.of(), "dd.MM.yyyy HH:mm");
@@ -85,16 +87,15 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
         }
     }.setCanSelect(true);
 
+    IModel<Boolean> captainEqOwner = Model.of(true);
 
-    FormComponent<Person> captain = new com.bochkov.smallcraft.wicket.web.pages.person.FormComponentInputPanel("captain", PersistableModel.of(id -> personRepository.findById(id))){
+    FormComponent<Person> captain = new com.bochkov.smallcraft.wicket.web.pages.person.FormComponentInputPanel("captain", PersistableModel.of(id -> personRepository.findById(id))) {
         @Override
         protected void onConfigure() {
             super.onConfigure();
             setVisible(!captainEqOwner.getObject()).setEnabled(!captainEqOwner.getObject());
         }
     }.setCanSelect(true);
-
-    IModel<Boolean> captainEqOwner = Model.of(true);
 
     FormComponent<Notification> notification = new SelectNotification("notification", PersistableModel.of(id -> notificationRepository.findById(id))).setRequired(true);
 
@@ -135,6 +136,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
         } else {
             e.setCaptain(captain.getConvertedInput());
         }
+        e.setEstimatedReturnDateTime(estimatedReturnDateTime.getConvertedInput());
         setConvertedInput(e);
     }
 
@@ -146,13 +148,13 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
         captain.setModelObject(getModel().map(ExitNotification::getCaptain).orElse(null).getObject());
         exitCallDateTime.setModelObject(getModel().map(ExitNotification::getExitCallDateTime).orElse(null).getObject());
         exitDateTime.setModelObject(getModel().map(ExitNotification::getExitDateTime).orElse(null).getObject());
-//        notification.setModelObject(getModel().map(ExitNotification::getNotification).orElse(null).getObject());
+        notification.setModelObject(getModel().map(ExitNotification::getNotification).orElse(null).getObject());
         pier.setModelObject(getModel().map(ExitNotification::getPier).orElse(null).getObject());
         regions.setModelObject(getModel().map(ExitNotification::getRegions).map(Sets::newHashSet).orElseGet(Sets::newHashSet).getObject());
         activities.setModelObject(getModel().map(ExitNotification::getActivities).map(Sets::newHashSet).orElseGet(Sets::newHashSet).getObject());
         returnCallDateTime.setModelObject(getModel().map(ExitNotification::getReturnCallDateTime).orElse(null).getObject());
         returnDateTime.setModelObject(getModel().map(ExitNotification::getReturnDateTime).orElse(null).getObject());
-
+        estimatedReturnDateTime.setModelObject(getModel().map(ExitNotification::getEstimatedReturnDateTime).orElse(null).getObject());
     }
 
     @Override
@@ -176,7 +178,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
         setOutputMarkupId(true);
         Optional<ExitNotification> entity = Optional.ofNullable(getModelObject());
         captainEqOwner.setObject(Objects.equals(entity.map(ExitNotification::getBoat).map(Boat::getPerson).orElse(null), entity.map(ExitNotification::getCaptain).orElse(null)));
-        add(id, exitCallDateTime, exitDateTime, returnCallDateTime, returnDateTime, pier, regions, boat, unit, activities, notification);
+        add(id, estimatedReturnDateTime, exitCallDateTime, exitDateTime, returnCallDateTime, returnDateTime, pier, regions, boat, unit, activities, notification);
         WebMarkupContainer captainConteiner = new WebMarkupContainer("captain-container");
         add(captainConteiner.setOutputMarkupId(true));
         captainConteiner.add(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {

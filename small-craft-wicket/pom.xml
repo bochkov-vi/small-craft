@@ -145,17 +145,17 @@
             <artifactId>wicket-spring-data-jpa</artifactId>
             <version>1.0</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.bochkov</groupId>
-            <version>0.0.1-SNAPSHOT</version>
-            <artifactId>small-craft-jpa</artifactId>
-        </dependency>
         <dependency>
             <groupId>com.bochkov</groupId>
             <artifactId>wicket-bootstrap</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.bochkov</groupId>
+            <version>0.0.1-SNAPSHOT</version>
+            <artifactId>small-craft-jpa</artifactId>
+        </dependency>
+
     </dependencies>
     <build>
         <finalName>small-craft</finalName>

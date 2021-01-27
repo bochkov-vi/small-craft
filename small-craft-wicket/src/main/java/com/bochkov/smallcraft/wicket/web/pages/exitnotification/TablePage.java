@@ -1,6 +1,7 @@
 package com.bochkov.smallcraft.wicket.web.pages.exitnotification;
 
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
+import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
@@ -68,13 +69,15 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     protected List<? extends IColumn> columns() {
         List<IColumn> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("id"), "id", "id"));
+        columns.add(new PropertyColumn(new ResourceModel("captain"), "captain", "captain.fio"));
+        columns.add(new LambdaColumn<ExitNotification,String>(new ResourceModel("phones"), row->Optional.ofNullable(row.getCaptain()).map(Person::getPhones).map(list->list.stream().collect(Collectors.joining("; "))).orElse(null)));
         columns.add(new PropertyColumn(new ResourceModel("type"), "type", "boat.type"));
         columns.add(new PropertyColumn(new ResourceModel("model"), "model", "boat.model"));
         columns.add(new PropertyColumn(new ResourceModel("tailNumber"), "tailNumber", "boat.tailNumber"));
         columns.add(new PropertyColumn(new ResourceModel("pier"), "pier", "pier"));
         columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("regions"), "regions", row -> Optional.ofNullable(row).map(ExitNotification::getRegions).map(set -> set.stream().collect(Collectors.joining("; "))).orElse(null)));
-        columns.add(new PropertyColumn(new ResourceModel("captain"), "captain", "captain.fio"));
         columns.add(new PropertyColumn(new ResourceModel("exitDateTime"), "exitDateTime", "exitDateTime"));
+        columns.add(new PropertyColumn(new ResourceModel("estimatedReturnDateTime"), "estimatedReturnDateTime", "estimatedReturnDateTime"));
         columns.add(new PropertyColumn(new ResourceModel("returnDateTime"), "returnDateTime", "returnDateTime"));
 //        columns.add(new PropertyColumn(new ResourceModel("activity"), "activity", "activity"));
 

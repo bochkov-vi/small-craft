@@ -22,7 +22,7 @@ public class BoatFilter extends Filter<Boat> {
 
     Unit unit;
 
-    Expirated expire = Expirated.NOT_EXPIRATED;
+    Expirated expire = null;
 
     @Override
     public Specification<Boat> specification() {
