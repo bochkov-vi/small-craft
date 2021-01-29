@@ -9,6 +9,7 @@ import com.bochkov.smallcraft.wicket.model.CompositeEntityModel;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.wicket.data.model.PersistableModel;
+import com.google.common.base.Joiner;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Session;
@@ -110,6 +111,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         columns.add(new PropertyColumn(new ResourceModel("serialNumber"), "serialNumber", "serialNumber"));
         columns.add(new PropertyColumn(new ResourceModel("buildYear"), "buildYear", "buildYear"));
         columns.add(new LambdaColumn<Boat, String>(new ResourceModel("person"), "person.lastName", row -> Optional.ofNullable(row).map(Boat::getPerson).map(Person::toString).orElse(null)));
+        columns.add(new LambdaColumn<Boat, String>(new ResourceModel("phone"), "person.phones", row -> Optional.ofNullable(row).map(Boat::getPerson).map(Person::getPhones).map(phones-> Joiner.on(", ").join(phones)).orElse(null)));
         columns.add(new LambdaColumn<Boat, String>(new ResourceModel("legalPerson"), "legalPerson.name", row -> Optional.ofNullable(row).map(Boat::getLegalPerson).map(Object::toString).orElse(null)));
         columns.add(new LambdaColumn<Boat, String>(new ResourceModel("unit"), "unit.name", row -> Optional.ofNullable(row).map(Boat::getUnit).map(Object::toString).orElse(null)));
         columns.add(new PropertyColumn(new ResourceModel("expirationDate"), "expirationDate", "expirationDate"));
