@@ -184,12 +184,11 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         } else {
             button = createSimpleCloneButton(id, model);
         }
-        button.add(new DisabledAttributeBehavior());
-        button.setVisible(false).setEnabled(false);
+
         return button;
     }
 
-    private AbstractLink createAjaxCloneButton(String id, IModel<T> model) {
+    public AbstractLink createAjaxCloneButton(String id, IModel<T> model) {
         return new AjaxLink<T>(id, model) {
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -205,8 +204,8 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         };
     }
 
-    private AbstractLink createSimpleCloneButton(String id, IModel<T> model) {
-        return new Link<T>(id, model) {
+    public AbstractLink createSimpleCloneButton(String id, IModel<T> model) {
+        AbstractLink button = new Link<T>(id, model) {
             @Override
             protected void onConfigure() {
                 super.onConfigure();
@@ -219,6 +218,8 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
                 onClone(Optional.empty(), CrudEditPage.this.getModel());
             }
         };
+        button.setVisible(false).setEnabled(false);
+        return button;
     }
 
 

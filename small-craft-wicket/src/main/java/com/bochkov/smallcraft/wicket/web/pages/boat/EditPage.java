@@ -6,8 +6,10 @@ import com.bochkov.smallcraft.jpa.repository.BoatRepository;
 import com.bochkov.smallcraft.jpa.repository.LegalPersonRepository;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
+import com.bochkov.wicket.data.model.PersistableModel;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
@@ -81,4 +83,26 @@ public class EditPage extends CrudEditPage<Boat, Long> {
         return super.newEntityInstance().setBuildYear(LocalDate.now().getYear());
     }
 
+    @Override
+    public AbstractLink createSimpleCloneButton(String id, IModel<Boat> model) {
+        {
+            AbstractLink link = super.createSimpleCloneButton(id, model);
+            link.setEnabled(true).setVisible(true);
+            return link;
+        }
+    }
+
+    @Override
+    public void onClone(Optional<AjaxRequestTarget> target, IModel<Boat> model) {
+
+        setResponsePage(new EditPage(PersistableModel.of(id -> repository.findById(id), () -> {
+            Boat boat = new Boat();
+            boat.setPerson(model.map(Boat::getPerson).getObject());
+            boat.setRegistrationDate(LocalDate.now());
+            boat.setLegalPerson(model.map(Boat::getLegalPerson).getObject());
+            boat.setPier(model.map(Boat::getPier).getObject());
+            boat.setUnit(model.map(Boat::getUnit).getObject());
+            return boat;
+        })));
+    }
 }

@@ -1,15 +1,21 @@
 package com.bochkov.smallcraft.wicket.web.pages.person;
 
+import com.bochkov.data.jpa.mask.Maskable;
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
-import org.apache.commons.compress.utils.Lists;
+import com.google.common.collect.Lists;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.LambdaColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
@@ -22,15 +28,32 @@ public class TablePage extends CrudTablePage<Person, Long> {
     @Inject
     PersonRepository repository;
 
+    IModel<String> search = Model.of();
+
+    Form form = new Form<Void>("form");
     public TablePage(PageParameters parameters) {
         super(Person.class, parameters);
+    }
+
+    @Override
+    protected void onInitialize() {
+        super.onInitialize();
+        add(form);
+        form.add(new TextField("search-text", search));
+    }
+
+
+    @Override
+    protected Specification<Person> specification() {
+        Specification specification = search.map(str -> Maskable.maskSpecification(str,
+                Lists.newArrayList("lastName", "passport.number", "phones", "email", "address"))).orElse(null).getObject();
+        return specification;
     }
 
     @Override
     public PersonRepository getRepository() {
         return repository;
     }
-
 
     @Override
     protected List<? extends IColumn> columns() {

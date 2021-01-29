@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:extend>
+    <div class="container">
+        <form wicket:id="form">
+            <div class="form-group">
+                <label wicket:for="search-text">
+                    <wicket:message key="search-text"/>
+                </label>
+                <input wicket:id="search-text" type="text" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="fa fa-search"></i>
+                <wicket:message key="search"/>
+            </button>
+        </form>
+    </div>
+
+
+</wicket:extend>
+</body>
+</html>

@@ -15,6 +15,7 @@ import org.apache.wicket.Session;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.repeater.Item;
@@ -174,28 +175,6 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         return Specification.where(super.specification()).and(filterPanel.specification());
     }
 
-    /* @Override
-    protected Specification<Boat> specification() {
-        List<Specification<Boat>> list = Lists.newArrayList();
-        String search = searchInput.getModelObject();
-        if (search != null && !Strings.isNullOrEmpty(search)) {
-            list.add((r, q, b) -> b.like(b.lower(r.get("registrationNumber").as(String.class)), "%" + search.toLowerCase() + "%"));
-            list.add((r, q, b) -> b.like(b.lower(r.get("tailNumber").as(String.class)), "%" + search.toLowerCase() + "%"));
-            list.add((r, q, b) -> b.like(b.lower(r.get("person").get("lastName").as(String.class)), "%" + search.toLowerCase() + "%"));
-            list.add((r, q, b) -> {
-                Join<Boat, LegalPerson> lp = r.join("legalPerson", JoinType.LEFT);
-                return b.like(b.lower(lp.get("name").as(String.class)), "%" + search.toLowerCase() + "%");
-            });
-        }
 
-        Specification<Boat> result = null;
-        for (Specification<Boat> s : list) {
-            if (result == null) {
-                result = s;
-            } else {
-                result = result.or(s);
-            }
-        }
-        return result;
-    }*/
+
 }
