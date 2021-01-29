@@ -35,7 +35,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
     @Inject
     BoatRepository repository;
 
-    BoatFilterPanel filterPanel = new BoatFilterPanel("filter", new CompositeEntityModel(new BoatFilter(), BoatFilter.class));
+    BoatFilterPanel filterPanel = new BoatFilterPanel("filter");
 
     @Inject
     ExitNotificationRepository exitNotificationRepository;

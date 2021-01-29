@@ -189,7 +189,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
         add(email);
         add(address);
 
-        lastName.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
+        /*lastName.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
             @Override
             public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
                 setModelObject(entity);
@@ -239,7 +239,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
             public IModel<Person> newModel(Person entity) {
                 return model(entity);
             }
-        });
+        });*/
 
         //add(new Label("select-label", new ResourceModel("person")));
         FormComponentInputPanel.this.streamChildren().filter(component -> component instanceof FormComponent).forEach(cmp -> cmp.setOutputMarkupId(true));
