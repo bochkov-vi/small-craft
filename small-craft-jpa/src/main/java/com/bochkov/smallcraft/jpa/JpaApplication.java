@@ -1,22 +1,21 @@
 package com.bochkov.smallcraft.jpa;
 
-import com.bochkov.smallcraft.jpa.repository.BoatRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+import java.util.Optional;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "com.bochkov.smallcraft.jpa.repository")
 @SpringBootApplication
-@EnableJpaAuditing
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class JpaApplication implements CommandLineRunner {
-
-    @Autowired
-    BoatRepository dataSource;
 
 
     public static void main(String[] args) {
@@ -26,7 +25,18 @@ public class JpaApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println(dataSource);
 
+
+    }
+
+    @Bean
+    AuditorAware<String> auditorAware() {
+        AuditorAware auditorAware = new AuditorAware() {
+            @Override
+            public Optional getCurrentAuditor() {
+                return Optional.empty();
+            }
+        };
+        return auditorAware;
     }
 }

@@ -19,11 +19,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "exit_notification")
-public class ExitNotification extends AbstractEntity<Long> {
+public class ExitNotification extends AbstractAuditableEntity<Long> {
 
     @Id
     @Column(name = "id_exit_notification")
-    @GeneratedValue(generator = "exit_notification_seq",strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "exit_notification_seq", strategy = GenerationType.IDENTITY)
     Long id;
 
     LocalDateTime exitCallDateTime;
