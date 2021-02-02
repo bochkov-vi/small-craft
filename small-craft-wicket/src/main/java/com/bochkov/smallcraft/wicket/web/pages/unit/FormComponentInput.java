@@ -3,6 +3,7 @@ package com.bochkov.smallcraft.wicket.web.pages.unit;
 import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
+import com.bochkov.smallcraft.wicket.component.InputMaskBehavior;
 import com.bochkov.wicket.data.model.PersistableModel;
 import com.bochkov.wicket.data.model.nonser.CollectionModel;
 import com.google.common.collect.Lists;
@@ -38,6 +39,8 @@ public class FormComponentInput extends FormComponentPanel<Unit> {
 
     FormComponent<String> name = new TextField<>("name", Model.of(), String.class).setRequired(true);
 
+    FormComponent<String> phone = new TextField<>("phone", Model.of(), String.class).setRequired(true);
+
 
     FormComponent<Unit> select = new SessionSelectUnit("select", selectedEntity);
 
@@ -65,7 +68,7 @@ public class FormComponentInput extends FormComponentPanel<Unit> {
             }
         });
         add(name);
-        add(select, id, parents);
+        add(select, id, parents, phone);
         FormComponentErrorBehavior.append(this);
     }
 
@@ -73,7 +76,8 @@ public class FormComponentInput extends FormComponentPanel<Unit> {
     protected void onBeforeRender() {
         Unit unit = getModelObject();
         select.setModelObject(unit);
-
+        phone.add(InputMaskBehavior.phone());
+        phone.setModelObject(unit.getPhone());
         name.setModelObject(getModel().map(Unit::getName).getObject());
         parents.setModelObject(getModel().map(Unit::getParents).getObject());
         super.onBeforeRender();
@@ -85,7 +89,7 @@ public class FormComponentInput extends FormComponentPanel<Unit> {
         if (unit == null) {
             unit = new Unit();
         }
-
+        unit.setPhone(phone.getConvertedInput());
         unit.setName(name.getConvertedInput());
         unit.setParents(Optional.ofNullable(parents.getConvertedInput()).map(Lists::newArrayList).orElse(null));
         setConvertedInput(unit);

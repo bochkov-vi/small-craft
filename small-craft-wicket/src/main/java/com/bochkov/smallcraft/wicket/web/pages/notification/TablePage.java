@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.wicket.web.pages.notification;
 
+import com.bochkov.data.jpa.mask.Maskable;
 import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Notification;
@@ -9,7 +10,7 @@ import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.smallcraft.wicket.web.crud.EntityDataTable;
 import com.bochkov.wicket.data.model.PersistableModel;
-import org.apache.commons.compress.utils.Lists;
+import com.google.common.collect.Lists;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
@@ -17,14 +18,18 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.request.resource.PackageResourceReference;
+import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
@@ -53,6 +58,20 @@ public class TablePage extends CrudTablePage<Notification, Long> {
         return repository;
     }
 
+
+    String quickSearch;
+
+    public Specification specification(){
+        return Maskable.maskSpecification(quickSearch, Lists.newArrayList("number", "captain.lastName", "boat.tailNumber", "captain.phones", "boat.registrationNumber"));
+    }
+
+    @Override
+    protected void onInitialize() {
+        super.onInitialize();
+        Form form = new Form<>("form",new CompoundPropertyModel<>(this));
+        form.add(new TextField<>("quickSearch"));
+        add(form);
+    }
 
     @Override
     protected List<? extends IColumn> columns() {

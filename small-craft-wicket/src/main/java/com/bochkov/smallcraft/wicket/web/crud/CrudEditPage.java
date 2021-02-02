@@ -14,6 +14,7 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.NestedRuntimeException;
@@ -87,17 +88,17 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     public void onSave(Optional<AjaxRequestTarget> target, IModel<T> model) {
         try {
             internalSave(model.getObject());
-            String message = MessageFormat.format(getString("save.success"), model.getObject());
+            String message = new StringResourceModel("save.success", this, model).setParameters(model.getObject()).getObject();
             Session.get().success(message);
             onAfterSave(target, model);
         } catch (NestedRuntimeException ex) {
-            String message = MessageFormat.format(getString("save.error"), model.getObject());
+            String message = new StringResourceModel("save.error", this, model).setParameters(model.getObject()).getObject();
             Session.get().error(message);
             Session.get().fatal(((NestedRuntimeException) ex).getMostSpecificCause());
             log.error(message, ex);
         } catch (CrudIteruptException ex) {
         } catch (Exception ex) {
-            String message = MessageFormat.format(getString("save.error"), model.getObject());
+            String message = new StringResourceModel("save.error", this, model).setParameters(model.getObject()).getObject();
             Session.get().error(message);
             Session.get().fatal(ex);
             log.error(message, ex);

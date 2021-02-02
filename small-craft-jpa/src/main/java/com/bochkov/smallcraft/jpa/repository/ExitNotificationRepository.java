@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-public interface ExitNotificationRepository extends JpaRepository<ExitNotification, Long>, JpaSpecificationExecutor<ExitNotification>, ExitNotificationSafeSaveRepository {
+public interface ExitNotificationRepository extends JpaRepository<ExitNotification, Long>, JpaSpecificationExecutor<ExitNotification>, ExitNotificationSafeSaveRepository, BaseConverter {
 
     default ExitNotification safeSave(ExitNotification entity) {
         return save(prepareSave(entity));

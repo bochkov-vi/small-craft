@@ -34,6 +34,7 @@ public class TablePage extends CrudTablePage<Unit, Long> {
         List<IColumn> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("id"), "id", "id"));
         columns.add(new PropertyColumn(new ResourceModel("name"), "name", "name"));
+        columns.add(new PropertyColumn(new ResourceModel("phone"), "phone", "phone"));
         columns.add(new PropertyColumn(new ResourceModel("parents"), "parents"));
         columns.add(new PropertyColumn(new ResourceModel("childs"), "childs"));
         columns.add(createEditColumn());

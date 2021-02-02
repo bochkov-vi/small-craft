@@ -20,6 +20,7 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.data.domain.Persistable;
@@ -85,15 +86,15 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
                 try {
                     getRepository().delete(model.getObject());
                     deletePanel.hide(target);
-                    info(MessageFormat.format(getString("delete.success"), entity));
+                    info(new StringResourceModel("delete.success", this,model).setParameters(model.getObject()).getObject());
                     onAfterDelete(target);
                 } catch (Exception e) {
-                    String message = MessageFormat.format(getString("delete.error"), entity);
+                    String message = new StringResourceModel("delete.error", this,model).setParameters(model.getObject()).getObject();
                     error(((NestedRuntimeException) e).getMostSpecificCause());
                     log.error(message, e);
                 }
             } else {
-                error(getString(MessageFormat.format("delete.empty.error", entity)));
+                error(new StringResourceModel("delete.empty.error",this, model).setParameters(model.getObject()).getObject());
             }
         }
     }

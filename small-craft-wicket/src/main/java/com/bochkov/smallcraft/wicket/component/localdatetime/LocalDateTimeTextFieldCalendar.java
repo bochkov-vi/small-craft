@@ -1,4 +1,4 @@
-package com.bochkov.smallcraft.wicket.component;
+package com.bochkov.smallcraft.wicket.component.localdatetime;
 
 import com.bochkov.bootstrap.tempusdominus.TempusdominusBehavior;
 import org.apache.wicket.extensions.markup.html.form.datetime.LocalDateTimeTextField;

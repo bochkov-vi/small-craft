@@ -2,7 +2,7 @@ package com.bochkov.smallcraft.wicket.web.pages.exitnotification;
 
 import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
-import com.bochkov.smallcraft.wicket.component.LocalDateTimeTextFieldCalendar;
+import com.bochkov.smallcraft.wicket.component.localdatetime.LocalDateTimeTextFieldCalendar;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.pages.boat.SelectPier;
 import com.bochkov.smallcraft.wicket.web.pages.notification.SelectActivity;
@@ -121,7 +121,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
 
         e.setExitCallDateTime(exitCallDateTime.getConvertedInput());
         e.setExitDateTime(exitDateTime.getConvertedInput());
-//        e.setNotification(notification.getConvertedInput());
+        e.setNotification(notification.getConvertedInput());
         e.setUnit(unit.getConvertedInput());
         e.setPier(pier.getConvertedInput());
         e.setRegions(Optional.ofNullable(regions.getConvertedInput()).map(Sets::newHashSet).orElse(null));

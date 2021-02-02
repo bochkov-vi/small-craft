@@ -73,6 +73,7 @@ public class ExitNotification extends AbstractEntity<Long> {
 
     public ExitNotification putData(Notification notification) {
         Optional<Notification> o = Optional.of(notification);
+        setNotification(o.orElse(null));
         setRegions(o.map(Notification::getRegions).map(Sets::newHashSet).orElse(null));
         setActivities(o.map(Notification::getActivities).map(Sets::newHashSet).orElse(null));
         setBoat(o.map(Notification::getBoat).orElse(null));

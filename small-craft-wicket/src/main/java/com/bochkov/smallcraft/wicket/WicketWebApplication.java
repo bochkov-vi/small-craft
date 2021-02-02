@@ -3,7 +3,7 @@ package com.bochkov.smallcraft.wicket;
 import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
-import com.bochkov.smallcraft.wicket.security.WicketSecuredWebSession;
+import com.bochkov.smallcraft.wicket.security.SmallCraftWebSession;
 import com.bochkov.smallcraft.wicket.web.pages.boat.BoatFilterPanel;
 import com.giffing.wicket.spring.boot.starter.app.WicketBootSecuredWebApplication;
 import com.google.common.base.Strings;
@@ -173,7 +173,7 @@ public class WicketWebApplication extends WicketBootSecuredWebApplication {
 
     @Override
     public Session newSession(Request request, Response response) {
-        WicketSecuredWebSession session = (WicketSecuredWebSession) super.newSession(request, response);
+        SmallCraftWebSession session = (SmallCraftWebSession) super.newSession(request, response);
         session.updateSignIn();
         return session;
 

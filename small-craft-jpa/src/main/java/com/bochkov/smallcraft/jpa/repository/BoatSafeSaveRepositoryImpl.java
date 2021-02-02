@@ -50,7 +50,7 @@ class BoatSafeSaveRepositoryImpl implements BoatSafeSaveRepository {
 
 
         if (!entity.isNotRegistable()) {
-            if (entity.getRegistrationNumber() == null || entity.getRegistrationNumber() <= 0) {
+            if (entity.getRegistrationNumber() == null || entity.getRegistrationNumber() < 0) {
                 entity.setRegistrationNumber(boatNumberSeqRepository.nextValue());
             }
             if (entity.getRegistrationDate() == null) {
@@ -66,6 +66,12 @@ class BoatSafeSaveRepositoryImpl implements BoatSafeSaveRepository {
 
     @PostConstruct
     public void postConstruct() {
+        setSequenceValueToMaxOfBoatRegistrationNumber();
+    }
+
+    @Transactional
+    @Override
+    public void setSequenceValueToMaxOfBoatRegistrationNumber() {
         boatNumberSeqRepository.setValue(Math.max(boatNumberSeqRepository.getMaxBoatRegistrationNumber().orElse(1), boatNumberSeqRepository.findTop().getNumber()));
     }
 

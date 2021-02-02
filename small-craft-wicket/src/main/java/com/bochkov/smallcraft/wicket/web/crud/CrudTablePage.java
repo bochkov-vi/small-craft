@@ -83,7 +83,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
 
     private ISortableDataProvider<T, ?> provider() {
-        return PersistableDataProvider.of(this::getRepository, this::specification);
+        return PersistableDataProvider.of(this::getRepository, this::specification,this::sort);
     }
 
 

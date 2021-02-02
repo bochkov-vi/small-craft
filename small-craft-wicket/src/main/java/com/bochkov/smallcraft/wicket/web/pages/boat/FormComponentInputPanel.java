@@ -6,7 +6,6 @@ import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
-import com.bochkov.smallcraft.wicket.component.Html5AttributesBehavior;
 import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.pages.legalPerson.FormComponentInput;

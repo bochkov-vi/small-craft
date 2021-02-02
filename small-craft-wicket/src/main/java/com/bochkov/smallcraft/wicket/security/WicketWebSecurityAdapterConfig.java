@@ -124,7 +124,7 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
 
             @Override
             public Class<? extends AbstractAuthenticatedWebSession> getAuthenticatedWebSessionClass() {
-                return WicketSecuredWebSession.class;
+                return SmallCraftWebSession.class;
             }
         };
     }

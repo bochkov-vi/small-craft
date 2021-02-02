@@ -7,24 +7,39 @@ import org.apache.wicket.Session;
 import org.apache.wicket.request.Request;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.RememberMeServices;
 
 import javax.inject.Inject;
+import java.time.ZoneId;
 import java.util.Objects;
+import java.util.TimeZone;
 
-public class WicketSecuredWebSession extends SecureWebSession {
+public class SmallCraftWebSession extends SecureWebSession {
 
     @Inject
     AccountRepository accountRepository;
 
 
-
-    public WicketSecuredWebSession(Request request) {
+    public SmallCraftWebSession(Request request) {
         super(request);
     }
 
-    public static WicketSecuredWebSession get() {
-        return (WicketSecuredWebSession) Session.get();
+    public static SmallCraftWebSession get() {
+        return (SmallCraftWebSession) Session.get();
+    }
+
+    public ZoneId getZoneId() {
+        return getTimezone().toZoneId();
+    }
+
+    public TimeZone getTimezone() {
+        TimeZone timezone = null;
+        if (timezone == null) {
+            timezone = getClientInfo().getProperties().getTimeZone();
+        }
+        if (timezone == null) {
+            timezone = TimeZone.getDefault();
+        }
+        return timezone;
     }
 
     public void updateSignIn() {

@@ -1,6 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 <wicket:extend>
+    <div class="container">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-light">
+                <wicket:message key="filter"/>
+            </div>
+            <div class="card-body">
+                <form wicket:id="form">
+                    <div class="form-row ">
+                        <div class="form-group col-4">
+                            <label wicket:for="quickSearch">
+                                <wicket:message key="quickSearch"/>
+                            </label>
+                            <div class="input-group">
+                                <input type="text" wicket:id="quickSearch" class="form-control">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <span class="fa fa-search"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <wicket:fragment wicket:id="exit-link">
         <span wicket:id="link" class="btn btn-outline-success" wicket:message="title:exit">
             <i class="fa fa-sign-out"></i>

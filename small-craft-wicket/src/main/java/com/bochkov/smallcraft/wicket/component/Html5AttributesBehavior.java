@@ -16,6 +16,7 @@ import org.apache.wicket.validation.IValidator;
 import org.apache.wicket.validation.ValidatorAdapter;
 import org.apache.wicket.validation.validator.PatternValidator;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class Html5AttributesBehavior extends HTML5Attributes {
@@ -49,20 +50,20 @@ public class Html5AttributesBehavior extends HTML5Attributes {
         }
     }
 
-
     protected void onInput(AbstractTextComponent<?> input, ComponentTag tag) {
         if (input.isRequired()) {
             tag.put("required", "required");
         }
         if (Strings.isNullOrEmpty(tag.getAttribute("placeholder"))) {
-            IModel<String> label = input.getLabel();
-            if (label != null && label.getObject() != null) {
-                tag.put("placeholder", label.getObject());
+            String label = Optional.ofNullable(input.getLabel()).map(IModel::getObject).orElse(null);
+            if (!Strings.isNullOrEmpty(label)) {
+                tag.put("placeholder", label);
             }
-
-            String labelValue = input.getDefaultLabel();
-            if (!Strings.isNullOrEmpty(labelValue)) {
-                tag.put("placeholder", labelValue);
+            if (Strings.isNullOrEmpty(label)) {
+                label = input.getDefaultLabel();
+                if (!Strings.isNullOrEmpty(label)) {
+                    tag.put("placeholder", label);
+                }
             }
         }
         for (IValidator<?> validator : input.getValidators()) {
