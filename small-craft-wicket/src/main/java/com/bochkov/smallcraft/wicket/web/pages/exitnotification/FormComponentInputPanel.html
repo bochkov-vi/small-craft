@@ -62,9 +62,14 @@
             <label wicket:for="notification">
                 <wicket:message key="notification"/>
             </label>
-
-            <select wicket:id="notification" class="form-control"></select>
-
+            <div class="input-group">
+                <select wicket:id="notification" class="form-control"></select>
+                <div wicket:id="edit-notification" class="input-group-append" wicket:message="title:edit-label">
+                    <div class="btn btn-outline-secondary">
+                        <span class="fa fa-pencil"></span>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="form-group col-md-4">
             <label wicket:for="unit">

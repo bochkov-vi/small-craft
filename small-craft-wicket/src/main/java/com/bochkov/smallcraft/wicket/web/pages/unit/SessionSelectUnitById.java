@@ -1,6 +1,5 @@
 package com.bochkov.smallcraft.wicket.web.pages.unit;
 
-import com.bochkov.smallcraft.jpa.entity.Unit;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.markup.html.form.FormComponent;
@@ -8,15 +7,13 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.visit.IVisit;
 import org.apache.wicket.util.visit.IVisitor;
 
-import java.util.Optional;
+public class SessionSelectUnitById extends SelectUnitById implements ISessionUnitSelector {
 
-public class SessionSelectUnit extends SelectUnit implements ISessionUnitSelector {
-
-    public SessionSelectUnit(String id) {
+    public SessionSelectUnitById(String id) {
         super(id);
     }
 
-    public SessionSelectUnit(String id, IModel<Unit> model) {
+    public SessionSelectUnitById(String id, IModel<Long> model) {
         super(id, model);
     }
 
@@ -29,7 +26,7 @@ public class SessionSelectUnit extends SelectUnit implements ISessionUnitSelecto
                 getForm().visitFormComponents(new IVisitor<FormComponent<?>, Object>() {
                     @Override
                     public void component(FormComponent<?> cmp, IVisit<Object> visit) {
-                        if (cmp instanceof ISessionUnitSelector) {
+                        if (cmp instanceof SessionSelectUnitById) {
                             if (cmp.getOutputMarkupId()) {
                                 target.add(cmp);
                             }
@@ -41,24 +38,29 @@ public class SessionSelectUnit extends SelectUnit implements ISessionUnitSelecto
         super.onInitialize();
     }
 
+
     @Override
     protected void onModelChanged() {
-        setAllFormModels(getModel().map(Unit::getId).getObject(), getForm());
+        Long unit = getModelObject();
+        setAllFormModels(getModelObject());
     }
 
+    public void setAllFormModels(Long unit) {
+        setAllFormModels(unit, getForm());
+    }
 
     @Override
     protected void onBeforeRender() {
         super.onBeforeRender();
         if (getModel() != null) {
             if (!getModel().isPresent().getObject()) {
-                getIdUnitFromSession().flatMap(id -> repository.findById(id)).ifPresent(this::setModelObject);
+                getIdUnitFromSession().flatMap(id -> repository.findById(id)).ifPresent(u -> setModelObject(u.getId()));
             }
         }
     }
 
     @Override
     public void setIdUnitToModel(Long idUnit) {
-        setModelObject(Optional.ofNullable(idUnit).flatMap(id->repository.findById(id)).orElse(null));
+        setModelObject(idUnit);
     }
 }

@@ -35,9 +35,6 @@
                     <resource>
                         <directory>src/main/dev-resources</directory>
                     </resource>
-                    <resource>
-                        <directory>src/main/resources</directory>
-                    </resource>
                 </resources>
             </build>
         </profile>
@@ -80,6 +77,16 @@
     </profiles>
     <dependencies>
         <dependency>
+            <groupId>org.wicketstuff</groupId>
+            <artifactId>wicketstuff-restannotations</artifactId>
+            <version>${wicket.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wicketstuff</groupId>
+            <artifactId>wicketstuff-restannotations-json</artifactId>
+            <version>${wicket.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
@@ -106,6 +113,10 @@
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>jackson-datatype-jdk8</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

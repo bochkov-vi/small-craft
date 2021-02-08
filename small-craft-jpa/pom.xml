@@ -10,7 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
     <version>0.0.1-SNAPSHOT</version>
     <artifactId>small-craft-jpa</artifactId>
-<properties><spring-boot.repackage.skip>true</spring-boot.repackage.skip></properties>
+    <properties>
+        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+    </properties>
     <profiles>
         <profile>
             <id>locahostdb</id>
@@ -39,7 +41,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

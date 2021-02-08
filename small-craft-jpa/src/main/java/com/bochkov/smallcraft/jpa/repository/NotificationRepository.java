@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long>, JpaSpecificationExecutor<Notification>, NotificationSafeSaveRepository {
 
@@ -22,6 +23,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     default Page<String> findRegionByMask(@Param("mask") String mask, Pageable pg) {
         return findRegionByMask(Optional.ofNullable(mask).map(expr -> String.format("%%%s%%", expr)).orElse("%"), Optional.ofNullable(mask).orElse(""), pg);
     }
+
     @Query(nativeQuery = true, value = "SELECT distinct activity FROM (SELECT activity FROM(SELECT n.activity FROM notification_activity n WHERE n.activity ILIKE :mask) as t ORDER BY position(:sort in activity), length(activity), activity) as t",
             countQuery = "SELECT count(distinct activity) FROM notification_activity n WHERE activity ILIKE :mask AND :sort IS NOT NULL\n")
     Page<String> findActivityByMask(@Param("mask") String mask, @Param("sort") String sort, Pageable pg);
@@ -49,5 +51,19 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     default List<Notification> findByBoatAndDatePeriod(Boat boat, LocalDate date) {
         return findByBoatAndDatePeriod(boat, date, date);
+    }
+
+    default List<Notification> findByNumber(Integer number) {
+        return findByNumberAndDate(number, LocalDate.now(TimeZone.getTimeZone("Asia/Kamchatka").toZoneId()));
+    }
+
+    default List<Notification> findByNumberAndDate(Integer number, LocalDate date) {
+        return findByNumberAndPeriod(number, date, date);
+    }
+
+    List<Notification> findByNumberAndDateToGreaterThanEqualAndDateFromLessThanEqual(Integer number, LocalDate dateFrom, LocalDate dateTo);
+
+    default List<Notification> findByNumberAndPeriod(Integer number, LocalDate dateFrom, LocalDate dateTo) {
+        return findByNumberAndDateToGreaterThanEqualAndDateFromLessThanEqual(number, dateFrom, dateTo);
     }
 }

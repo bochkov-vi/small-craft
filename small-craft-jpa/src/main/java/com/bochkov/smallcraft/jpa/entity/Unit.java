@@ -1,6 +1,9 @@
 package com.bochkov.smallcraft.jpa.entity;
 
 import com.bochkov.hierarchical.IHierarchical;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +19,15 @@ import java.util.List;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"createDate",
+        "allChildsAndThis",
+        "allChilds",
+        "canHaveChilds",
+        "new",
+        "allParentsAndThis",
+        "firstParent",
+        "allParents",
+        "canHaveParents"})
 public class Unit extends AbstractEntity<Long> implements IHierarchical<Long, Unit> {
 
     @Id
@@ -28,11 +40,13 @@ public class Unit extends AbstractEntity<Long> implements IHierarchical<Long, Un
 
     String phone;
 
+    @JsonBackReference
     @ManyToMany
     @JoinTable(name = "unit_p", joinColumns = @JoinColumn(name = "id_unit", referencedColumnName = "id_unit"),
             inverseJoinColumns = @JoinColumn(name = "id_unit_parent", referencedColumnName = "id_unit"))
     List<Unit> parents;
 
+    @JsonManagedReference
     @ManyToMany(mappedBy = "parents", cascade = CascadeType.ALL)
     List<Unit> childs;
 

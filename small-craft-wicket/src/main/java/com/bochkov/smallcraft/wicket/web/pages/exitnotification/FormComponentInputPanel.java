@@ -4,7 +4,9 @@ import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.localdatetime.LocalDateTimeTextFieldCalendar;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
+import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.pages.boat.SelectPier;
+import com.bochkov.smallcraft.wicket.web.pages.notification.EditPage;
 import com.bochkov.smallcraft.wicket.web.pages.notification.SelectActivity;
 import com.bochkov.smallcraft.wicket.web.pages.notification.SelectNotification;
 import com.bochkov.smallcraft.wicket.web.pages.notification.SelectRegion;
@@ -13,6 +15,7 @@ import com.bochkov.wicket.data.model.PersistableModel;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import lombok.experimental.Accessors;
+import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -20,10 +23,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.HiddenField;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.IModelComparator;
-import org.apache.wicket.model.Model;
-import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.model.*;
 import org.apache.wicket.model.util.CollectionModel;
 
 import javax.inject.Inject;
@@ -191,6 +191,16 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
 
 
         captainConteiner.add(captain);
+        add(new AjaxLink<Notification>("edit-notification", LambdaModel.of(getModel(), ExitNotification::getNotification, ExitNotification::setNotification)) {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                Page backPg = getPage();
+
+                CrudEditPage notificationPage = new EditPage(getModel()) ;
+                notificationPage.setBackPage(backPg);
+                setResponsePage(notificationPage);
+            }
+        });
     }
 
     @Override

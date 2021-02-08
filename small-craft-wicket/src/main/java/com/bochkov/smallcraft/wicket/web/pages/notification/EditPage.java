@@ -84,7 +84,7 @@ public class EditPage extends CrudEditPage<Notification, Long> {
 
     @Override
     public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<Notification> model) {
-
+        super.onAfterSave(target, model);
     }
 
     @Override

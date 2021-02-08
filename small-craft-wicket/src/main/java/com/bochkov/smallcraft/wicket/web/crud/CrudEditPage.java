@@ -88,17 +88,17 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     public void onSave(Optional<AjaxRequestTarget> target, IModel<T> model) {
         try {
             internalSave(model.getObject());
-            String message = new StringResourceModel("save.success", this, model).setParameters(model.getObject()).getObject();
+            String message = new StringResourceModel("save.success", form, model).setParameters(model.getObject()).getObject();
             Session.get().success(message);
             onAfterSave(target, model);
         } catch (NestedRuntimeException ex) {
-            String message = new StringResourceModel("save.error", this, model).setParameters(model.getObject()).getObject();
+            String message = new StringResourceModel("save.error", form, model).setParameters(model.getObject()).getObject();
             Session.get().error(message);
             Session.get().fatal(((NestedRuntimeException) ex).getMostSpecificCause());
             log.error(message, ex);
         } catch (CrudIteruptException ex) {
         } catch (Exception ex) {
-            String message = new StringResourceModel("save.error", this, model).setParameters(model.getObject()).getObject();
+            String message = new StringResourceModel("save.error", form, model).setParameters(model.getObject()).getObject();
             Session.get().error(message);
             Session.get().fatal(ex);
             log.error(message, ex);

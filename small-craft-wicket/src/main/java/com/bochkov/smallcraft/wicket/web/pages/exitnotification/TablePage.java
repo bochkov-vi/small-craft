@@ -4,11 +4,14 @@ import com.bochkov.data.jpa.mask.Maskable;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
+import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.localdate.LocalDateTextFieldCalendar;
 import com.bochkov.smallcraft.wicket.component.localdatetime.LocalDateTimeTextFieldCalendar;
 import com.bochkov.smallcraft.wicket.security.SmallCraftWebSession;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
+import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnit;
+import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnitById;
 import com.google.common.collect.Lists;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
@@ -36,6 +39,9 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     @Inject
     ExitNotificationRepository repository;
 
+    @Inject
+    UnitRepository unitRepository;
+
     Form form = new Form<Void>("form");
 
 
@@ -48,6 +54,8 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     LocalDate currentDate;
 
     String quickSearch;
+
+    Long unit;
 
     public TablePage(PageParameters parameters) {
         super(ExitNotification.class, parameters);
@@ -71,6 +79,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
         form.add(new LocalDateTimeTextFieldCalendar("dateTo", getString("dateTimeFormat")));
         form.add(new LocalDateTextFieldCalendar("currentDate", getString("dateFormat")).setVisible(false));
         form.add(new TextField<>("quickSearch"));
+        form.add(new SessionSelectUnitById("unit"));
         FormComponent<Boolean> onExitFormComponent = new CheckBox("onExitOnly");
         onExitFormComponent.add(new AjaxFormComponentUpdatingBehavior("change") {
             @Override
@@ -96,7 +105,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     protected List<? extends IColumn> columns() {
         List<IColumn> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("notification.number"), "notification.number", "notification.number"));
-        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("id"), "id", en->repository.convert(en.getId())));
+        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("id"), "id", en -> repository.convert(en.getId())));
         columns.add(new PropertyColumn(new ResourceModel("captain"), "captain", "captain.fio"));
         columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("phones"), row -> Optional.ofNullable(row.getCaptain()).map(Person::getPhones).map(list -> list.stream().collect(Collectors.joining("; "))).orElse(null)));
         columns.add(new PropertyColumn(new ResourceModel("type"), "type", "boat.type"));
@@ -141,6 +150,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
                 Lists.newArrayList("notification.number", "captain.lastName", "boat.tailNumber", "captain.phones", "boat.registrationNumber")
         )).orElse(null));
         where = where.and(Optional.ofNullable(dateTo).map(dt -> (Specification<ExitNotification>) (r, q, b) -> b.lessThanOrEqualTo(r.get("exitDateTime"), dt)).orElse(null));
+        where = where.and(Optional.ofNullable(unit).map(u -> (Specification<ExitNotification>) (r, q, b) -> r.get("unit").get("id").in(u)).orElse(null));
         return where;
     }
 
