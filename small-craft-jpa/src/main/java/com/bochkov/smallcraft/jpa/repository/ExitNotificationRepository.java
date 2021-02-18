@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface ExitNotificationRepository extends JpaRepository<ExitNotification, Long>, JpaSpecificationExecutor<ExitNotification>, ExitNotificationSafeSaveRepository, BaseConverter {
@@ -59,7 +60,7 @@ public interface ExitNotificationRepository extends JpaRepository<ExitNotificati
             exitNotification.setBoat(notification.getBoat());
             exitNotification.setCaptain(notification.getCaptain());
             exitNotification.setRegions(notification.getRegions());
-            exitNotification.setPier(notification.getBoat().getPier());
+            exitNotification.setPier(notification.getPier());
             exitNotification.setUnit(notification.getBoat().getUnit());
             exitNotification.setExitCallDateTime(callExitDate);
             exitNotification.setExitDateTime(callExitDate.plusHours(2));
@@ -78,4 +79,7 @@ public interface ExitNotificationRepository extends JpaRepository<ExitNotificati
         exitNotification = Optional.ofNullable(exitNotification.map(this::safeSave).orElse(null));
         return exitNotification;
     }
+
+    @Query("SELECT o FROM ExitNotification  o WHERE o.notification.number=:number AND (o.exitDateTime<=:date AND (o.returnDateTime>=:date OR o.returnDateTime IS NULL))")
+    List<ExitNotification> findByNotificationNumber(@Param("number") Integer notificationNumber, @Param("date") LocalDateTime date);
 }

@@ -45,7 +45,7 @@ public class SmallCraftWebSession extends SecureWebSession {
     public void updateSignIn() {
         if (!isSessionInvalidated()) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            signIn(auth != null && auth.isAuthenticated() && auth.getAuthorities().stream().anyMatch(role -> !Objects.equals(role.getAuthority(), "ROLE_ANONYMOUS")));
+            signIn(auth != null && auth.isAuthenticated());
         }
     }
 

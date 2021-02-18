@@ -31,6 +31,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.CollectionModel;
+import org.apache.wicket.model.util.SetModel;
 import org.apache.wicket.util.visit.IVisit;
 import org.apache.wicket.util.visit.IVisitor;
 
@@ -51,7 +52,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
     @Setter
     boolean canSelect = false;
 
-    PhonesInput phones = (PhonesInput) new PhonesInput("phone", new CollectionModel<>()).setRequired(true);
+    PhonesInput phones = (PhonesInput) new PhonesInput("phone", new SetModel<>()).setRequired(true);
 
     FormComponent<String> email = new TextField<String>("email", Model.of(), String.class) {
         @Override

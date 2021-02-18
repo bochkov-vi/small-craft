@@ -19,6 +19,7 @@ public class SessionSelectUnitById extends SelectUnitById implements ISessionUni
 
     @Override
     protected void onInitialize() {
+        super.onInitialize();
         setOutputMarkupId(true);
         add(new AjaxFormComponentUpdatingBehavior("change") {
             @Override
@@ -35,9 +36,12 @@ public class SessionSelectUnitById extends SelectUnitById implements ISessionUni
                 });
             }
         });
-        super.onInitialize();
+        if (getModel() != null) {
+            if (!getModel().isPresent().getObject()) {
+                getIdUnitFromSession().flatMap(id -> repository.findById(id)).ifPresent(u -> setModelObject(u.getId()));
+            }
+        }
     }
-
 
     @Override
     protected void onModelChanged() {
@@ -52,15 +56,13 @@ public class SessionSelectUnitById extends SelectUnitById implements ISessionUni
     @Override
     protected void onBeforeRender() {
         super.onBeforeRender();
-        if (getModel() != null) {
-            if (!getModel().isPresent().getObject()) {
-                getIdUnitFromSession().flatMap(id -> repository.findById(id)).ifPresent(u -> setModelObject(u.getId()));
-            }
-        }
+
     }
 
     @Override
     public void setIdUnitToModel(Long idUnit) {
         setModelObject(idUnit);
     }
+
+
 }

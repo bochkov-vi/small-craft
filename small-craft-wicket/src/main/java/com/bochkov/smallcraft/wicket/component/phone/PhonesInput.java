@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
 import lombok.Getter;
+import org.apache.commons.compress.utils.Sets;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
@@ -28,7 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PhonesInput extends CompositeInputPanel<Collection<String>> {
+public class PhonesInput extends CompositeInputPanel<Set<String>> {
 
     @Getter
     FormComponent<String> phoneInput = new TextField<String>("phone", Model.of(), String.class);
@@ -41,7 +42,7 @@ public class PhonesInput extends CompositeInputPanel<Collection<String>> {
         super(id);
     }
 
-    public PhonesInput(String id, IModel<Collection<String>> model) {
+    public PhonesInput(String id, IModel<Set<String>> model) {
         super(id, model);
     }
 
@@ -96,8 +97,8 @@ public class PhonesInput extends CompositeInputPanel<Collection<String>> {
 
     @Override
     protected void initBeforeRenderer() {
-        String phone = getModel().orElseGet(ImmutableList::of).getObject().stream().filter(Objects::nonNull).findFirst().orElse(null);
-        List<String> phones = getModel().orElseGet(ImmutableList::of).getObject().stream().filter(Objects::nonNull).skip(1).collect(Collectors.toList());
+        String phone = getModel().orElseGet(Sets::newHashSet).getObject().stream().filter(Objects::nonNull).findFirst().orElse(null);
+        List<String> phones = getModel().orElseGet(Sets::newHashSet).getObject().stream().filter(Objects::nonNull).skip(1).collect(Collectors.toList());
         phoneInput.setModelObject(phone);
         additionalPhones.setObject(phones);
     }

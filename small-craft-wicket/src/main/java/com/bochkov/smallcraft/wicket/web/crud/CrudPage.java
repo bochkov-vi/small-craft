@@ -22,17 +22,19 @@ import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.danekja.java.util.function.serializable.SerializableConsumer;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.repository.CrudRepository;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 @Accessors(chain = true)
 public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Serializable> extends BasePage<T> {
+
 
     @Getter
     @Setter
@@ -56,12 +58,22 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
 
     protected Class<ENTITY> entityClass;
 
+    @Getter
+    @Setter
+    Consumer<Optional<AjaxRequestTarget>> onBack = new SerializableConsumer<Optional<AjaxRequestTarget>>() {
+        @Override
+        public void accept(Optional<AjaxRequestTarget> ajaxRequestTarget) {
+            if (backPage != null) {
+                setResponsePage(backPage);
+            }
+        }
+    };
+
     public CrudPage(Class<ENTITY> entityClass) {
         super();
         this.entityClass = entityClass;
         log = org.slf4j.LoggerFactory.getLogger(this.getClass());
     }
-
 
     public CrudPage(Class<ENTITY> entityClass, IModel<T> model) {
         super(model);
@@ -86,15 +98,15 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
                 try {
                     getRepository().delete(model.getObject());
                     deletePanel.hide(target);
-                    info(new StringResourceModel("delete.success", this,model).setParameters(model.getObject()).getObject());
+                    info(new StringResourceModel("delete.success", this, model).setParameters(model.getObject()).getObject());
                     onAfterDelete(target);
                 } catch (Exception e) {
-                    String message = new StringResourceModel("delete.error", this,model).setParameters(model.getObject()).getObject();
+                    String message = new StringResourceModel("delete.error", this, model).setParameters(model.getObject()).getObject();
                     error(((NestedRuntimeException) e).getMostSpecificCause());
                     log.error(message, e);
                 }
             } else {
-                error(new StringResourceModel("delete.empty.error",this, model).setParameters(model.getObject()).getObject());
+                error(new StringResourceModel("delete.empty.error", this, model).setParameters(model.getObject()).getObject());
             }
         }
     }
@@ -166,9 +178,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
     }
 
     public void onBack(Optional<AjaxRequestTarget> target) {
-        if (backPage != null) {
-            setResponsePage(backPage);
-        }
+        this.onBack.accept(target);
     }
 
     public void onRequestDelete(AjaxRequestTarget target, IModel<ENTITY> model) {
@@ -225,5 +235,15 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
     @Override
     public IModelComparator getModelComparator() {
         return IModelComparator.ALWAYS_FALSE;
+    }
+
+
+    @Override
+    protected void onConfigure() {
+        super.onConfigure();
+    }
+
+    public void addOnBack(Consumer<Optional<AjaxRequestTarget>> consumer) {
+        this.onBack = onBack.andThen(consumer);
     }
 }

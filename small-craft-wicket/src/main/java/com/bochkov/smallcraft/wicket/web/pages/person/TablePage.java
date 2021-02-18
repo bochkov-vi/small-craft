@@ -31,6 +31,7 @@ public class TablePage extends CrudTablePage<Person, Long> {
     IModel<String> search = Model.of();
 
     Form form = new Form<Void>("form");
+
     public TablePage(PageParameters parameters) {
         super(Person.class, parameters);
     }
@@ -56,8 +57,8 @@ public class TablePage extends CrudTablePage<Person, Long> {
     }
 
     @Override
-    protected List<? extends IColumn> columns() {
-        List<IColumn> columns = Lists.newArrayList();
+    protected List<? extends IColumn<Person, String>> columns() {
+        List<IColumn<Person,String>> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("id"), "id", "id"));
 
         columns.add(new LambdaColumn<Person, String>(new ResourceModel("lastName"), "lastName", Person::toString));

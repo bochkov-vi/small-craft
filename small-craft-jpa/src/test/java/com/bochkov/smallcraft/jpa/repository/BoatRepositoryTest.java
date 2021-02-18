@@ -24,10 +24,9 @@ public class BoatRepositoryTest extends PersonRepositoryTest {
     UnitRepository unitRepository;
 
 
-
     public static Boat newBoat() {
         Boat boat = new Boat();
-        boat.setPerson(newPerson()).setPier("test").setModel("test model").setType("МЛ").setRegistrationDate(LocalDate.now().with(TemporalAdjusters.firstDayOfYear()))
+        boat.setPerson(newPerson()).setModel("test model").setType("МЛ").setRegistrationDate(LocalDate.now().with(TemporalAdjusters.firstDayOfYear()))
                 .setTailNumber("-----").setUnit(new Unit().setName("test unit"));
         return boat;
     }

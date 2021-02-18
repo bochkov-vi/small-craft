@@ -2,8 +2,10 @@ package com.bochkov.smallcraft.jpa.entity;
 
 import com.bochkov.hierarchical.IHierarchical;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,13 +42,13 @@ public class Unit extends AbstractEntity<Long> implements IHierarchical<Long, Un
 
     String phone;
 
-    @JsonBackReference
+    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "unit_p", joinColumns = @JoinColumn(name = "id_unit", referencedColumnName = "id_unit"),
             inverseJoinColumns = @JoinColumn(name = "id_unit_parent", referencedColumnName = "id_unit"))
     List<Unit> parents;
 
-    @JsonManagedReference
+    @JsonIgnore
     @ManyToMany(mappedBy = "parents", cascade = CascadeType.ALL)
     List<Unit> childs;
 

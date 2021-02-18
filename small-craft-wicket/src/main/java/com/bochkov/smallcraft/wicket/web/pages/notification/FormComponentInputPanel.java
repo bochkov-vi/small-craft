@@ -4,26 +4,36 @@ import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
+import com.bochkov.smallcraft.wicket.web.pages.boat.SelectPier;
 import com.bochkov.smallcraft.wicket.web.pages.legalPerson.FormComponentInput;
 import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
 import com.bochkov.wicket.data.model.PersistableModel;
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.*;
+import org.apache.wicket.markup.html.form.CheckBox;
+import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.HiddenField;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.model.util.CollectionModel;
+import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.IValidator;
+import org.apache.wicket.validation.ValidationError;
+import org.apache.wicket.validation.validator.PatternValidator;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
@@ -54,7 +64,9 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     FormComponent<Person> captain = new CaptainPanel("captain", PersistableModel.of(id -> personRepository.findById(id))).setCanSelect(true);
 
-    FormComponent<Boat> boat = new com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel("boat", PersistableModel.of(id -> boatRepository.findById(id))) {
+    FormComponent<String> pier = new SelectPier("pier", Model.of());
+
+    com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel boat = new com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel("boat", PersistableModel.of(id -> boatRepository.findById(id))) {
         @Override
         public void onUpdate(AjaxRequestTarget target) {
             Boat b = getModelObject();
@@ -82,6 +94,8 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     FormComponent<Boolean> tck = new CheckBox("tck", Model.of());
 
+    FormComponent<Boolean> voiceCall = new CheckBox("voiceCall", Model.of());
+
     IModel<Boolean> captainEqOwner = Model.of(true);
 
     public FormComponentInputPanel(String id) {
@@ -99,10 +113,48 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
-        FormComponentErrorBehavior.append(this);
+        /*voiceCall.add(new IValidator<Boolean>() {
+            @Override
+            public void validate(IValidatable<Boolean> validatable) {
+                if (validatable.getModel().orElse(false).getObject()) {
+                    regions.setRequired(true);
+                    activities.setRequired(true);
+                    boat.getPier().setRequired(true);
+                } else {
+                    regions.setRequired(false);
+                    activities.setRequired(false);
+                    boat.getPier().setRequired(false);
+                }
+            }
+        });*/
+        add(new IValidator<Notification>() {
+            @Override
+            public void validate(IValidatable<Notification> validatable) {
+                Notification notification = validatable.getValue();
+                Optional<Notification> optional = Optional.ofNullable(notification);
+                if (optional.isPresent()) {
+                    if (optional.map(Notification::getCanVoiceCall).orElse(false)) {
+                        if (optional.map(Notification::getPier).map(Strings::isNullOrEmpty).orElse(true)) {
+                            pier.error(new ValidationError().addKey("Required"));
+                        }
+                        if (optional.map(Notification::getActivities).map(Set::isEmpty).orElse(true)) {
+                            activities.error(new ValidationError().addKey("Required"));
+                        }
+                        if (optional.map(Notification::getRegions).map(Set::isEmpty).orElse(true)) {
+                            regions.error(new ValidationError().addKey("Required"));
+                        }
+                        if (boat.hasErrorMessage() || activities.hasErrorMessage() || regions.hasErrorMessage()) {
+                            validatable.error(new ValidationError().addKey("canVoiceCallWithNoData"));
+                        }
+                    }
+                }
+            }
+        });
+        pier.add(new PatternValidator("[^-]+"));
+
         captain.setOutputMarkupId(true);
         setOutputMarkupId(true);
-        add(regions, captain, boat, legalPerson, date, dateFrom, dateTo, activities, timeOfDay, tck, id, number, year, unit);
+        add(voiceCall,pier, regions, captain, boat, legalPerson, date, dateFrom, dateTo, activities, timeOfDay, tck, id, number, year, unit);
         legalPerson.setVisible(false).setEnabled(false);
         tck.setOutputMarkupId(true);
         add(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {
@@ -120,10 +172,12 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
                 target.add(dateFrom);
             }
         });
+        FormComponentErrorBehavior.append(this);
     }
 
     @Override
     public void convertInput() {
+
         Notification entity = id.getConvertedInput();
         if (entity == null) {
             entity = new Notification();
@@ -145,11 +199,14 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
         entity.setTck(tck.getConvertedInput());
         entity.setTimeOfDay(timeOfDay.getConvertedInput());
         entity.setUnit(unit.getConvertedInput());
+        entity.setCanVoiceCall(voiceCall.getConvertedInput());
+        entity.setPier(pier.getConvertedInput());
         setConvertedInput(entity);
     }
 
     @Override
     protected void initBeforeRenderer() {
+
         Notification e = getModelObject();
         id.setModelObject(e);
         unit.setModelObject(e.getUnit());
@@ -163,7 +220,10 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
         activities.setModelObject(Optional.ofNullable(e.getActivities()).map(Sets::newHashSet).orElse(null));
         regions.setModelObject(Optional.ofNullable(e.getRegions()).map(Sets::newHashSet).orElse(null));
         tck.setModelObject(e.getTck());
+        voiceCall.setModelObject(e.getCanVoiceCall());
         timeOfDay.setModelObject(e.getTimeOfDay());
+        pier.setModelObject(e.getPier());
+
     }
 
     @Override
@@ -173,6 +233,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     @Override
     protected void onConfigure() {
+
         if (captainEqOwner.getObject()) {
             captain.setEnabled(false);
             captain.setVisible(false);

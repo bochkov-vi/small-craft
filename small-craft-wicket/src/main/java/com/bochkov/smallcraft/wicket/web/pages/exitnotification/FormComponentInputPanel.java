@@ -70,22 +70,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
 
     FormComponent<Collection<String>> activities = new SelectActivity("activities", new CollectionModel<>());
 
-    FormComponent<Boat> boat = new com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel("boat", PersistableModel.of(id -> boatRepository.findById(id))) {
-        public void onUpdate(AjaxRequestTarget target) {
-            Optional<Boat> b = Optional.ofNullable(getModelObject());
-            if (b.isPresent()) {
-                if (Strings.isNullOrEmpty(pier.getModelObject())) {
-                    b.map(Boat::getPier).ifPresent(p -> pier.setModelObject(p));
-                    target.add(pier);
-                }
-                if (!regions.getModel().isPresent().getObject() || regions.getModel().map(Collection::isEmpty).getObject()) {
-                    Optional<Notification> n = notificationRepository.findTopByBoatOrderByNumberDesc(b.get());
-                    n.map(Notification::getRegions).map(Sets::newHashSet).ifPresent(rg -> regions.setModelObject(rg));
-                    target.add(regions);
-                }
-            }
-        }
-    }.setCanSelect(true);
+    FormComponent<Boat> boat = new com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel("boat", PersistableModel.of(id -> boatRepository.findById(id))).setCanSelect(true);
 
     IModel<Boolean> captainEqOwner = Model.of(true);
 
@@ -97,7 +82,23 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
         }
     }.setCanSelect(true);
 
-    FormComponent<Notification> notification = new SelectNotification("notification", PersistableModel.of(id -> notificationRepository.findById(id))).setRequired(true);
+    FormComponent<Notification> notification = new SelectNotification("notification", PersistableModel.of(id -> notificationRepository.findById(id))){
+
+        public void onUpdate(AjaxRequestTarget target) {
+            Optional<Notification> optional = Optional.ofNullable(getModelObject());
+            if (optional.isPresent()) {
+                if (Strings.isNullOrEmpty(pier.getModelObject())) {
+                    optional.map(Notification::getPier).ifPresent(p -> pier.setModelObject(p));
+                    target.add(pier);
+                }
+                if (!regions.getModel().isPresent().getObject() || regions.getModel().map(Collection::isEmpty).getObject() || optional.map(Notification::getBoat).isPresent()) {
+                    Optional<Notification> n = notificationRepository.findTopByBoatOrderByNumberDesc(optional.map(Notification::getBoat).get());
+                    n.map(Notification::getRegions).map(Sets::newHashSet).ifPresent(rg -> regions.setModelObject(rg));
+                    target.add(regions);
+                }
+            }
+        }
+    }.setRequired(true);
 
     public FormComponentInputPanel(String id) {
         super(id);

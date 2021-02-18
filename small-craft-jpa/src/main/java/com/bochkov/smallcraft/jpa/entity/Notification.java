@@ -55,6 +55,10 @@ public class Notification extends AbstractEntity<Long> {
 
     LocalDate dateTo;
 
+    String pier;
+
+    Boolean canVoiceCall = false;
+
     @ElementCollection
     @Column(name = "activity")
     @CollectionTable(name = "notification_activity", joinColumns = @JoinColumn(name = "id_notification"))

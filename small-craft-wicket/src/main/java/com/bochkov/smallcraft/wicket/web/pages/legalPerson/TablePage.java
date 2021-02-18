@@ -30,8 +30,8 @@ public class TablePage extends CrudTablePage<LegalPerson, Long> {
 
 
     @Override
-    protected List<? extends IColumn> columns() {
-        List<IColumn> columns = Lists.newArrayList();
+    protected List<? extends IColumn<LegalPerson,String>> columns() {
+        List<IColumn<LegalPerson,String>> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("id"), "id", "id"));
         columns.add(new PropertyColumn(new ResourceModel("name"), "name", "name"));
         columns.add(new PropertyColumn(new ResourceModel("address"), "address", "address"));

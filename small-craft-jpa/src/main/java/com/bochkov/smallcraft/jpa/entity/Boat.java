@@ -40,8 +40,6 @@ public class Boat extends AbstractEntity<Long> {
 
     Integer registrationNumber;
 
-    String pier;
-
     Integer buildYear;
 
     String serialNumber;

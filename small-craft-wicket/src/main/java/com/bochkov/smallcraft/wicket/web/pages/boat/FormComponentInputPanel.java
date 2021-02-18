@@ -25,6 +25,7 @@ import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.validation.validator.PatternValidator;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -76,7 +77,6 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
 
     FormComponent<Integer> buildYear = new NumberTextField<>("buildYear", Model.of(), Integer.class);
 
-    FormComponent<String> pier = new SelectPier("pier", Model.of()).setRequired(true);
 
     FormComponent<String> model = new TextField<>("model", Model.of(), String.class).setRequired(true);
 
@@ -108,8 +108,8 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
         setOutputMarkupId(true);
         add(registrationPanel);
         registrationPanel.setOutputMarkupId(true);
-        registrationPanel.add(registrationDate, registrationNumber, expirationDate, pier, unit, buildYear, serialNumber);
-        add(id, selectBoat, tailNumber, model, type);
+        registrationPanel.add(registrationDate, registrationNumber, expirationDate, unit, buildYear, serialNumber);
+        add(id, selectBoat, tailNumber, model,  type);
         add(notRegistable);
 
 
@@ -239,7 +239,6 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
         boat.setTailNumber(tailNumber.getConvertedInput());
         boat.setModel(model.getConvertedInput());
         boat.setType(type.getConvertedInput());
-        boat.setPier(pier.getConvertedInput());
         boat.setRegistrationDate(registrationDate.getConvertedInput());
         boat.setExpirationDate(expirationDate.getConvertedInput());
         boat.setRegistrationNumber(registrationNumber.getConvertedInput());
@@ -259,7 +258,6 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
         buildYear.setModelObject(getModel().map(Boat::getBuildYear).getObject());
         unit.setModelObject(getModel().map(Boat::getUnit).getObject());
         type.setModelObject(getModel().map(Boat::getType).getObject());
-        pier.setModelObject(getModel().map(Boat::getPier).getObject());
         model.setModelObject(getModel().map(Boat::getModel).getObject());
         registrationDate.setModelObject(getModel().map(Boat::getRegistrationDate).getObject());
         expirationDate.setModelObject(getModel().map(Boat::getExpirationDate).getObject());

@@ -1,6 +1,7 @@
 package com.bochkov.smallcraft.wicket.web.pages.notification;
 
 import com.bochkov.data.jpa.mask.Maskable;
+import com.bochkov.data.jpa.mask.MaskableProperty;
 import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Notification;
@@ -9,6 +10,7 @@ import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.smallcraft.wicket.web.crud.EntityDataTable;
+import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnitById;
 import com.bochkov.wicket.data.model.PersistableModel;
 import com.google.common.collect.Lists;
 import org.apache.wicket.AttributeModifier;
@@ -18,6 +20,7 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.AbstractLink;
@@ -33,6 +36,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -49,6 +54,10 @@ public class TablePage extends CrudTablePage<Notification, Long> {
     @Inject
     ExitNotificationRepository exitNotificationRepository;
 
+    Long unit;
+
+    String quickSearch;
+
     public TablePage(PageParameters parameters) {
         super(Notification.class, parameters);
     }
@@ -58,24 +67,31 @@ public class TablePage extends CrudTablePage<Notification, Long> {
         return repository;
     }
 
-
-    String quickSearch;
-
-    public Specification specification(){
-        return Maskable.maskSpecification(quickSearch, Lists.newArrayList("number", "captain.lastName", "boat.tailNumber", "captain.phones", "boat.registrationNumber"));
+    public Specification specification() {
+        return Specification.where(MaskableProperty.<Notification>maskSpecification(quickSearch, Lists.newArrayList("number", "captain.lastName", "boat.tailNumber", "boat.registrationNumber","captain.phones")))
+                .and(Optional.ofNullable(unit).map(id -> (Specification<Notification>) (r, q, b) -> b.equal(r.get("unit").get("id"), id)).orElse(null));
     }
 
     @Override
     protected void onInitialize() {
         super.onInitialize();
-        Form form = new Form<>("form",new CompoundPropertyModel<>(this));
+        Form form = new Form<>("form", new CompoundPropertyModel<>(this));
         form.add(new TextField<>("quickSearch"));
+        form.add(new SessionSelectUnitById("unit"));
+        form.add(new Button("clear-filter") {
+            @Override
+            public void onSubmit() {
+                form.clearInput();
+                unit = null;
+                quickSearch = null;
+            }
+        });
         add(form);
     }
 
     @Override
-    protected List<? extends IColumn> columns() {
-        List<IColumn> columns = Lists.newArrayList();
+    protected List<? extends IColumn<Notification,String>> columns() {
+        List<IColumn<Notification,String>> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("year"), "year", "year") {
             @Override
             public String getCssClass() {
@@ -131,7 +147,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
         });
         columns.add(new PropertyColumn(new ResourceModel("model"), "boat.model", "boat.model"));
         columns.add(new PropertyColumn(new ResourceModel("tailNumber"), "boat.tailNumber", "boat.tailNumber"));
-        columns.add(new PropertyColumn(new ResourceModel("pier"), "boat.pier", "boat.pier") {
+        columns.add(new PropertyColumn(new ResourceModel("pier"), "pier", "pier") {
             @Override
             public String getCssClass() {
                 return "d-none d-xl-table-cell";
@@ -181,10 +197,10 @@ public class TablePage extends CrudTablePage<Notification, Long> {
 
             @Override
             public void populateItem(Item<ICellPopulator<Notification>> cellItem, String componentId, IModel<Notification> rowModel) {
-                Fragment fragment = new Fragment(componentId, "exit-link", getPage()){
+                Fragment fragment = new Fragment(componentId, "exit-link", getPage()) {
                     @Override
                     protected void onConfigure() {
-                        setVisible(rowModel.map(n -> n.isExpired()).map(b->!b).getObject());
+                        setVisible(rowModel.map(n -> n.isExpired()).map(b -> !b).getObject());
                         super.onConfigure();
                     }
                 };

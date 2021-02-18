@@ -1,11 +1,13 @@
 package com.bochkov.smallcraft.wicket.web.crud;
 
 import com.bochkov.wicket.component.table.XLSXDataExportLink;
+import com.bochkov.wicket.data.model.nonser.CollectionModel;
 import com.bochkov.wicket.data.provider.PersistableDataProvider;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.Component;
+import org.apache.wicket.Page;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -41,6 +43,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     EntityDataTable<T, ID> table = null;
 
+    ScrollToAnchor<T> scrollToAnchor;
 
     boolean ajax = false;
 
@@ -64,12 +67,26 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        if (getModel() == null) {
+            setModel(CollectionModel.of(id -> getRepository().findById(id)));
+        }
+        scrollToAnchor = new ScrollToAnchor(entityClass);
         exportFileName = new ResourceModel("exportFileName").wrapOnAssignment(getPage());
-        table = new EntityDataTable("table", columns(), provider()) {
+        table = new EntityDataTable<T, ID>("table", columns(), provider()) {
 
             @Override
-            public void onRowCreated(Item row, String id, int index, IModel model) {
+            public void onRowCreated(Item<T> row, String id, int index, IModel<T> model) {
                 CrudTablePage.this.onRowCreated(table, row, id, index, model);
+                row.add(new ClassAttributeModifier() {
+                    @Override
+                    protected Set<String> update(Set<String> oldClasses) {
+                        if (model.combineWith(CrudTablePage.this.getModel(), (e, collection) -> collection.contains(e)).getObject()) {
+                            oldClasses.addAll(Lists.newArrayList("bg-success"));
+                        }
+
+                        return oldClasses;
+                    }
+                });
             }
         };
         exportExcel = new XLSXDataExportLink("export-excel", table, exportFileName.getObject());
@@ -78,17 +95,18 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         container.setOutputMarkupId(true);
         container.add(createAddRowButton("btn-add-row"));
         container.add(exportExcel);
+        add(scrollToAnchor);
         add(container);
     }
 
 
-    private ISortableDataProvider<T, ?> provider() {
-        return PersistableDataProvider.of(this::getRepository, this::specification,this::sort);
+    private ISortableDataProvider<T, String> provider() {
+        return PersistableDataProvider.of(this::getRepository, this::specification, this::sort);
     }
 
 
-    protected List<? extends IColumn> columns() {
-        List<? extends IColumn> result = Lists.newArrayList();
+    protected List<? extends IColumn<T, String>> columns() {
+        List<? extends IColumn<T, String>> result = Lists.newArrayList();
         return result;
     }
 
@@ -108,6 +126,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
             button = createEditSimpleButton(id, model);
         }
         button.setEscapeModelStrings(false);
+        button.add(scrollToAnchor.attributeModifier(model));
         button.setBody(Model.of("<span class='fa fa-pencil'></span>"));
         button.add(new ClassAttributeModifier() {
             @Override
@@ -186,7 +205,9 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     }
 
     public void onEdit(Optional<AjaxRequestTarget> target, IModel<T> model) {
-        setResponsePage(createEditPage(model));
+        Page page = createEditPage(model);
+        setModelObject(Lists.newArrayList(model.getObject()));
+        setResponsePage(page);
     }
 
 
@@ -209,9 +230,8 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
             page = createEditPage();
             page.setModel(model);
         }
-
-
         page.setBackPage(this);
+        scrollToAnchor.setAnchor(model);
         return page;
     }
 

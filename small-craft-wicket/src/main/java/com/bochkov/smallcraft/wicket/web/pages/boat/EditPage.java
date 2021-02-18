@@ -100,7 +100,6 @@ public class EditPage extends CrudEditPage<Boat, Long> {
             boat.setPerson(model.map(Boat::getPerson).getObject());
             boat.setRegistrationDate(LocalDate.now());
             boat.setLegalPerson(model.map(Boat::getLegalPerson).getObject());
-            boat.setPier(model.map(Boat::getPier).getObject());
             boat.setUnit(model.map(Boat::getUnit).getObject());
             return boat;
         })));

@@ -26,8 +26,23 @@
                 </resources>
             </build>
         </profile>
+        <profile>
+            <id>development</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/dev-resources</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
     </profiles>
     <dependencies>
+        <dependency>
+            <groupId>com.bochkov</groupId>
+            <artifactId>data-jpa-mask</artifactId>
+            <version>1.0</version>
+        </dependency>
         <dependency>
             <groupId>com.bochkov</groupId>
             <artifactId>hierarchical-entity</artifactId>

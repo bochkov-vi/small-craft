@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.jpa.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -78,7 +79,7 @@ public class ExitNotification extends AbstractAuditableEntity<Long> {
         setActivities(o.map(Notification::getActivities).map(Sets::newHashSet).orElse(null));
         setBoat(o.map(Notification::getBoat).orElse(null));
         setCaptain(o.map(Notification::getBoat).map(Boat::getPerson).orElse(null));
-        setPier(o.map(Notification::getBoat).map(Boat::getPier).orElse(null));
+        setPier(o.map(Notification::getPier).orElse(null));
         setUnit(o.map(Notification::getUnit).orElse(null));
         return this;
     }
