@@ -1,13 +1,8 @@
 package com.bochkov.smallcraft.wicket.web.pages.unit;
 
-import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.util.visit.IVisit;
-import org.apache.wicket.util.visit.IVisitor;
 
-public class SessionSelectUnitById extends SelectUnitById implements ISessionUnitSelector {
+public class SessionSelectUnitById extends SelectUnitById implements IIdUnitSelect {
 
     public SessionSelectUnitById(String id) {
         super(id);
@@ -20,49 +15,16 @@ public class SessionSelectUnitById extends SelectUnitById implements ISessionUni
     @Override
     protected void onInitialize() {
         super.onInitialize();
-        setOutputMarkupId(true);
-        add(new AjaxFormComponentUpdatingBehavior("change") {
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-                getForm().visitFormComponents(new IVisitor<FormComponent<?>, Object>() {
-                    @Override
-                    public void component(FormComponent<?> cmp, IVisit<Object> visit) {
-                        if (cmp instanceof SessionSelectUnitById) {
-                            if (cmp.getOutputMarkupId()) {
-                                target.add(cmp);
-                            }
-                        }
-                    }
-                });
-            }
-        });
-        if (getModel() != null) {
-            if (!getModel().isPresent().getObject()) {
-                getIdUnitFromSession().flatMap(id -> repository.findById(id)).ifPresent(u -> setModelObject(u.getId()));
-            }
-        }
+        add(new SessionUnitBehavior<>());
     }
 
     @Override
-    protected void onModelChanged() {
-        Long unit = getModelObject();
-        setAllFormModels(getModelObject());
-    }
-
-    public void setAllFormModels(Long unit) {
-        setAllFormModels(unit, getForm());
+    public Long getIdUnit() {
+        return getModelObject();
     }
 
     @Override
-    protected void onBeforeRender() {
-        super.onBeforeRender();
-
+    public void setIdUnit(Long id) {
+        setModelObject(id);
     }
-
-    @Override
-    public void setIdUnitToModel(Long idUnit) {
-        setModelObject(idUnit);
-    }
-
-
 }

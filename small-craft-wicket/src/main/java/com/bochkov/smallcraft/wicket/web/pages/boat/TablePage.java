@@ -1,5 +1,7 @@
 package com.bochkov.smallcraft.wicket.web.pages.boat;
 
+import com.bochkov.data.jpa.mask.MaskableProperty;
+import com.bochkov.hierarchical.Hierarchicals;
 import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Notification;
@@ -7,6 +9,8 @@ import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.BoatRepository;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
+import com.bochkov.smallcraft.jpa.repository.UnitRepository;
+import com.bochkov.smallcraft.wicket.component.filter.FilterPanel;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.wicket.data.model.PersistableModel;
@@ -17,9 +21,13 @@ import org.apache.wicket.Session;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.form.EnumChoiceRenderer;
+import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -27,6 +35,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
+import javax.persistence.criteria.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -40,10 +49,19 @@ public class TablePage extends CrudTablePage<Boat, Long> {
     @Inject
     NotificationRepository notificationRepository;
 
-    BoatFilterPanel filterPanel = new BoatFilterPanel("filter");
-
     @Inject
     ExitNotificationRepository exitNotificationRepository;
+
+    @Inject
+    UnitRepository unitRepository;
+
+    Long unit;
+
+    String quickSearch;
+
+    Boolean includeUnitChilds = true;
+
+    Expirated expire;
 
     public TablePage(PageParameters parameters) {
         super(Boat.class, parameters);
@@ -52,8 +70,10 @@ public class TablePage extends CrudTablePage<Boat, Long> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
-        add(filterPanel);
-
+        FilterPanel filter = new FilterPanel("filter", new CompoundPropertyModel<>(this));
+        add(filter);
+        FormComponent<BoatFilterPanel.Expirated> expiratedDropDownChoice = new DropDownChoice<>("expire", com.google.common.collect.Lists.newArrayList(BoatFilterPanel.Expirated.values()), new EnumChoiceRenderer<>(getPage())).setNullValid(true);
+        filter.add(expiratedDropDownChoice);
     }
 
     @Override
@@ -63,8 +83,8 @@ public class TablePage extends CrudTablePage<Boat, Long> {
 
 
     @Override
-    protected List<? extends IColumn<Boat,String>> columns() {
-        List<IColumn<Boat,String>> columns = Lists.newArrayList();
+    protected List<? extends IColumn<Boat, String>> columns() {
+        List<IColumn<Boat, String>> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("id"), "id", "id"));
         columns.add(new AbstractColumn<Boat, String>(null, "notRegistable") {
             @Override
@@ -177,10 +197,32 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         return EditPage.class;
     }
 
-    @Override
-    protected Specification<Boat> specification() {
-        return Specification.where(super.specification()).and(filterPanel.specification());
+    public Specification<Boat> specification() {
+        Specification<Boat> specification = Specification.where(null);
+
+        specification = specification.and(Optional.ofNullable(quickSearch).map(str -> MaskableProperty.<Boat>maskSpecification(str, "registrationNumber", "tailNumber", "person.lastName", "legalPerson.name", "model")).orElse(null));
+        specification = specification.and(Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).map(unitEntity -> Hierarchicals.getAllChildIds(true, unitEntity)).filter(list -> !list.isEmpty()).map(list -> (Specification<Boat>) (r, q, b) -> r.get("unit").get("id").in(list)).orElse(null));
+        specification = specification.and(Optional.ofNullable(expire).map(exp ->
+            (Specification<Boat>) (r, q, b) -> {
+                Path path = r.get("expirationDate");
+                switch (expire) {
+                    case NOT_EXPIRATED: {
+                        return path.isNull();
+                    }
+                    case EXPIRATED: {
+                        return path.isNotNull();
+
+                    }
+                    default: {
+                        return null;
+                    }
+                }
+            }).orElse(null));
+        return specification;
     }
 
+    public enum Expirated {
+        EXPIRATED, NOT_EXPIRATED
+    }
 
 }

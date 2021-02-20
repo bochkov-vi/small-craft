@@ -2,9 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 <body>
 <wicket:extend>
-    <div class="container">
-        <div wicket:id="filter">
-
+    <div wicket:id="filter" class="container">
+        <div class="form-group ">
+            <label wicket:for="expire">
+                <wicket:message key="expire"/>
+            </label>
+            <select wicket:id="expire" class="btn-group form-control"></select>
         </div>
     </div>
 

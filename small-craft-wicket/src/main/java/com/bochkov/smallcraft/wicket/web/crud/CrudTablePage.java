@@ -7,8 +7,8 @@ import com.google.common.collect.Lists;
 import lombok.Getter;
 import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.Component;
-import org.apache.wicket.Page;
 import org.apache.wicket.Session;
+import org.apache.wicket.StyleAttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
@@ -30,10 +30,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serializable> extends CrudPage<Collection<T>, T, ID> {
 
@@ -43,7 +40,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     EntityDataTable<T, ID> table = null;
 
-    ScrollToAnchor<T> scrollToAnchor;
+    ScrollToAnchorBehavior<T> scrollToAnchorBehavior;
 
     boolean ajax = false;
 
@@ -70,23 +67,33 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         if (getModel() == null) {
             setModel(CollectionModel.of(id -> getRepository().findById(id)));
         }
-        scrollToAnchor = new ScrollToAnchor(entityClass);
+        scrollToAnchorBehavior = new ScrollToAnchorBehavior(entityClass);
         exportFileName = new ResourceModel("exportFileName").wrapOnAssignment(getPage());
         table = new EntityDataTable<T, ID>("table", columns(), provider()) {
 
             @Override
             public void onRowCreated(Item<T> row, String id, int index, IModel<T> model) {
                 CrudTablePage.this.onRowCreated(table, row, id, index, model);
-                row.add(new ClassAttributeModifier() {
+                /*row.add(new ClassAttributeModifier() {
                     @Override
                     protected Set<String> update(Set<String> oldClasses) {
                         if (model.combineWith(CrudTablePage.this.getModel(), (e, collection) -> collection.contains(e)).getObject()) {
-                            oldClasses.addAll(Lists.newArrayList("bg-success"));
+                            oldClasses.addAll(Lists.newArrayList("border-success","border"));
                         }
 
                         return oldClasses;
                     }
+                });*/
+                row.add(new StyleAttributeModifier() {
+                    @Override
+                    protected Map<String, String> update(Map<String, String> oldStyles) {
+                        if (model.combineWith(CrudTablePage.this.getModel(), (e, collection) -> collection.contains(e)).getObject()) {
+                            oldStyles.put("box-shadow", "0 0 30px #44f");
+                        }
+                        return oldStyles;
+                    }
                 });
+                row.add(scrollToAnchorBehavior.nameAttributeModifier(model));
             }
         };
         exportExcel = new XLSXDataExportLink("export-excel", table, exportFileName.getObject());
@@ -95,7 +102,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         container.setOutputMarkupId(true);
         container.add(createAddRowButton("btn-add-row"));
         container.add(exportExcel);
-        add(scrollToAnchor);
+        add(scrollToAnchorBehavior);
         add(container);
     }
 
@@ -126,7 +133,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
             button = createEditSimpleButton(id, model);
         }
         button.setEscapeModelStrings(false);
-        button.add(scrollToAnchor.attributeModifier(model));
+
         button.setBody(Model.of("<span class='fa fa-pencil'></span>"));
         button.add(new ClassAttributeModifier() {
             @Override
@@ -205,7 +212,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     }
 
     public void onEdit(Optional<AjaxRequestTarget> target, IModel<T> model) {
-        Page page = createEditPage(model);
+        CrudEditPage<T, ID> page = createEditPage(model);
         setModelObject(Lists.newArrayList(model.getObject()));
         setResponsePage(page);
     }
@@ -231,7 +238,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
             page.setModel(model);
         }
         page.setBackPage(this);
-        scrollToAnchor.setAnchor(model);
+        scrollToAnchorBehavior.setAnchor(model);
         return page;
     }
 

@@ -17,7 +17,7 @@ import org.apache.wicket.request.resource.PackageResourceReference;
 import java.util.Optional;
 
 @Accessors(chain = true)
-public class ScrollToAnchor<T> extends Behavior {
+public class ScrollToAnchorBehavior<T> extends Behavior {
 
     public static String ANCHOR_PARAM = "anchor";
 
@@ -29,7 +29,7 @@ public class ScrollToAnchor<T> extends Behavior {
 
     private Class<T> entityClass;
 
-    public ScrollToAnchor(Class<T> entityClass) {
+    public ScrollToAnchorBehavior(Class<T> entityClass) {
         this.entityClass = entityClass;
     }
 
@@ -41,7 +41,7 @@ public class ScrollToAnchor<T> extends Behavior {
 
     @Override
     public void renderHead(Component comp, IHeaderResponse response) {
-        response.render(JavaScriptHeaderItem.forReference(new PackageResourceReference(ScrollToAnchor.class, "ScrollToAnchor.js")));
+        response.render(JavaScriptHeaderItem.forReference(new PackageResourceReference(ScrollToAnchorBehavior.class, "ScrollToAnchor.js")));
         if (!Strings.isNullOrEmpty(anchor)) {
             response.render(new OnLoadHeaderItem(String.format("scrollToAnchor('%s')", anchor)));
         }
@@ -65,16 +65,16 @@ public class ScrollToAnchor<T> extends Behavior {
         return Optional.ofNullable(entity).map(e->component.getConverter(entityClass).convertToString(e, Session.get().getLocale())).orElse(null);
     }
 
-    public AttributeModifier attributeModifier(IModel<T> model) {
+    public AttributeModifier nameAttributeModifier(IModel<T> model) {
         return new AttributeModifier("name", createAnchor(model));
     }
 
-    public ScrollToAnchor<T> setAnchor(IModel<T> model) {
+    public ScrollToAnchorBehavior<T> setAnchor(IModel<T> model) {
         this.anchor = createAnchor(model);
         return this;
     }
 
-    public ScrollToAnchor<T> setAnchor(T entity) {
+    public ScrollToAnchorBehavior<T> setAnchor(T entity) {
         this.anchor = createAnchor(entity);
         return this;
     }

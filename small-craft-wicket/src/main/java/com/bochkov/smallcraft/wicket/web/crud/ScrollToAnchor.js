@@ -1,4 +1,5 @@
 function scrollToAnchor(aid) {
-    var aTag = $("[name='" + aid + "']");
-    $('html,body').animate({scrollTop: aTag.offset().top}, 'slow');
+    const aTag = $("[name='" + aid + "']");
+    const top = aTag.offset().top - 100;
+    $('html,body').animate({scrollTop: top}, 'slow');
 }

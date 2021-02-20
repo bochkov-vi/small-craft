@@ -2,86 +2,27 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 <body>
 <wicket:extend>
-    <div class="container">
-        <div class="card border-primary">
-            <div class="card-header bg-primary text-light">
-                <wicket:message key="filter"/>
+    <div wicket:id="filter" class="container">
+        <div class="form-row">
+            <div class="form-group col-sm-4">
+                <label wicket:for="dateFrom">
+                    <wicket:message key="dateFrom"/>
+                </label>
+                <input type="text" wicket:id="dateFrom">
             </div>
-            <div class="card-body">
-                <form wicket:id="form">
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label wicket:for="quickSearch">
-                                <wicket:message key="quickSearch"/>
-                            </label>
-                            <div class="input-group">
-                                <input type="text" wicket:id="quickSearch" class="form-control">
-                                <div class="input-group-append">
-                                    <button type="submit" class="btn btn-outline-primary">
-                                        <span class="fa fa-search"></span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 form-row">
-                            <div class="form-group col-6">
-                                <label wicket:for="dateFrom">
-                                    <wicket:message key="dateFrom"/>
-                                </label>
-                                <input type="text" wicket:id="dateFrom">
-                            </div>
-                            <div class="form-group col-6">
-                                <label wicket:for="dateTo">
-                                    <wicket:message key="dateTo"/>
-                                </label>
-                                <input type="text" wicket:id="dateTo">
-                            </div>
-                        </div>
-                        <wicket:enclosure child="currentDate">
-                            <div class="form-group col-4">
-                                <label wicket:for="currentDate" key="date">
-                                    <wicket:message key="date"/>
-                                </label>
-                                <input type="text" wicket:id="currentDate">
-                            </div>
-                        </wicket:enclosure>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group col-sm-4">
-                            <label>
-                                <input wicket:id="onExitOnly" type="checkbox">
-                                <span class="m-3">
-                                <wicket:message key="boat-on-exit"/>
-                            </span>
-                            </label>
-                        </div>
-                        <div class="form-group col-sm-8">
-                            <div class="input-group">
-                                <select wicket:id="unit" class="form-control"></select>
-                                <div class="input-group-append">
-                                    <div class="input-group-text">
-                                        <input wicket:id="unitIncludeChilds" type="checkbox">
-                                        <label wicket:for="unitIncludeChilds" class="m-0 d-inline">
-                                            <wicket:message key="include-childs"/>
-                                        </label>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-outline-primary">
-                            <span class="fa fa-filter"></span>
-                            <span><wicket:message key="do-filter"/></span>
-                        </button>
-                        <button wicket:id="clear-filter" type="submit" class="btn btn-outline-secondary">
-                            <span class="fa fa-close"></span>
-                            <span><wicket:message key="clear-filter"/></span>
-                        </button>
-                    </div>
-                </form>
+            <div class="form-group col-sm-4">
+                <label wicket:for="dateTo">
+                    <wicket:message key="dateTo"/>
+                </label>
+                <input type="text" wicket:id="dateTo">
+            </div>
+            <div class="form-group col-sm-4">
+                <div class="custom-control custom-checkbox">
+                    <input wicket:id="onExitOnly" type="checkbox" class="custom-control-input">
+                    <label wicket:for="onExitOnly" class="custom-control-label">
+                        <wicket:message key="boat-on-exit"/>
+                    </label>
+                </div>
             </div>
         </div>
     </div>

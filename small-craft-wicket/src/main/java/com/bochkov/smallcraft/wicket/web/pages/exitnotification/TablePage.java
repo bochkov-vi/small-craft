@@ -7,19 +7,19 @@ import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
-import com.bochkov.smallcraft.wicket.component.localdate.LocalDateTextFieldCalendar;
+import com.bochkov.smallcraft.wicket.component.filter.FilterPanel;
 import com.bochkov.smallcraft.wicket.component.localdatetime.LocalDateTimeTextFieldCalendar;
 import com.bochkov.smallcraft.wicket.security.SmallCraftWebSession;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
-import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnitById;
 import com.google.common.collect.Lists;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.LambdaColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
-import org.apache.wicket.markup.html.form.*;
+import org.apache.wicket.markup.html.form.CheckBox;
+import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -43,8 +43,6 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     @Inject
     UnitRepository unitRepository;
 
-    Form form = new Form<Void>("form");
-
 
     Boolean onExitOnly;
 
@@ -52,14 +50,11 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
 
     LocalDateTime dateTo;
 
-    LocalDate currentDate;
+    Long unit;
 
     String quickSearch;
 
-    Long unit;
-
-    Boolean unitIncludeChilds;
-
+    Boolean includeUnitChilds = true;
     public TablePage(PageParameters parameters) {
         super(ExitNotification.class, parameters);
     }
@@ -72,18 +67,13 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     @Override
     protected void onInitialize() {
 
-
-        currentDate = LocalDate.now(SmallCraftWebSession.get().getZoneId());
-        dateFrom = LocalDateTime.from(currentDate.atStartOfDay(SmallCraftWebSession.get().getZoneId()));
+        FilterPanel filterPanel = new FilterPanel("filter",new CompoundPropertyModel<>(this));
+        add(filterPanel);
+        dateFrom = LocalDateTime.from(LocalDate.now().atStartOfDay(SmallCraftWebSession.get().getZoneId()));
         dateTo = dateFrom.plusDays(1);
-        add(form);
-        form.setModel(new CompoundPropertyModel(this));
-        form.add(new LocalDateTimeTextFieldCalendar("dateFrom", getString("dateTimeFormat")));
-        form.add(new LocalDateTimeTextFieldCalendar("dateTo", getString("dateTimeFormat")));
-        form.add(new LocalDateTextFieldCalendar("currentDate", getString("dateFormat")).setVisible(false));
-        form.add(new TextField<>("quickSearch"));
-        form.add(new SessionSelectUnitById("unit"));
-        form.add(new CheckBox("unitIncludeChilds").setOutputMarkupId(true));
+        filterPanel.add(new LocalDateTimeTextFieldCalendar("dateFrom", getString("dateTimeFormat")));
+        filterPanel.add(new LocalDateTimeTextFieldCalendar("dateTo", getString("dateTimeFormat")));
+
         FormComponent<Boolean> onExitFormComponent = new CheckBox("onExitOnly");
         onExitFormComponent.add(new AjaxFormComponentUpdatingBehavior("change") {
             @Override
@@ -91,24 +81,13 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
                 target.add(getPage());
             }
         });
-        form.add(onExitFormComponent);
-        form.add(new Button("clear-filter") {
-            @Override
-            public void onSubmit() {
-                form.clearInput();
-                onExitOnly = null;
-                dateFrom = null;
-                dateTo = null;
-                currentDate = null;
-                quickSearch = null;
-            }
-        });
+        filterPanel.add(onExitFormComponent);
         super.onInitialize();
     }
 
     @Override
-    protected List<? extends IColumn<ExitNotification,String>> columns() {
-        List<IColumn<ExitNotification,String>> columns = Lists.newArrayList();
+    protected List<? extends IColumn<ExitNotification, String>> columns() {
+        List<IColumn<ExitNotification, String>> columns = Lists.newArrayList();
         columns.add(new PropertyColumn(new ResourceModel("notification.number"), "notification.number", "notification.number"));
         columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("id"), "id", en -> repository.convert(en.getId())));
         columns.add(new PropertyColumn(new ResourceModel("captain"), "captain", "captain.fio"));
@@ -162,7 +141,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
                 Lists.newArrayList("notification.number", "captain.lastName", "boat.tailNumber", "captain.phones", "boat.registrationNumber")
         )).orElse(null));
         where = where.and(Optional.ofNullable(dateTo).map(dt -> (Specification<ExitNotification>) (r, q, b) -> b.lessThanOrEqualTo(r.get("exitDateTime"), dt)).orElse(null));
-        if (unitIncludeChilds == null || !unitIncludeChilds) {
+        if (includeUnitChilds == null || !includeUnitChilds) {
             where = where.and(Optional.ofNullable(unit).map(u -> (Specification<ExitNotification>) (r, q, b) -> r.get("unit").get("id").in(u)).orElse(null));
         } else {
             where = where.and(Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).map(entity -> Hierarchicals.getAllChildIds(true, entity)).map(u -> (Specification<ExitNotification>) (r, q, b) -> r.get("unit").get("id").in(u)).orElse(null));
