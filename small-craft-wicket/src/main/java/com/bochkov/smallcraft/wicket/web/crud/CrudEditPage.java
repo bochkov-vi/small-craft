@@ -1,6 +1,9 @@
 package com.bochkov.smallcraft.wicket.web.crud;
 
 import com.bochkov.wicket.data.model.PersistableModel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -21,9 +24,9 @@ import org.springframework.core.NestedRuntimeException;
 import org.springframework.data.domain.Persistable;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.Optional;
 
+@Accessors(chain = true)
 public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Serializable> extends CrudPage<T, T, ID> {
 
     WebMarkupContainer container = new WebMarkupContainer("container");
@@ -31,7 +34,6 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     Form<T> form = new Form<>("form");
 
 
-    boolean ajax = false;
 
     public CrudEditPage(Class<T> entityClass, PageParameters parameters) {
         super(entityClass, parameters);

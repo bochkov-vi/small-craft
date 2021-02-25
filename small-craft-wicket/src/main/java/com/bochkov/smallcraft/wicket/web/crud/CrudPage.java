@@ -40,6 +40,10 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
     @Setter
     protected Page backPage;
 
+    @Getter
+    @Setter
+    protected boolean ajax = false;
+
     protected org.slf4j.Logger log;
 
     protected FeedbackPanel feedback = new FeedbackPanel("feedback", new IFeedbackMessageFilter() {

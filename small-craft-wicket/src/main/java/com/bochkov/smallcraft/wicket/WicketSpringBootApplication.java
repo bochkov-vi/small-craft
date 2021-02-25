@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.web.context.WebApplicationContext;
@@ -16,6 +17,7 @@ import javax.servlet.ServletContext;
 
 @SpringBootApplication
 @Import(JpaApplication.class)
+
 public class WicketSpringBootApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) throws Exception {

@@ -70,6 +70,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        this.setAjax(true);
         FilterPanel filter = new FilterPanel("filter", new CompoundPropertyModel<>(this));
         add(filter);
         FormComponent<BoatFilterPanel.Expirated> expiratedDropDownChoice = new DropDownChoice<>("expire", com.google.common.collect.Lists.newArrayList(BoatFilterPanel.Expirated.values()), new EnumChoiceRenderer<>(getPage())).setNullValid(true);

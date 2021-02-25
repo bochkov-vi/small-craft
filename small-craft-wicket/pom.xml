@@ -77,6 +77,10 @@
     </profiles>
     <dependencies>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-rest</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.bochkov</groupId>
             <artifactId>wicket-jpa-converter</artifactId>
             <version>1.0-SNAPSHOT</version>

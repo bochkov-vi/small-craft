@@ -6,6 +6,8 @@
     <modules>
         <module>small-craft-jpa</module>
         <module>small-craft-wicket</module>
+        <module>small-craft-frontend</module>
+        <module>small-craft-backend</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -22,7 +24,15 @@
     <properties>
         <java.version>1.8</java.version>
     </properties>
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.bochkov</groupId>
+                <artifactId>small-craft-jpa</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>javax.inject</groupId>
