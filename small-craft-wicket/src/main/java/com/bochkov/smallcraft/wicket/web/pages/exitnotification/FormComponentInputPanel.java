@@ -1,8 +1,8 @@
 package com.bochkov.smallcraft.wicket.web.pages.exitnotification;
 
+import com.bochkov.bootstrap.tempusdominus.localdatetime.LocalDateTimeTextFieldCalendar;
 import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
-import com.bochkov.smallcraft.wicket.component.localdatetime.LocalDateTimeTextFieldCalendar;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.pages.boat.SelectPier;
