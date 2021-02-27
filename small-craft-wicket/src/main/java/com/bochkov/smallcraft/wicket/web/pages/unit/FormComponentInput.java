@@ -3,7 +3,7 @@ package com.bochkov.smallcraft.wicket.web.pages.unit;
 import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
-import com.bochkov.smallcraft.wicket.component.InputMaskBehavior;
+import com.bochkov.wicket.component.InputMaskBehavior;
 import com.bochkov.wicket.data.model.PersistableModel;
 import com.bochkov.wicket.data.model.nonser.CollectionModel;
 import com.google.common.collect.Lists;

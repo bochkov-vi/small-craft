@@ -8,6 +8,7 @@ import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
@@ -90,5 +91,19 @@ public class EditPage extends CrudEditPage<Notification, Long> {
     @Override
     public Notification save(Notification entity) {
         return repository.safeSave(entity);
+    }
+
+    @Override
+    protected AbstractLink createCloneButton(String id, IModel<Notification> model) {
+        AbstractLink cloneButton = super.createCloneButton(id, model);
+        cloneButton.setEnabled(true).setVisible(true);
+        return cloneButton;
+    }
+
+    @Override
+    public Notification copyDataForClone(Notification src, Notification dst) {
+        super.copyDataForClone(src, dst);
+        dst.setNumber(null).setId(null).setCreateDate(null);
+        return dst;
     }
 }

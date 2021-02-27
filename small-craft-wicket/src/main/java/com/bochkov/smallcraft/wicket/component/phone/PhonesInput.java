@@ -1,7 +1,7 @@
 package com.bochkov.smallcraft.wicket.component.phone;
 
-import com.bochkov.smallcraft.wicket.component.InputMaskBehavior;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
+import com.bochkov.wicket.component.InputMaskBehavior;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;

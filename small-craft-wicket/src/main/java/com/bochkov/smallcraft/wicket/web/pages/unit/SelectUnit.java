@@ -3,18 +3,10 @@ package com.bochkov.smallcraft.wicket.web.pages.unit;
 import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.wicket.component.select2.data.PersistableChoiceProvider;
-import org.apache.wicket.Session;
-import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
-import org.apache.wicket.util.visit.IVisit;
-import org.apache.wicket.util.visit.IVisitor;
 import org.wicketstuff.select2.ChoiceProvider;
 import org.wicketstuff.select2.Select2Choice;
-
-import java.util.Optional;
 
 public class SelectUnit extends Select2Choice<Unit> {
 

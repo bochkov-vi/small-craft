@@ -69,7 +69,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
     }
 
     public Specification specification() {
-        return Specification.where(MaskableProperty.<Notification>maskSpecification(quickSearch, Lists.newArrayList("number", "captain.lastName", "boat.tailNumber", "boat.registrationNumber", "captain.phones")))
+        return Specification.where(MaskableProperty.<Notification>maskSpecification(quickSearch, Lists.newArrayList("number", "captain.lastName","boat.person.lastName" ,"boat.tailNumber", "boat.registrationNumber", "captain.phones")))
                 .and(Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).map(unitEntity -> Hierarchicals.getAllChildIds(true, unitEntity)).filter(list -> !list.isEmpty()).map(list -> (Specification<Notification>) (r, q, b) -> r.get("unit").get("id").in(list)).orElse(null));
     }
 

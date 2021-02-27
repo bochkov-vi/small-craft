@@ -1,9 +1,9 @@
 package com.bochkov.smallcraft.wicket.web.crud;
 
 import com.bochkov.wicket.data.model.PersistableModel;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.apache.commons.beanutils.FluentPropertyBeanIntrospector;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -19,20 +19,36 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.spring.injection.annot.SpringBean;
+import org.danekja.java.util.function.serializable.SerializableSupplier;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.data.domain.Persistable;
 
+import javax.persistence.EntityManager;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 @Accessors(chain = true)
 public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Serializable> extends CrudPage<T, T, ID> {
 
+    static {
+        PropertyUtils.addBeanIntrospector(new FluentPropertyBeanIntrospector());
+        /*ConvertUtils.register(new Converter() {
+            @Override
+            public <T> T convert(Class<T> type, Object value) {
+                return (T) Sets.newHashSet((Collection) value);
+            }
+        }, Set.class);*/
+    }
+
+    @SpringBean
+    EntityManager entityManager;
+
     WebMarkupContainer container = new WebMarkupContainer("container");
 
     Form<T> form = new Form<>("form");
-
 
 
     public CrudEditPage(Class<T> entityClass, PageParameters parameters) {
@@ -130,8 +146,21 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     }
 
     public void onClone(Optional<AjaxRequestTarget> target, IModel<T> model) {
-        target.ifPresent(t -> t.add(feedback));
+        IModel<T> newModel = createModelForNewRow(() -> {
+            T clone = newEntityInstance();
+            T src = model.getObject();
+            copyDataForClone(src, clone);
+            return clone;
+        });
         CrudEditPage<T, ID> editPage = BeanUtils.instantiateClass(getClass());
+        editPage.setModel(newModel);
+        editPage.setResponsePage(getPage());
+        editPage.setBackPage(this);
+        if (target.isPresent()) {
+            target.get().add(editPage);
+        } else {
+            setResponsePage(editPage);
+        }
 
     }
 
@@ -176,11 +205,15 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     }
 
     final protected IModel<T> createModelForNewRow() {
-        IModel<T> model = PersistableModel.of(getRepository()::findById, () -> newEntityInstance());
+        return createModelForNewRow(this::newEntityInstance);
+    }
+
+    final protected IModel<T> createModelForNewRow(SerializableSupplier<T> newInstanceCreator) {
+        IModel<T> model = PersistableModel.of(getRepository()::findById, newInstanceCreator);
         return model;
     }
 
-    private AbstractLink createCloneButton(String id, IModel<T> model) {
+    protected AbstractLink createCloneButton(String id, IModel<T> model) {
         AbstractLink button = null;
         if (ajax) {
             button = createAjaxCloneButton(id, model);
@@ -191,8 +224,18 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         return button;
     }
 
+    public T copyDataForClone(final T src, final T dst) {
+        try {
+            entityManager.detach(dst);
+            org.apache.commons.beanutils.BeanUtils.copyProperties(dst, src);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return dst;
+    }
+
     public AbstractLink createAjaxCloneButton(String id, IModel<T> model) {
-        return new AjaxLink<T>(id, model) {
+        AbstractLink button = new AjaxLink<T>(id, model) {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 onClone(Optional.of(target), CrudEditPage.this.getModel());
@@ -205,6 +248,9 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
                 setEnabled(object != null && !object.isNew());
             }
         };
+        button.setEnabled(false).setVisible(false);
+        return button;
+
     }
 
     public AbstractLink createSimpleCloneButton(String id, IModel<T> model) {

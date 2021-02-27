@@ -2,6 +2,7 @@ package com.bochkov.smallcraft.wicket.web.pages.exitnotification;
 
 import com.bochkov.bootstrap.tempusdominus.localdatetime.LocalDateTimeTextFieldCalendar;
 import com.bochkov.data.jpa.mask.Maskable;
+import com.bochkov.data.jpa.mask.MaskableProperty;
 import com.bochkov.hierarchical.Hierarchicals;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Person;
@@ -137,7 +138,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
                 b.greaterThanOrEqualTo(r.get("returnDateTime"), df),
                 r.get("returnDateTime").isNull())
         ).orElse(null));
-        where = where.and(Optional.ofNullable(quickSearch).map(str -> Maskable.maskSpecification(str,
+        where = where.and(Optional.ofNullable(quickSearch).map(str -> MaskableProperty.maskSpecification(str,
                 Lists.newArrayList("notification.number", "captain.lastName", "boat.tailNumber", "captain.phones", "boat.registrationNumber")
         )).orElse(null));
         where = where.and(Optional.ofNullable(dateTo).map(dt -> (Specification<ExitNotification>) (r, q, b) -> b.lessThanOrEqualTo(r.get("exitDateTime"), dt)).orElse(null));
