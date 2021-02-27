@@ -1,12 +1,11 @@
 package com.bochkov.smallcraft.wicket.web.error;
 
-import javax.servlet.http.HttpServletResponse;
-
 import com.bochkov.smallcraft.wicket.web.BasePage;
+import com.giffing.wicket.spring.boot.context.scan.WicketAccessDeniedPage;
 import org.apache.wicket.request.http.WebResponse;
 import org.wicketstuff.annotation.mount.MountPath;
 
-import com.giffing.wicket.spring.boot.context.scan.WicketAccessDeniedPage;
+import javax.servlet.http.HttpServletResponse;
 
 @MountPath("problem")
 @WicketAccessDeniedPage

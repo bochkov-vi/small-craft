@@ -1,8 +1,6 @@
 package com.bochkov.smallcraft.wicket.web.pages.exitnotification;
 
-import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
-import com.bochkov.smallcraft.jpa.entity.Notification;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import org.apache.wicket.Component;

@@ -2,7 +2,7 @@ package com.bochkov.smallcraft.wicket.web.pages.person;
 
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
-import com.bochkov.wicket.component.select2.data.MaskableChoiceProvider;
+import com.bochkov.wicket.select2.data.MaskableChoiceProvider;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.springframework.data.domain.Page;
@@ -11,7 +11,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.select2.ChoiceProvider;
 import org.wicketstuff.select2.Select2Choice;
 
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 

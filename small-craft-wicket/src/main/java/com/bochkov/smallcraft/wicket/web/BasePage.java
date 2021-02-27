@@ -19,9 +19,6 @@ import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.protocol.http.WebSession;
-import org.apache.wicket.protocol.http.request.WebClientInfo;
-import org.apache.wicket.protocol.https.RequireHttps;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.convert.ConversionException;
 import org.apache.wicket.util.string.StringValue;
@@ -33,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.TimeZone;
 
 public class BasePage<T> extends GenericWebPage<T> {
 

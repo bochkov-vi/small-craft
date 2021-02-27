@@ -1,7 +1,6 @@
 package com.bochkov.smallcraft.wicket.web.pages.exitnotification;
 
 import com.bochkov.bootstrap.tempusdominus.localdatetime.LocalDateTimeTextFieldCalendar;
-import com.bochkov.data.jpa.mask.Maskable;
 import com.bochkov.data.jpa.mask.MaskableProperty;
 import com.bochkov.hierarchical.Hierarchicals;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;

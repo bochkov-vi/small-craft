@@ -1,7 +1,7 @@
 package com.bochkov.smallcraft.wicket;
 
 import com.bochkov.wicket.component.Html5AttributesBehavior;
-import com.bochkov.wicket.component.select2.Select2ApplicationExtension;
+import com.bochkov.wicket.select2.Select2ApplicationExtension;
 import com.giffing.wicket.spring.boot.context.extensions.ApplicationInitExtension;
 import com.giffing.wicket.spring.boot.context.extensions.WicketApplicationInitConfiguration;
 import de.agilecoders.wicket.webjars.WicketWebjars;

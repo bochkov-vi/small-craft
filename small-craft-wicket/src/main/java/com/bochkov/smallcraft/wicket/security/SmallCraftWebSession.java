@@ -10,7 +10,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.inject.Inject;
 import java.time.ZoneId;
-import java.util.Objects;
 import java.util.TimeZone;
 
 public class SmallCraftWebSession extends SecureWebSession {

@@ -2,7 +2,7 @@ package com.bochkov.smallcraft.wicket.web.pages.boat;
 
 import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.repository.BoatRepository;
-import com.bochkov.wicket.component.select2.data.MaskableChoiceProvider;
+import com.bochkov.wicket.select2.data.MaskableChoiceProvider;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.wicketstuff.select2.ChoiceProvider;

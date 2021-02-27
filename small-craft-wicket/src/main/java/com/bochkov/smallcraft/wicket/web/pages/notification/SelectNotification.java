@@ -2,7 +2,7 @@ package com.bochkov.smallcraft.wicket.web.pages.notification;
 
 import com.bochkov.smallcraft.jpa.entity.Notification;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
-import com.bochkov.wicket.component.select2.data.MaskableChoiceProvider;
+import com.bochkov.wicket.select2.data.MaskableChoiceProvider;
 import org.apache.wicket.model.IModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,13 +1,11 @@
 package com.bochkov.smallcraft.wicket;
 
-import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.security.SmallCraftWebSession;
 import com.giffing.wicket.spring.boot.starter.app.WicketBootSecuredWebApplication;
 import org.apache.wicket.IConverterLocator;
 import org.apache.wicket.Session;
 import org.apache.wicket.request.Request;
 import org.apache.wicket.request.Response;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;

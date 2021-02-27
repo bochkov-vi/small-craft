@@ -2,7 +2,7 @@ package com.bochkov.smallcraft.wicket.web.pages.unit;
 
 import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
-import com.bochkov.wicket.component.select2.data.PersistableChoiceProvider;
+import com.bochkov.wicket.select2.data.PersistableChoiceProvider;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.wicketstuff.select2.ChoiceProvider;
