@@ -1,6 +1,7 @@
 package com.bochkov.smallcraft.wicket.web.pages.person;
 
 import com.bochkov.data.jpa.mask.Maskable;
+import com.bochkov.data.jpa.mask.MaskableProperty;
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.repository.PersonRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
@@ -46,7 +47,7 @@ public class TablePage extends CrudTablePage<Person, Long> {
 
     @Override
     protected Specification<Person> specification() {
-        Specification specification = search.map(str -> Maskable.maskSpecification(str,
+        Specification specification = search.map(str -> MaskableProperty.maskSpecification(str,
                 Lists.newArrayList("lastName", "passport.number", "phones", "email", "address"))).orElse(null).getObject();
         return specification;
     }
