@@ -52,7 +52,7 @@ public class Boat extends AbstractEntity<Long> {
     @JoinColumn(name = "id_unit")
     Unit unit;
 
-    @Column(nullable = false)
+    @Column(nullable = false,columnDefinition = "boolean not null default true")
     boolean notRegistable;
 
     @ManyToOne

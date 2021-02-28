@@ -6,8 +6,8 @@
     <modules>
         <module>small-craft-jpa</module>
         <module>small-craft-wicket</module>
-        <module>small-craft-frontend</module>
-        <module>small-craft-backend</module>
+
+        <module>small-craft-embeded-ldap</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -24,6 +24,15 @@
     <properties>
         <java.version>1.8</java.version>
     </properties>
+    <profiles>
+        <profile>
+            <id>vue</id>
+            <modules>
+                <module>small-craft-frontend</module>
+                <module>small-craft-backend</module>
+            </modules>
+        </profile>
+    </profiles>
     <dependencyManagement>
         <dependencies>
             <dependency>

@@ -15,12 +15,12 @@
     </properties>
     <profiles>
         <profile>
-            <id>locahostdb</id>
+            <id>localhost</id>
             <build>
                 <resources>
                     <resource>
                         <directory>
-                            src/main/dev-resources
+                            src/main/localhost-resources
                         </directory>
                     </resource>
                 </resources>
