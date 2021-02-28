@@ -6,8 +6,8 @@
     <modules>
         <module>small-craft-jpa</module>
         <module>small-craft-wicket</module>
-        <!-- <module>small-craft-frontend</module>
-         <module>small-craft-backend</module>-->
+        <module>small-craft-frontend</module>
+        <module>small-craft-backend</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

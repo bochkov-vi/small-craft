@@ -40,7 +40,7 @@
     <dependencies>
         <dependency>
             <groupId>com.bochkov</groupId>
-            <artifactId>data-jpa-mask</artifactId>
+            <artifactId>spring-data-jpa-findbymask</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>

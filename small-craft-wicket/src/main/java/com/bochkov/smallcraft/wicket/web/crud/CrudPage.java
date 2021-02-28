@@ -3,7 +3,7 @@ package com.bochkov.smallcraft.wicket.web.crud;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.duplicate.DuplicateError;
 import com.bochkov.smallcraft.wicket.web.BasePage;
-import com.bochkov.wicket.data.model.PersistableModel;
+import com.bochkov.wicket.jpa.model.PersistableModel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
