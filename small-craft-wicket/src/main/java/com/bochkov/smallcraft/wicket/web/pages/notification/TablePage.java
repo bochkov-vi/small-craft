@@ -12,6 +12,7 @@ import com.bochkov.smallcraft.wicket.component.filter.FilterPanel;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.smallcraft.wicket.web.crud.EntityDataTable;
+import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeLink;
 import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.collect.Lists;
 import org.apache.wicket.AttributeModifier;
@@ -195,7 +196,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
                     }
                 };
 
-                AbstractLink link = new Link<Notification>("link", rowModel) {
+                AbstractLink link = new AuthorizeLink<Notification>("link", rowModel) {
                     @Override
                     public void onClick() {
                         com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage editPage = new com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage(PersistableModel.of(

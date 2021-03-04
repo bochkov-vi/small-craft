@@ -84,9 +84,9 @@ public class EditPage extends CrudEditPage<Boat, Long> {
     }
 
     @Override
-    public AbstractLink createSimpleCloneButton(String id, IModel<Boat> model) {
+    public AbstractLink createCloneButton(String id, IModel<Boat> model) {
         {
-            AbstractLink link = super.createSimpleCloneButton(id, model);
+            AbstractLink link = super.createCloneButton(id, model);
             link.setEnabled(true).setVisible(true);
             return link;
         }

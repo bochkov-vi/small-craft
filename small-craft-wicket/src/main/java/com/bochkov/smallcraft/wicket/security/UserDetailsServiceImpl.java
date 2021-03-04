@@ -23,8 +23,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserDetails details;
-        Account account = repository.findById(username).orElseGet(() -> repository.save(new Account(username).setRole("ROLE_USER", "ROLE_ADMIN")));
-        details = new User(account.getId(), "", Optional.ofNullable(account.getRoles()).map(roles -> roles.stream().map(role -> new SimpleGrantedAuthority(role)).collect(Collectors.toList())).orElseGet(Lists::newArrayList));
+        Account account = repository.findById(username).orElseGet(() -> repository.save(new Account(username).setRole("ROLE_USER")));
+        details = new User(account.getId(), "", Optional.ofNullable(account.getRoles()).map(roles -> roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())).orElseGet(Lists::newArrayList));
         return details;
     }
 }

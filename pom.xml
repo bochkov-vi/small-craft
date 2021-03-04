@@ -41,6 +41,11 @@
             </dependency>
             <dependency>
                 <groupId>com.bochkov</groupId>
+                <artifactId>small-craft-security</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bochkov</groupId>
                 <artifactId>wicket-spring-data-jpa-crud</artifactId>
                 <version>1.0</version>
             </dependency>

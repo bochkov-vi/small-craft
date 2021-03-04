@@ -1,5 +1,7 @@
 package com.bochkov.smallcraft.wicket.web.crud;
 
+import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeButton;
+import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeLink;
 import com.bochkov.wicket.jpa.model.PersistableModel;
 import lombok.experimental.Accessors;
 import org.apache.commons.beanutils.FluentPropertyBeanIntrospector;
@@ -7,13 +9,12 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.link.AbstractLink;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.*;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
@@ -28,6 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 @Accessors(chain = true)
+@AuthorizeInstantiation("ROLE_ADMIN")
 public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Serializable> extends CrudPage<T, T, ID> {
 
     static {
@@ -67,12 +69,12 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
 
 
     private Button createSaveButton(String id) {
-        Button button = null;
-        if (ajax) {
-            button = createAjaxSaveButton(id);
-        } else {
-            button = createSimpleSaveButton(id);
-        }
+        Button button = new AuthorizeButton(id) {
+            @Override
+            public void onSubmit() {
+                onSave(Optional.empty(), CrudEditPage.this.getModel());
+            }
+        };
         return button;
     }
 
@@ -86,15 +88,6 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
             @Override
             protected void onError(AjaxRequestTarget target) {
                 onSaveError(Optional.of(target), CrudEditPage.this.getModel());
-            }
-        };
-    }
-
-    private Button createSimpleSaveButton(String id) {
-        return new Button(id) {
-            @Override
-            public void onSubmit() {
-                onSave(Optional.empty(), CrudEditPage.this.getModel());
             }
         };
     }
@@ -161,7 +154,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
 
     }
 
-    public void onAddRow(Optional<AjaxRequestTarget> target) {
+    public void onAddRow() {
         CrudEditPage<T, ID> page = BeanUtils.instantiateClass(this.getClass());
         page.setBackPage(getBackPage());
         setResponsePage(page);
@@ -184,9 +177,9 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         Component addButton = createAddRowButton("btn-new");
         form.add(addButton);
 
-        Component deleteButton = createDeleteButton("btn-delete", getModel(),new ResourceModel("delete").wrapOnAssignment(this));
+        Component deleteButton = createDeleteButton("btn-delete", getModel(), new ResourceModel("delete").wrapOnAssignment(this));
         form.add(deleteButton);
-        form.add(createBackButton("btn-back", ajax));
+        form.add(createBackButton("btn-back"));
         form.add(createInputPanel("input-panel", getModel()));
         form.setDefaultButton(saveButton);
         container.add(form);
@@ -210,16 +203,6 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         return model;
     }
 
-    protected AbstractLink createCloneButton(String id, IModel<T> model) {
-        AbstractLink button = null;
-        if (ajax) {
-            button = createAjaxCloneButton(id, model);
-        } else {
-            button = createSimpleCloneButton(id, model);
-        }
-
-        return button;
-    }
 
     public T copyDataForClone(final T src, final T dst) {
         try {
@@ -231,27 +214,8 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         return dst;
     }
 
-    public AbstractLink createAjaxCloneButton(String id, IModel<T> model) {
-        AbstractLink button = new AjaxLink<T>(id, model) {
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                onClone(Optional.of(target), CrudEditPage.this.getModel());
-            }
-
-            @Override
-            protected void onConfigure() {
-                super.onConfigure();
-                T object = getModelObject();
-                setEnabled(object != null && !object.isNew());
-            }
-        };
-        button.setEnabled(false).setVisible(false);
-        return button;
-
-    }
-
-    public AbstractLink createSimpleCloneButton(String id, IModel<T> model) {
-        AbstractLink button = new Link<T>(id, model) {
+    public AbstractLink createCloneButton(String id, IModel<T> model) {
+        AbstractLink button = new AuthorizeLink<T>(id, model) {
             @Override
             protected void onConfigure() {
                 super.onConfigure();
@@ -269,30 +233,13 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     }
 
 
-    public Component createAddRowAjaxButton(String id) {
-        return new AjaxLink<Void>(id) {
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                onAddRow(Optional.of(target));
-            }
-        };
-    }
-
-    public Component createAddRowSimpleButton(String id) {
-        return new Link<Void>(id) {
+    public Component createAddRowButton(String id) {
+        return new AuthorizeLink<Void>(id) {
             @Override
             public void onClick() {
-                onAddRow(Optional.empty());
+                onAddRow();
             }
         };
-    }
-
-    public Component createAddRowButton(String id) {
-        if (ajax) {
-            return createAddRowAjaxButton(id);
-        } else {
-            return createAddRowSimpleButton(id);
-        }
     }
 
     @Override

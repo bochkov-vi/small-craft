@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.wicket.web.crud;
 
+import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeLink;
 import com.bochkov.wicket.component.table.XLSXDataExportLink;
 import com.bochkov.wicket.data.provider.PersistableDataProvider;
 import com.bochkov.wicket.jpa.model.CollectionModel;
@@ -10,15 +11,12 @@ import org.apache.wicket.Component;
 import org.apache.wicket.Session;
 import org.apache.wicket.StyleAttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.HeaderlessColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.ISortableDataProvider;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.link.AbstractLink;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -34,18 +32,18 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Stream;
 
+
 public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serializable> extends CrudPage<Collection<T>, T, ID> {
 
-
-    private ScrollToAnchorBehavior<T> scrollToAnchorBehavior;
 
     WebMarkupContainer container = new WebMarkupContainer("container");
 
     EntityDataTable<T, ID> table = null;
 
-    boolean ajax = false;
 
     XLSXDataExportLink exportExcel;
+
+    private ScrollToAnchorBehavior<T> scrollToAnchorBehavior;
 
     @Getter
     private IModel<String> exportFileName;
@@ -118,11 +116,12 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     public Component createEditButton(String id, IModel<T> model) {
         AbstractLink button = null;
-        if (ajax) {
-            button = createEditAjaxButton(id, model);
-        } else {
-            button = createEditSimpleButton(id, model);
-        }
+        button = new AuthorizeLink<T>(id, model) {
+            @Override
+            public void onClick() {
+                onEdit(getModel());
+            }
+        };
         button.setEscapeModelStrings(false);
 
         button.setBody(Model.of("<span class='fa fa-pencil'></span>"));
@@ -134,7 +133,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
                 return oldClasses;
             }
         });
-        button.add(new AttributeAppender("title", new ResourceModel("edit").wrapOnAssignment(button)));
+
         return button;
     }
 
@@ -157,26 +156,9 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         };
     }
 
+
     public Component createAddRowButton(String id) {
-        if (ajax) {
-            return createAddRowAjaxButton(id);
-        } else {
-            return createAddRowSimpleButton(id);
-        }
-    }
-
-
-    public Component createAddRowAjaxButton(String id) {
-        return new AjaxLink<Void>(id) {
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                onAddRow(Optional.of(target));
-            }
-        };
-    }
-
-    public Component createAddRowSimpleButton(String id) {
-        return new Link<Void>(id) {
+        return new AuthorizeLink<Void>(id) {
             @Override
             public void onClick() {
                 onAddRow(Optional.empty());
@@ -184,31 +166,11 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         };
     }
 
-
-    public AbstractLink createEditAjaxButton(String id, IModel<T> model) {
-        return new AjaxLink<T>(id, model) {
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                onEdit(Optional.of(target), model);
-            }
-        };
-    }
-
-    public AbstractLink createEditSimpleButton(String id, IModel<T> model) {
-        return new Link<T>(id, model) {
-            @Override
-            public void onClick() {
-                onEdit(Optional.empty(), model);
-            }
-        };
-    }
-
-    public void onEdit(Optional<AjaxRequestTarget> target, IModel<T> model) {
+    public void onEdit(IModel<T> model) {
         CrudEditPage<T, ID> page = createEditPage(model);
         setSelected(model);
         setResponsePage(page);
     }
-
 
     public void onAddRow(Optional<AjaxRequestTarget> target) {
         setResponsePage(createEditPage().setBackPage(this));
@@ -224,6 +186,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
             PageParameters pageParameters = pageParametersForModel(model);
             Constructor<? extends CrudEditPage<T, ID>> constructor = null;
             constructor = clazz.getConstructor(PageParameters.class);
+
             page = BeanUtils.instantiateClass(constructor, pageParameters);
         } catch (NoSuchMethodException e) {
             page = createEditPage();

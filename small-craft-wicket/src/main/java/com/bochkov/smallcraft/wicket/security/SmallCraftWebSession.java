@@ -3,6 +3,7 @@ package com.bochkov.smallcraft.wicket.security;
 import com.bochkov.smallcraft.jpa.entity.Account;
 import com.bochkov.smallcraft.jpa.repository.AccountRepository;
 import com.giffing.wicket.spring.boot.starter.configuration.extensions.external.spring.security.SecureWebSession;
+import org.apache.wicket.ISessionListener;
 import org.apache.wicket.Session;
 import org.apache.wicket.request.Request;
 import org.springframework.security.core.Authentication;
@@ -62,5 +63,15 @@ public class SmallCraftWebSession extends SecureWebSession {
     public void signOut() {
         super.signOut();
         SecurityContextHolder.clearContext();
+    }
+
+    public static class SmallCraftWebSessionListener implements ISessionListener {
+
+        @Override
+        public void onCreated(Session session) {
+            if (session instanceof SmallCraftWebSession) {
+                ((SmallCraftWebSession) session).updateSignIn();
+            }
+        }
     }
 }

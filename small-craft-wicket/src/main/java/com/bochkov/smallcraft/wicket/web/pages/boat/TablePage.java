@@ -13,6 +13,7 @@ import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.filter.FilterPanel;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
+import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeLink;
 import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.base.Joiner;
 import org.apache.commons.compress.utils.Lists;
@@ -32,7 +33,6 @@ import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.domain.Specification;
@@ -76,7 +76,6 @@ public class TablePage extends CrudTablePage<Boat, Long> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
-        this.setAjax(true);
         FilterPanel filter = new FilterPanel("filter", new CompoundPropertyModel<>(this));
         add(filter);
         FormComponent<BoatFilterPanel.Expirated> expiratedDropDownChoice = new DropDownChoice<>("expire", com.google.common.collect.Lists.newArrayList(BoatFilterPanel.Expirated.values()), new EnumChoiceRenderer<>(getPage())).setNullValid(true);
@@ -198,7 +197,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
                 id -> notificationRepository.findById(id));
         PageParameters parameters = new PageParameters();
         parameters.set("boat", getConverter(Boat.class).convertToString(rowModel.getObject(), Session.get().getLocale()));
-        Link link = new Link<Notification>("link", notification) {
+        Link link = new AuthorizeLink<Notification>("link", notification) {
             @Override
             public void onClick() {
                 com.bochkov.smallcraft.wicket.web.pages.notification.EditPage notificationPage = new com.bochkov.smallcraft.wicket.web.pages.notification.EditPage(notification.copyWithIfNullGet(() -> {
@@ -226,7 +225,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         PersistableModel<ExitNotification, Long> exitNotification = PersistableModel.of(
                 exitNotificationRepository.findLastByBoatAndPeriod(rowModel.getObject(), LocalDate.now()).orElse(null),
                 id -> exitNotificationRepository.findById(id));
-        Link<Boat> link = new Link<Boat>("link", rowModel) {
+        Link<Boat> link = new AuthorizeLink<Boat>("link", rowModel) {
             @Override
             public void onClick() {
                 com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage editPage = new com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage(
@@ -249,7 +248,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
                 setSelected(rowModel);
             }
         };
-        link.add(new Label("label", exitNotification.map(en->getString("on-exit"))));
+        link.add(new Label("label", exitNotification.map(en -> getString("on-exit"))));
         fragment.add(link);
         return fragment;
     }

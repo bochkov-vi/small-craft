@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.wicket.security;
 
+import com.bochkov.smallcraft.jpa.entity.Account;
 import com.bochkov.smallcraft.jpa.repository.AccountRepository;
 import com.giffing.wicket.spring.boot.context.security.AuthenticatedWebSessionConfig;
 import org.apache.wicket.authroles.authentication.AbstractAuthenticatedWebSession;
@@ -11,11 +12,16 @@ import org.springframework.core.annotation.Order;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,6 +31,8 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Default Spring Boot Wicket security getting started configuration. Its only
@@ -71,10 +79,26 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
                 })
                 .contextSource()
                 .url("ldap://main.svpubo.fsb.ru:389/dc=9862,dc=svpubo,dc=fsb,dc=ru");
-       /* auth.inMemoryAuthentication()
-                .withUser("admin")
-                .password(passwordEncoder().encode("admin"))
-                .roles("USER", "ADMIN");*/
+        auth.authenticationProvider(new AuthenticationProvider() {
+            @Override
+            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+                Account account = accountRepository.findById(authentication.getName()).orElse(null);
+                if (account != null) {
+                    if (Objects.equals(account.getPassword(), authentication.getCredentials())) {
+                        authentication = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), authentication.getCredentials(),
+                                account.getRoles().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+                    }
+                }
+
+                return authentication;
+            }
+
+            @Override
+            public boolean supports(Class<?> authentication) {
+                boolean result = UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+                return result;
+            }
+        });
     }
 
     @Override

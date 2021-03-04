@@ -94,7 +94,7 @@ public class EditPage extends CrudEditPage<Notification, Long> {
     }
 
     @Override
-    protected AbstractLink createCloneButton(String id, IModel<Notification> model) {
+    public AbstractLink createCloneButton(String id, IModel<Notification> model) {
         AbstractLink cloneButton = super.createCloneButton(id, model);
         cloneButton.setEnabled(true).setVisible(true);
         return cloneButton;

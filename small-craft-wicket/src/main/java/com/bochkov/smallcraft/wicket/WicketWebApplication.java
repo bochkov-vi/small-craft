@@ -29,12 +29,12 @@ public class WicketWebApplication extends WicketBootSecuredWebApplication {
     }
 
 
-    @Override
+   /* @Override
     public Session newSession(Request request, Response response) {
         SmallCraftWebSession session = (SmallCraftWebSession) super.newSession(request, response);
         session.updateSignIn();
         return session;
-    }
+    }*/
 
 
 }
