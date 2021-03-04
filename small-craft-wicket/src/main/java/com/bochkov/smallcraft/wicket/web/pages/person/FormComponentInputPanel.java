@@ -11,7 +11,7 @@ import com.bochkov.smallcraft.wicket.web.pages.person.component.Select2FirstName
 import com.bochkov.smallcraft.wicket.web.pages.person.component.Select2MiddleName;
 import com.bochkov.wicket.component.InputMaskBehavior;
 import com.bochkov.wicket.component.LocalDateTextField;
-import com.bochkov.wicket.data.model.PersistableModel;
+import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.Getter;

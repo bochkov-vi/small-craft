@@ -1,6 +1,6 @@
 package com.bochkov.smallcraft.wicket.web.crud;
 
-import com.bochkov.wicket.data.model.PersistableModel;
+import com.bochkov.wicket.jpa.model.PersistableModel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;

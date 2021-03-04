@@ -6,7 +6,6 @@
     <modules>
         <module>small-craft-jpa</module>
         <module>small-craft-wicket</module>
-
         <module>small-craft-embeded-ldap</module>
     </modules>
     <parent>

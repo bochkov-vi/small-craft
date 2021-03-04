@@ -12,15 +12,13 @@ import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.feedback.IFeedbackMessageFilter;
 import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.IModelComparator;
-import org.apache.wicket.model.Model;
-import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.model.*;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.danekja.java.util.function.serializable.SerializableConsumer;
 import org.springframework.core.NestedRuntimeException;
@@ -137,16 +135,16 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         } else {
             button = createSimpleBackButton(id);
         }
-        button.setEscapeModelStrings(false);
-        button.add(new ClassAttributeModifier() {
-            @Override
-            protected Set<String> update(Set<String> oldClasses) {
-                oldClasses.add("btn");
-                oldClasses.add("btn-outline-info");
-                return oldClasses;
-            }
-        });
-        button.setBody(Model.of("<span class='fa fa-mail-reply'></span>"));
+//        button.setEscapeModelStrings(false);
+//        button.add(new ClassAttributeModifier() {
+//            @Override
+//            protected Set<String> update(Set<String> oldClasses) {
+//                oldClasses.add("btn");
+//                oldClasses.add("btn-outline-info");
+//                return oldClasses;
+//            }
+//        });
+        //button.setBody(Model.of("<span class='fa fa-mail-reply'></span>"));
         return button;
     }
 
@@ -191,13 +189,17 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         deletePanel.show(target);
     }
 
-    public final Component createDeleteButton(String id, IModel model) {
+    public final Component createDeleteButton(String id, IModel model, IModel<String> label) {
         AbstractLink button = null;
 
         button = createDeleteAjaxButton(id, model);
-
+        button.add(new AttributeAppender("title", new ResourceModel("delete").wrapOnAssignment(button)));
         button.setEscapeModelStrings(false);
-        button.setBody(Model.of("<span class='fa fa-trash'></span>"));
+        if (label != null) {
+            button.setBody(label.map(str -> String.format("<span class='fa fa-trash'></span><span>%s</span", str)));
+        } else {
+            button.setBody(Model.of("<span class='fa fa-trash'></span>"));
+        }
         button.add(new ClassAttributeModifier() {
             @Override
             protected Set<String> update(Set<String> oldClasses) {

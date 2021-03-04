@@ -1,6 +1,6 @@
 package com.bochkov.smallcraft.wicket.web.crud;
 
-import com.bochkov.wicket.data.model.PersistableModel;
+import com.bochkov.wicket.jpa.model.PersistableModel;
 import lombok.experimental.Accessors;
 import org.apache.commons.beanutils.FluentPropertyBeanIntrospector;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -14,10 +14,7 @@ import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.model.CompoundPropertyModel;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.IModelComparator;
-import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.model.*;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.danekja.java.util.function.serializable.SerializableSupplier;
@@ -187,7 +184,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         Component addButton = createAddRowButton("btn-new");
         form.add(addButton);
 
-        Component deleteButton = createDeleteButton("btn-delete", getModel());
+        Component deleteButton = createDeleteButton("btn-delete", getModel(),new ResourceModel("delete").wrapOnAssignment(this));
         form.add(deleteButton);
         form.add(createBackButton("btn-back", ajax));
         form.add(createInputPanel("input-panel", getModel()));

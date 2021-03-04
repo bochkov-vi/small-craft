@@ -13,11 +13,13 @@ import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.filter.FilterPanel;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
-import com.bochkov.wicket.data.model.PersistableModel;
+import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.base.Joiner;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
 import org.apache.wicket.Session;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.html.basic.Label;
@@ -30,14 +32,18 @@ import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
 import javax.persistence.criteria.Path;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @MountPath("boat")
@@ -142,50 +148,13 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         columns.add(new HeaderlessColumn<Boat, String>() {
             @Override
             public void populateItem(Item<ICellPopulator<Boat>> cellItem, String componentId, IModel<Boat> rowModel) {
-                Fragment fragment = new Fragment(componentId, "not-link", getPage());
-                Link<Boat> link = new Link<Boat>("link", rowModel) {
-                    @Override
-                    public void onClick() {
-                        PageParameters parameters = new PageParameters();
-                        parameters.set("boat", getConverter(Boat.class).convertToString(getModelObject(), Session.get().getLocale()));
-                        com.bochkov.smallcraft.wicket.web.pages.notification.EditPage notificationPage = new com.bochkov.smallcraft.wicket.web.pages.notification.EditPage(parameters);
-                        notificationPage.setBackPage(getPage());
-                        setResponsePage(notificationPage);
-                    }
-                };
-                cellItem.add(fragment);
-                fragment.add(link);
+                cellItem.add(createNotificationLink(componentId, rowModel));
             }
         });
         columns.add(new HeaderlessColumn<Boat, String>() {
             @Override
             public void populateItem(Item<ICellPopulator<Boat>> cellItem, String componentId, IModel<Boat> rowModel) {
-                Fragment fragment = new Fragment(componentId, "exit-link", getPage());
-                Link<Boat> link = new Link<Boat>("link", rowModel) {
-                    @Override
-                    public void onClick() {
-
-                        com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage editPage = new com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage(
-                                PersistableModel.of(id -> exitNotificationRepository.findById(id),
-                                        () -> {
-                                            Optional<Notification> n = notificationRepository.findTopByBoatOrderByNumberDesc(rowModel.getObject());
-                                            return new ExitNotification()
-                                                    .setBoat(rowModel.getObject())
-                                                    .setUnit(rowModel.map(Boat::getUnit).getObject())
-                                                    .setPier(n.map(Notification::getPier).orElse(null))
-                                                    .setActivities(n.map(Notification::getActivities).orElse(null))
-                                                    .setRegions(n.map(Notification::getRegions).orElse(null))
-                                                    .setCaptain(rowModel.map(Boat::getPerson).getObject())
-                                                    .setExitCallDateTime(LocalDateTime.now())
-                                                    .setExitDateTime(LocalDateTime.now().plusHours(2));
-                                        })
-                        );
-                        editPage.setBackPage(getPage());
-                        setResponsePage(editPage);
-                    }
-                };
-                cellItem.add(fragment);
-                fragment.add(link);
+                cellItem.add(createExitNotificationLink(componentId, rowModel));
             }
         });
         columns.add(createEditColumn());
@@ -204,26 +173,89 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         specification = specification.and(Optional.ofNullable(quickSearch).map(str -> MaskableProperty.<Boat>maskSpecification(str, "registrationNumber", "tailNumber", "person.lastName", "legalPerson.name", "model")).orElse(null));
         specification = specification.and(Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).map(unitEntity -> Hierarchicals.getAllChildIds(true, unitEntity)).filter(list -> !list.isEmpty()).map(list -> (Specification<Boat>) (r, q, b) -> r.get("unit").get("id").in(list)).orElse(null));
         specification = specification.and(Optional.ofNullable(expire).map(exp ->
-            (Specification<Boat>) (r, q, b) -> {
-                Path path = r.get("expirationDate");
-                switch (expire) {
-                    case NOT_EXPIRATED: {
-                        return path.isNull();
-                    }
-                    case EXPIRATED: {
-                        return path.isNotNull();
+                (Specification<Boat>) (r, q, b) -> {
+                    Path path = r.get("expirationDate");
+                    switch (expire) {
+                        case NOT_EXPIRATED: {
+                            return path.isNull();
+                        }
+                        case EXPIRATED: {
+                            return path.isNotNull();
 
+                        }
+                        default: {
+                            return null;
+                        }
                     }
-                    default: {
-                        return null;
-                    }
-                }
-            }).orElse(null));
+                }).orElse(null));
         return specification;
     }
+
+    public Component createNotificationLink(String componentId, IModel<Boat> rowModel) {
+        Fragment fragment = new Fragment(componentId, "not-link", getPage());
+        PersistableModel<Notification, Long> notification = PersistableModel.of(
+                notificationRepository.findTopByBoatOrderByNumberDesc(rowModel.getObject(), LocalDate.now()).map(Persistable::getId).orElse(null),
+                id -> notificationRepository.findById(id));
+        PageParameters parameters = new PageParameters();
+        parameters.set("boat", getConverter(Boat.class).convertToString(rowModel.getObject(), Session.get().getLocale()));
+        Link link = new Link<Notification>("link", notification) {
+            @Override
+            public void onClick() {
+                com.bochkov.smallcraft.wicket.web.pages.notification.EditPage notificationPage = new com.bochkov.smallcraft.wicket.web.pages.notification.EditPage(notification.copyWithIfNullGet(() -> {
+                    Notification e = new Notification();
+                    e.setBoat(rowModel.getObject());
+                    return e;
+                }));
+                notificationPage.setBackPage(getPage());
+                setResponsePage(notificationPage);
+                setSelected(rowModel);
+            }
+        };
+
+        link.add(new Label("label", notification.map(Notification::getNumber).map(Objects::toString)));
+        link.add(new AttributeAppender("title", notification.map(n -> String.format(getString("valid-until"), n.getDateTo())).orElseGet(() -> getString("create-new"))));
+        fragment.add(link);
+        return fragment;
+    }
+
+    public Component createExitNotificationLink(String componentId, IModel<Boat> rowModel) {
+        Fragment fragment = new Fragment(componentId, "exit-link", getPage());
+        PersistableModel<Notification, Long> notification = PersistableModel.of(
+                notificationRepository.findTopByBoatOrderByNumberDesc(rowModel.getObject(), LocalDate.now()).map(Persistable::getId).orElse(null),
+                id -> notificationRepository.findById(id));
+        PersistableModel<ExitNotification, Long> exitNotification = PersistableModel.of(
+                exitNotificationRepository.findLastByBoatAndPeriod(rowModel.getObject(), LocalDate.now()).orElse(null),
+                id -> exitNotificationRepository.findById(id));
+        Link<Boat> link = new Link<Boat>("link", rowModel) {
+            @Override
+            public void onClick() {
+                com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage editPage = new com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage(
+                        exitNotification.copyWithIfNullGet(
+                                () -> {
+                                    return new ExitNotification()
+                                            .setBoat(rowModel.getObject())
+                                            .setUnit(rowModel.map(Boat::getUnit).getObject())
+                                            .setNotification(notification.getObject())
+                                            .setPier(notification.map(Notification::getPier).orElse(null).getObject())
+                                            .setActivities(notification.map(Notification::getActivities).orElse(null).getObject())
+                                            .setRegions(notification.map(Notification::getRegions).orElse(null).getObject())
+                                            .setCaptain(rowModel.map(Boat::getPerson).getObject())
+                                            .setExitCallDateTime(LocalDateTime.now())
+                                            .setExitDateTime(LocalDateTime.now());
+                                })
+                );
+                editPage.setBackPage(getPage());
+                setResponsePage(editPage);
+                setSelected(rowModel);
+            }
+        };
+        link.add(new Label("label", exitNotification.map(en->getString("on-exit"))));
+        fragment.add(link);
+        return fragment;
+    }
+
 
     public enum Expirated {
         EXPIRATED, NOT_EXPIRATED
     }
-
 }

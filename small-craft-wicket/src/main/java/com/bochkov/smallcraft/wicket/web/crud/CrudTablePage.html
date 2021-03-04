@@ -8,9 +8,12 @@
             <div class="btn-block p-3">
                 <div wicket:id="btn-add-row" class="btn btn-outline-primary">
                     <span class="fa fa-plus"></span>
+                    <wicket:message key="new-row-label"/>
                 </div>
-                <div wicket:id="export-excel" class="btn btn-outline-success">
+                <div wicket:id="export-excel" class="btn btn-outline-success"
+                     wicket:message="title:export-to-excel-file">
                     <span class="fa fa-file-excel-o"></span>
+                    <wicket:message key="export-to-excel-file"/>
                 </div>
             </div>
         </div>

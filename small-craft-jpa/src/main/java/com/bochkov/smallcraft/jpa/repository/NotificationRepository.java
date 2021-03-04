@@ -42,6 +42,12 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     Optional<Notification> findTopByBoatOrderByNumberDesc(Boat boat);
 
+    default Optional<Notification> findTopByBoatOrderByNumberDesc(Boat boat, LocalDate date) {
+        return findTopByBoatAndDateToGreaterThanEqualOrderByNumberDesc(boat,date);
+    }
+
+    Optional<Notification> findTopByBoatAndDateToGreaterThanEqualOrderByNumberDesc(Boat boat, LocalDate date);
+
     default Notification safeSave(Notification entity) {
         return save(preapreSave(entity));
     }

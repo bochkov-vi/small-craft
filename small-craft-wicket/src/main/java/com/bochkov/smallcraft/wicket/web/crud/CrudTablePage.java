@@ -1,8 +1,8 @@
 package com.bochkov.smallcraft.wicket.web.crud;
 
 import com.bochkov.wicket.component.table.XLSXDataExportLink;
-import com.bochkov.wicket.data.model.nonser.CollectionModel;
 import com.bochkov.wicket.data.provider.PersistableDataProvider;
+import com.bochkov.wicket.jpa.model.CollectionModel;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import org.apache.wicket.ClassAttributeModifier;
@@ -11,6 +11,7 @@ import org.apache.wicket.Session;
 import org.apache.wicket.StyleAttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.HeaderlessColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
@@ -31,16 +32,16 @@ import org.springframework.data.jpa.domain.Specification;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.stream.Stream;
 
 public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serializable> extends CrudPage<Collection<T>, T, ID> {
 
 
+    private ScrollToAnchorBehavior<T> scrollToAnchorBehavior;
+
     WebMarkupContainer container = new WebMarkupContainer("container");
 
-
     EntityDataTable<T, ID> table = null;
-
-    ScrollToAnchorBehavior<T> scrollToAnchorBehavior;
 
     boolean ajax = false;
 
@@ -74,16 +75,6 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
             @Override
             public void onRowCreated(Item<T> row, String id, int index, IModel<T> model) {
                 CrudTablePage.this.onRowCreated(table, row, id, index, model);
-                /*row.add(new ClassAttributeModifier() {
-                    @Override
-                    protected Set<String> update(Set<String> oldClasses) {
-                        if (model.combineWith(CrudTablePage.this.getModel(), (e, collection) -> collection.contains(e)).getObject()) {
-                            oldClasses.addAll(Lists.newArrayList("border-success","border"));
-                        }
-
-                        return oldClasses;
-                    }
-                });*/
                 row.add(new StyleAttributeModifier() {
                     @Override
                     protected Map<String, String> update(Map<String, String> oldStyles) {
@@ -143,6 +134,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
                 return oldClasses;
             }
         });
+        button.add(new AttributeAppender("title", new ResourceModel("edit").wrapOnAssignment(button)));
         return button;
     }
 
@@ -160,7 +152,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         return new HeaderlessColumn<T, String>() {
             @Override
             public void populateItem(Item<ICellPopulator<T>> cellItem, String componentId, IModel<T> rowModel) {
-                cellItem.add(createDeleteButton(componentId, rowModel));
+                cellItem.add(createDeleteButton(componentId, rowModel, null));
             }
         };
     }
@@ -213,7 +205,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     public void onEdit(Optional<AjaxRequestTarget> target, IModel<T> model) {
         CrudEditPage<T, ID> page = createEditPage(model);
-        setModelObject(Lists.newArrayList(model.getObject()));
+        setSelected(model);
         setResponsePage(page);
     }
 
@@ -262,5 +254,17 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     public void onRowCreated(EntityDataTable<T, ID> table, Item<T> item, final String id, final int index, final IModel<T> model) {
 
+    }
+
+    public CrudTablePage<T, ID> setSelectedCollection(IModel<Collection<T>> model) {
+        scrollToAnchorBehavior.setAnchor(model.map(Collection::stream).map(Stream::findFirst).map(s -> s.orElse(null)));
+        setModelObject(Lists.newArrayList(model.getObject()));
+        return this;
+    }
+
+    public CrudTablePage<T, ID> setSelected(IModel<T> model) {
+        scrollToAnchorBehavior.setAnchor(model);
+        setModelObject(Lists.newArrayList(model.getObject()));
+        return this;
     }
 }

@@ -8,7 +8,7 @@ import com.bochkov.smallcraft.wicket.web.pages.boat.SelectPier;
 import com.bochkov.smallcraft.wicket.web.pages.legalPerson.FormComponentInput;
 import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
-import com.bochkov.wicket.data.model.PersistableModel;
+import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import org.apache.wicket.ajax.AjaxRequestTarget;

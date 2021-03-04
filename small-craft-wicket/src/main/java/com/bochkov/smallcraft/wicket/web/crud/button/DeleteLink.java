@@ -4,6 +4,7 @@ import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 
 import java.util.Set;
 
@@ -21,7 +22,7 @@ public abstract class DeleteLink<T> extends Link<T> {
     protected void onInitialize() {
         super.onInitialize();
         setEscapeModelStrings(true);
-        setBody(Model.of("<span class='fa fa-close'></span>"));
+        setBody(Model.of(new ResourceModel("delete").map(lbl->String.format("<span class='fa fa-close'></span><span>%s</span>",lbl))));
         add(new ClassAttributeModifier() {
             @Override
             protected Set<String> update(Set<String> oldClasses) {
