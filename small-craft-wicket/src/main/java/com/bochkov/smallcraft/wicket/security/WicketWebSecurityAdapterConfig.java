@@ -87,11 +87,10 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
                     if (Objects.equals(account.getPassword(), authentication.getCredentials())) {
                         authentication = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), authentication.getCredentials(),
                                 account.getRoles().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
-                    }else {
-                        authentication =null;
+                    } else {
+                        authentication = null;
                     }
                 }
-
                 return authentication;
             }
 
@@ -106,11 +105,7 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                //.anonymous().disable()
                 .csrf().disable()
-
-//                .authorizeRequests().antMatchers("/boat/**","/person/**","/notification/**","/exit-notification/**","/unit/**").hasAnyRole("USER", "ADMIN")
-//                .and()
                 .authorizeRequests().antMatchers("/**").permitAll()
                 .and()
                 .logout()
@@ -133,17 +128,6 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
         return manager;
     }
 
-    /*  @Bean
-      public UserDetailsService userDetailsService() {
-          InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-          manager.createUser(
-                  User.withUsername("admin")
-                          .password(passwordEncoder().encode("admin"))
-                          .authorities("USER", "ADMIN")
-                          .build());
-          return manager;
-      }
-  */
     @Bean
     public AuthenticatedWebSessionConfig authenticatedWebSessionConfig() {
         return new AuthenticatedWebSessionConfig() {
