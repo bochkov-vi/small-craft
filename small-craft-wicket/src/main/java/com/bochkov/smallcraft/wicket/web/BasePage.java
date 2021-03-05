@@ -5,9 +5,13 @@ import com.bochkov.bootstrap.BootstrapBehavior;
 import com.bochkov.fontawesome.FontAwesomeBehavior;
 import com.bochkov.smallcraft.jpa.entity.Account;
 import com.bochkov.smallcraft.wicket.security.SmallCraftWebSession;
+import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.smallcraft.wicket.web.login.LoginPage;
 import com.bochkov.smallcraft.wicket.web.pages.boat.TablePage;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import org.apache.wicket.Application;
+import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -15,21 +19,28 @@ import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.MetaDataHeaderItem;
 import org.apache.wicket.markup.html.GenericWebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
+import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.resource.loader.IStringResourceLoader;
 import org.apache.wicket.util.convert.ConversionException;
 import org.apache.wicket.util.string.StringValue;
 import org.apache.wicket.util.string.Strings;
+import org.reflections.Reflections;
 import org.springframework.security.web.authentication.RememberMeServices;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class BasePage<T> extends GenericWebPage<T> {
 
@@ -71,19 +82,42 @@ public class BasePage<T> extends GenericWebPage<T> {
         super.onInitialize();
         add(new BootstrapBehavior());
         add(new FontAwesomeBehavior());
-        add(new BookmarkablePageLink<Void>("home-link", HomePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("boat-link", TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("person-link", com.bochkov.smallcraft.wicket.web.pages.person.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("legal-person-link", com.bochkov.smallcraft.wicket.web.pages.legalPerson.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("notification-link", com.bochkov.smallcraft.wicket.web.pages.notification.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("exit-notification-link", com.bochkov.smallcraft.wicket.web.pages.exitnotification.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
-        add(new BookmarkablePageLink<Void>("unit-link", com.bochkov.smallcraft.wicket.web.pages.unit.TablePage.class).add(ActiveLinkBehavior.forBookmarkable()));
+        Reflections reflections = new Reflections("com.bochkov.smallcraft");
+        List<Class> classes = Lists.newArrayList(reflections.getSubTypesOf(CrudTablePage.class));
+        classes.add(Application.get().getHomePage());
+        Collections.sort(classes, Ordering.natural().nullsFirst().onResultOf(c -> loadString((Class) c, "page-order")));
+        RepeatingView links = new RepeatingView("links");
+        for (Class<? extends CrudTablePage> pageClass : classes) {
+            IModel title = IModel.of(() -> loadString(pageClass, "title"));
+            String iconName = loadString(pageClass, "icon");
+            AbstractLink link = new BookmarkablePageLink<Void>(links.newChildId(), pageClass);
+            link.add(ActiveLinkBehavior.forBookmarkable());
+            link.setEscapeModelStrings(false);
+            Label label = new Label("label", title);
+            link.add(label);
+            Label icon = new Label("icon");
+            if (!Strings.isEmpty(iconName)) {
+                label.add(new ClassAttributeModifier() {
+                    @Override
+                    protected Set<String> update(Set<String> oldClasses) {
+                        oldClasses.add("fa");
+                        oldClasses.add(iconName);
+                        return oldClasses;
+                    }
+                });
+            } else {
+                icon.setVisible(false);
+            }
+            link.add(icon);
+            links.add(link);
+        }
+        add(links);
+
         IModel<Account> accountIModel = LoadableDetachableModel.of(() -> {
             SmallCraftWebSession session = SmallCraftWebSession.get();
             Account account = session.getCurrentAccount();
             return account;
         });
-
         AjaxLink btnSignOut = new AjaxLink<Void>("btn-signout") {
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -121,5 +155,16 @@ public class BasePage<T> extends GenericWebPage<T> {
         super.renderHead(response);
         String contextPath = WebApplication.get().getServletContext().getContextPath();
         response.render(MetaDataHeaderItem.forLinkTag("icon", contextPath + "/res/img/fishing-boat-icon-3.png"));
+    }
+
+    public String loadString(Class clazz, String key) {
+        for (IStringResourceLoader sl :
+                Application.get().getResourceSettings().getStringResourceLoaders()) {
+            String value = sl.loadStringResource(clazz, key, Session.get().getLocale(), Session.get().getStyle(), null);
+            if (!Strings.isEmpty(value)) {
+                return value;
+            }
+        }
+        return null;
     }
 }

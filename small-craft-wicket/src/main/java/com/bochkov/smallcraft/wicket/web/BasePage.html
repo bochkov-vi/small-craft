@@ -2,8 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 <wicket:head>
     <title>
-        <wicket:message key="title"></wicket:message>
-    </title>
+        <wicket:message key="title"></wicket:message> </title>
     <style>
         html {
             font-size: 12px;
@@ -26,30 +25,12 @@
         </button>
         <div id="navbarSupportedContent" class="collapse navbar-collapse">
             <div class="navbar-nav ">
-                <a wicket:id="home-link" href="#" class="nav-item nav-link ">
-                    <i class="fa fa-home"/>
-                    <wicket:message key="home-page-title"/>
-                </a>
-                <a wicket:id="boat-link" href="#" class="nav-item nav-link">
-                    <i class="fa fa-ship"/>
-                    <wicket:message key="boat-page-title"/>
-                </a>
-                <a wicket:id="person-link" href="#" class="nav-item nav-link ">
-                    <wicket:message key="person-page-title"/>
-                </a>
-                <a wicket:id="legal-person-link" href="#" class="nav-item nav-link ">
-                    <wicket:message key="legal-person-page-title"/>
-                </a>
-                <a wicket:id="notification-link" href="#" class="nav-item nav-link ">
-                    <wicket:message key="notification-page-title"/>
+
+                <a wicket:id="links" href="#" class="nav-item nav-link btn-outline-info">
+                    <i wicket:id="icon"/>
+                    <span wicket:id="label"/>
                 </a>
 
-                <a wicket:id="exit-notification-link" href="#" class="nav-item nav-link ">
-                    <wicket:message key="exit-notification-page-title"/>
-                </a>
-                <a wicket:id="unit-link" href="#" class="nav-item nav-link ">
-                    <wicket:message key="unit-page-title"/>
-                </a>
             </div>
             <div class="navbar-nav flex-row ml-md-auto d-none d-md-flex">
                 <div class="nav-item">

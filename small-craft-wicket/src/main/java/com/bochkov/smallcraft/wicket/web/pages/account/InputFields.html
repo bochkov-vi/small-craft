@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:panel>
+    <div class="form-group">
+        <label wicket:for="id">
+            <wicket:message key="id"/>
+        </label>
+        <input type="text" wicket:id="id" class="form-control"></input>
+    </div>
+    <div class="form-group">
+        <label wicket:for="password">
+            <wicket:message key="password"/>
+        </label>
+        <input type="password" wicket:id="password" class="form-control"></input>
+    </div>
+    <div wicket:id="roles"></div>
+    <div class="form-group">
+        <label wicket:for="unit">
+            <wicket:message key="unit"/>
+        </label>
+        <select wicket:id="unit" class="form-control"></select>
+    </div>
+</wicket:panel>
+</body>
+</html>

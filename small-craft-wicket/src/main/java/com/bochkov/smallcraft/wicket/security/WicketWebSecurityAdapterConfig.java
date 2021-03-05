@@ -87,6 +87,8 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
                     if (Objects.equals(account.getPassword(), authentication.getCredentials())) {
                         authentication = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), authentication.getCredentials(),
                                 account.getRoles().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+                    }else {
+                        authentication =null;
                     }
                 }
 

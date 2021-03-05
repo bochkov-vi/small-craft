@@ -2,6 +2,7 @@ package com.bochkov.smallcraft.wicket.web.crud;
 
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.IModelComparator;
 
 public abstract class CompositeInputPanel<T> extends FormComponentPanel<T> {
 
@@ -25,5 +26,10 @@ public abstract class CompositeInputPanel<T> extends FormComponentPanel<T> {
             initBeforeRenderer();
         }
         super.onBeforeRender();
+    }
+
+    @Override
+    public IModelComparator getModelComparator() {
+        return IModelComparator.ALWAYS_FALSE;
     }
 }
