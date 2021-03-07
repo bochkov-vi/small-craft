@@ -57,6 +57,18 @@
             <select wicket:id="activities" class="form-control"></select>
         </div>
     </div>
+    <div wicket:id="captain-container" class="card border-info mt-3">
+        <div class="card-header bg-info">
+            <label wicket:for="captain">
+                <wicket:message key="captain"/>
+            </label>
+        </div>
+        <div wicket:id="btn-captain-eq-owner" class="btn btn-outline-primary">
+            <span class="fa fa-plus"></span>
+            <span wicket:id="btn-captain-eq-owner-label">[btn-captain-eq-owner-label]</span>
+        </div>
+        <div class="card-body " wicket:id="captain"></div>
+    </div>
     <div class="row">
         <div class="form-group col-md-8">
             <label wicket:for="notification">
@@ -87,18 +99,7 @@
 
         <div class="card-body" wicket:id="boat"></div>
     </div>
-    <div wicket:id="captain-container" class="card border-info mt-3">
-        <div class="card-header bg-info">
-            <label wicket:for="captain">
-                <wicket:message key="captain"/>
-            </label>
-        </div>
-        <div wicket:id="btn-captain-eq-owner" class="btn btn-outline-primary">
-            <span class="fa fa-plus"></span>
-            <span wicket:id="btn-captain-eq-owner-label">[btn-captain-eq-owner-label]</span>
-        </div>
-        <div class="card-body " wicket:id="captain"></div>
-    </div>
+
 
 </wicket:panel>
 </body>

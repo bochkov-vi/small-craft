@@ -2,7 +2,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 <wicket:extend>
     <div wicket:id="filter" class="container">
+        <div class="form-group">
+            <label>
+                <input wicket:id="active" type="checkbox">
+                <span>
+                    <wicket:message key="active"/>
+                </span>
+            </label>
 
+        </div>
     </div>
     <wicket:fragment wicket:id="exit-link">
         <span wicket:id="link" class="btn btn-outline-success" wicket:message="title:exit">

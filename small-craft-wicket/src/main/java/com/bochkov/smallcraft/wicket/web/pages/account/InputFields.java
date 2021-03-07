@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.wicket.web.pages.account;
 
+import com.bochkov.smallcraft.jpa.entity.AbstractEntity;
 import com.bochkov.smallcraft.jpa.entity.Account;
 import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.bochkov.smallcraft.jpa.repository.AccountRepository;
@@ -13,7 +14,6 @@ import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
 
@@ -30,9 +30,9 @@ public class InputFields extends CompositeInputPanel<Account> {
     @Inject
     AccountRepository accountRepository;
 
-    FormComponent<Account> id = new TextField<>("id", PersistableModel.of(id -> accountRepository.findById(id)), Account.class);
+    FormComponent<String> id = new TextField<>("id", Model.of(),String.class).setRequired(true);
 
-    FormComponent<Unit> unit = new SessionSelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id)));
+    FormComponent<Unit> unit = new SessionSelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id))).setRequired(true);
 
     FormComponent<Collection<String>> roles = new CheckBoxMultipleChoice<String>("roles", new ListModel<String>(), Lists.newArrayList("ROLE_USER", "ROLE_ADMIN"));
 
@@ -54,17 +54,27 @@ public class InputFields extends CompositeInputPanel<Account> {
 
     @Override
     protected void initBeforeRenderer() {
-        id.setModelObject(getModelObject());
+        id.setModelObject(getModel().map(Account::getId).orElse(null).getObject());
         password.setModelObject(getModel().map(Account::getPassword).getObject());
         roles.setModelObject(getModel().map(Account::getRoles).map(Lists::newArrayList).getObject());
         unit.setModelObject(getModel().map(Account::getUnit).getObject());
     }
 
     @Override
+    protected void onConfigure() {
+        super.onConfigure();
+        if (getModel().map(AbstractEntity::isNew).getObject()) {
+            id.setEnabled(true);
+        } else {
+            id.setEnabled(false);
+        }
+    }
+
+    @Override
     public void convertInput() {
-        Account account = id.getConvertedInput();
-        if (account == null) {
-            account = new Account();
+        Account account = getModelObject();
+        if (account == null || account.isNew()) {
+            account = new Account().setId(id.getConvertedInput());
         }
         account.setPassword(password.getConvertedInput())
                 .setRoles(Optional.ofNullable(roles.getConvertedInput()).map(Lists::newArrayList).orElse(null))

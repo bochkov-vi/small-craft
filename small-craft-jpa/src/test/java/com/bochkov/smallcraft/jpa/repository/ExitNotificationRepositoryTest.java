@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.jpa.repository;
 
+import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import org.junit.Before;
@@ -8,6 +9,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.Optional;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -37,5 +40,11 @@ public class ExitNotificationRepositoryTest {
             String str = repository.convert(id);
             System.out.println(str);
         });
+    }
+
+    @Test
+    public void findTopExitNotificationOrderByModifyDate(){
+        Optional<ExitNotification> o = repository.findLastModified();
+        System.out.println(o.orElse(null));
     }
 }

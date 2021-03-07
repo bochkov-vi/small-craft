@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.jpa.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 @Setter
 @Accessors(chain = true)
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties("new")
 public abstract class AbstractEntity<ID extends Serializable> implements Persistable<ID>{
 
     @CreatedDate

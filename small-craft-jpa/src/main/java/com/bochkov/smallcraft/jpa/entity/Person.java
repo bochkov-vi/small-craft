@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.jpa.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
@@ -55,6 +56,7 @@ public class Person extends AbstractEntity<Long> {
         return getFio();
     }
 
+    @JsonIgnore
     public String getFio() {
         return lastName + " " + Optional.ofNullable(firstName)
                 .map(s -> s.charAt(0) + ".")

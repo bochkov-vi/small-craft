@@ -22,8 +22,8 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.link.AbstractLink;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.CompoundPropertyModel;
@@ -35,6 +35,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -58,6 +59,8 @@ public class TablePage extends CrudTablePage<Notification, Long> {
 
     String quickSearch;
 
+    Boolean active=true;
+
     Boolean includeUnitChilds = true;
 
     public TablePage(PageParameters parameters) {
@@ -70,14 +73,18 @@ public class TablePage extends CrudTablePage<Notification, Long> {
     }
 
     public Specification specification() {
-        return Specification.where(MaskableProperty.<Notification>maskSpecification(quickSearch, Lists.newArrayList("number", "captain.lastName","boat.person.lastName" ,"boat.tailNumber", "boat.registrationNumber", "captain.phones")))
-                .and(Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).map(unitEntity -> Hierarchicals.getAllChildIds(true, unitEntity)).filter(list -> !list.isEmpty()).map(list -> (Specification<Notification>) (r, q, b) -> r.get("unit").get("id").in(list)).orElse(null));
+        return Specification.where(MaskableProperty.<Notification>maskSpecification(quickSearch, Lists.newArrayList("number", "captain.lastName", "boat.person.lastName", "boat.tailNumber", "boat.registrationNumber", "captain.phones")))
+                .and(Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).map(unitEntity -> Hierarchicals.getAllChildIds(true, unitEntity)).filter(list -> !list.isEmpty()).map(list -> (Specification<Notification>) (r, q, b) -> r.get("unit").get("id").in(list)).orElse(null))
+                .and(Optional.ofNullable(active).map(aBoolean -> (Specification<Notification>) (r, q, b) -> {
+                    return b.greaterThanOrEqualTo(r.get("dateTo"), LocalDate.now());
+                }).orElse(null));
     }
 
     @Override
     protected void onInitialize() {
         super.onInitialize();
         add(new FilterPanel("filter", new CompoundPropertyModel<>(this)));
+        queue(new CheckBox("active"));
     }
 
     @Override

@@ -40,6 +40,6 @@ public class FilterPanel<T> extends Border {
                 });
             }
         });
-        form.add(new CheckBox("includeUnitChilds"));
+        form.add(new CheckBox("includeUnitChilds").setOutputMarkupId(true));
     }
 }

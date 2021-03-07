@@ -36,9 +36,25 @@ import java.util.stream.Stream;
 public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serializable> extends CrudPage<Collection<T>, T, ID> {
 
 
-    WebMarkupContainer container = new WebMarkupContainer("container");
+    protected WebMarkupContainer container = new WebMarkupContainer("container");
 
-    EntityDataTable<T, ID> table = null;
+    protected EntityDataTable<T, ID> table = new EntityDataTable<T, ID>("table", columns(), provider()) {
+
+        @Override
+        public void onRowCreated(Item<T> row, String id, int index, IModel<T> model) {
+            CrudTablePage.this.onRowCreated(table, row, id, index, model);
+            row.add(new StyleAttributeModifier() {
+                @Override
+                protected Map<String, String> update(Map<String, String> oldStyles) {
+                    if (model.combineWith(CrudTablePage.this.getModel(), (e, collection) -> collection.contains(e)).getObject()) {
+                        oldStyles.put("box-shadow", "0 0 30px #44f");
+                    }
+                    return oldStyles;
+                }
+            });
+            row.add(scrollToAnchorBehavior.nameAttributeModifier(model));
+        }
+    };
 
 
     XLSXDataExportLink exportExcel;
@@ -68,23 +84,8 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         }
         scrollToAnchorBehavior = new ScrollToAnchorBehavior(entityClass);
         exportFileName = new ResourceModel("exportFileName").wrapOnAssignment(getPage());
-        table = new EntityDataTable<T, ID>("table", columns(), provider()) {
-
-            @Override
-            public void onRowCreated(Item<T> row, String id, int index, IModel<T> model) {
-                CrudTablePage.this.onRowCreated(table, row, id, index, model);
-                row.add(new StyleAttributeModifier() {
-                    @Override
-                    protected Map<String, String> update(Map<String, String> oldStyles) {
-                        if (model.combineWith(CrudTablePage.this.getModel(), (e, collection) -> collection.contains(e)).getObject()) {
-                            oldStyles.put("box-shadow", "0 0 30px #44f");
-                        }
-                        return oldStyles;
-                    }
-                });
-                row.add(scrollToAnchorBehavior.nameAttributeModifier(model));
-            }
-        };
+        table.setOutputMarkupId(true);
+        container.setOutputMarkupId(true);
         exportExcel = new XLSXDataExportLink("export-excel", table, exportFileName.getObject());
         table.setOutputMarkupId(true);
         container.add(table);

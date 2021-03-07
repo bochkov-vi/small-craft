@@ -1,5 +1,7 @@
 package com.bochkov.smallcraft.jpa.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,6 +37,7 @@ public class Notification extends AbstractEntity<Long> {
 
     @ManyToOne
     @JoinColumn(name = "id_captain", nullable = false)
+            @JsonDeserialize()
     Person captain;
 
     @ManyToOne
@@ -80,18 +83,22 @@ public class Notification extends AbstractEntity<Long> {
         return this;
     }
 
+    @JsonIgnore
     public boolean isValidExit(LocalDateTime dateTime) {
         return dateTime.isAfter(dateFrom.atStartOfDay()) && dateTime.isBefore(dateTo.atStartOfDay().plusDays(1));
     }
 
+    @JsonIgnore
     public boolean isValidExit() {
         return isValidExit(LocalDateTime.now());
     }
 
+    @JsonIgnore
     public boolean isExpiredDate(LocalDateTime dateTime) {
         return !dateTime.isBefore(dateTo.atStartOfDay().plusDays(1));
     }
 
+    @JsonIgnore
     public boolean isExpired() {
         return isExpiredDate(LocalDateTime.now());
     }

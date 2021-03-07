@@ -11,13 +11,16 @@ import org.wicketstuff.select2.ChoiceProvider;
 import org.wicketstuff.select2.Select2Choice;
 
 import javax.inject.Inject;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
+import java.time.LocalDate;
+import java.util.Optional;
 
 public class SelectNotification extends Select2Choice<Notification> {
 
     @Inject
     NotificationRepository repository;
+
+    Boolean onlyActive = true;
 
     public SelectNotification(String id) {
         super(id);
@@ -40,12 +43,8 @@ public class SelectNotification extends Select2Choice<Notification> {
                 "boat.tailNumber", "captain.lastName", "boat.registrationNumber", "boat.model") {
             @Override
             protected Page<Notification> findAll(Specification<Notification> specification, Pageable pageable) {
+                specification = specification.and(Optional.ofNullable(onlyActive).map(aboolean->(Specification<Notification>) (r, q, b) -> b.lessThanOrEqualTo(r.get("dateTo"), LocalDate.now())).orElse(null));
                 return repository.findAll(specification, pageable);
-            }
-
-            @Override
-            public Path createPathForProperty(Root<Notification> root, String expression) {
-                return super.createPathForProperty(root, expression);
             }
         };
         return provider;

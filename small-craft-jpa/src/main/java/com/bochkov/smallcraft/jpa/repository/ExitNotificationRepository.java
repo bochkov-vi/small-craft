@@ -3,6 +3,9 @@ package com.bochkov.smallcraft.jpa.repository;
 import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Notification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -82,4 +85,12 @@ public interface ExitNotificationRepository extends JpaRepository<ExitNotificati
 
     @Query("SELECT o FROM ExitNotification  o WHERE o.notification.number=:number AND (o.exitDateTime<=:date AND (o.returnDateTime>=:date OR o.returnDateTime IS NULL))")
     List<ExitNotification> findByNotificationNumber(@Param("number") Integer notificationNumber, @Param("date") LocalDateTime date);
+
+
+    default Optional<ExitNotification> findLastModified() {
+        return findLastModified(PageRequest.of(0, 1)).stream().findFirst();
+    }
+
+    @Query("SELECT o FROM ExitNotification o order by o.modifyDate DESC")
+    Page<ExitNotification> findLastModified(Pageable pageable);
 }

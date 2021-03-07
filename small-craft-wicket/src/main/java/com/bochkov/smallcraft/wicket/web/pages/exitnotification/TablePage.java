@@ -3,6 +3,7 @@ package com.bochkov.smallcraft.wicket.web.pages.exitnotification;
 import com.bochkov.bootstrap.tempusdominus.localdatetime.LocalDateTimeTextFieldCalendar;
 import com.bochkov.data.jpa.mask.MaskableProperty;
 import com.bochkov.hierarchical.Hierarchicals;
+import com.bochkov.smallcraft.jpa.entity.AbstractAuditableEntity;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.entity.Unit;
@@ -12,24 +13,41 @@ import com.bochkov.smallcraft.wicket.component.filter.FilterPanel;
 import com.bochkov.smallcraft.wicket.security.SmallCraftWebSession;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
+import com.giffing.wicket.spring.boot.starter.web.servlet.websocket.WebSocketMessageBroadcaster;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang.StringUtils;
+import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
+import org.apache.wicket.Session;
+import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.LambdaColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.link.AbstractLink;
+import org.apache.wicket.markup.html.panel.Fragment;
+import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.util.cookies.CookieUtils;
+import org.apache.wicket.util.time.Duration;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import javax.inject.Inject;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -54,7 +72,10 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
 
     String quickSearch;
 
+    NewRowsAjaxTimerBehavior newRowsAjaxTimerBehavior;
+
     Boolean includeUnitChilds = true;
+
     public TablePage(PageParameters parameters) {
         super(ExitNotification.class, parameters);
     }
@@ -66,8 +87,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
 
     @Override
     protected void onInitialize() {
-
-        FilterPanel filterPanel = new FilterPanel("filter",new CompoundPropertyModel<>(this));
+        FilterPanel filterPanel = new FilterPanel("filter", new CompoundPropertyModel<>(this));
         add(filterPanel);
         dateFrom = LocalDateTime.from(LocalDate.now().atStartOfDay(SmallCraftWebSession.get().getZoneId()));
         dateTo = dateFrom.plusDays(1);
@@ -82,16 +102,49 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
             }
         });
         filterPanel.add(onExitFormComponent);
+
+        container.setOutputMarkupId(true);
         super.onInitialize();
+        newRowsAjaxTimerBehavior = new NewRowsAjaxTimerBehavior(Duration.seconds(10)) {
+            @Override
+            protected void onTimer(AjaxRequestTarget target) {
+                LocalDateTime lmd = repository.findLastModified().map(AbstractAuditableEntity::getModifyDate).orElse(null);
+                if (newRowsAjaxTimerBehavior.isNew(lmd)) {
+                    target.add(container);
+                }
+            }
+        };
+        add(newRowsAjaxTimerBehavior);
     }
 
     @Override
     protected List<? extends IColumn<ExitNotification, String>> columns() {
         List<IColumn<ExitNotification, String>> columns = Lists.newArrayList();
+        columns.add(new HeaderlessColumn<ExitNotification, String>() {
+            @Override
+            public void populateItem(Item<ICellPopulator<ExitNotification>> cellItem, String componentId, IModel<ExitNotification> rowModel) {
+                Fragment fragment = new Fragment(componentId, "badge-new", getPage());
+                if (!newRowsAjaxTimerBehavior.isNew(rowModel.map(AbstractAuditableEntity::getModifyDate).orElse(null).getObject())) {
+                    fragment.setVisible(false);
+                }else {
+                    fragment.setVisible(true);
+                    fragment.add(new AttributeAppender("title",IModel.of(()->newRowsAjaxTimerBehavior.checked)));
+                }
+                cellItem.add(fragment);
+            }
+        });
         columns.add(new PropertyColumn(new ResourceModel("notification.number"), "notification.number", "notification.number"));
         columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("id"), "id", en -> repository.convert(en.getId())));
         columns.add(new PropertyColumn(new ResourceModel("captain"), "captain", "captain.fio"));
-        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("phones"), row -> Optional.ofNullable(row.getCaptain()).map(Person::getPhones).map(list -> list.stream().collect(Collectors.joining("; "))).orElse(null)));
+        columns.add(new AbstractColumn<ExitNotification, String>(new ResourceModel("phones")) {
+            @Override
+            public void populateItem(Item<ICellPopulator<ExitNotification>> cellItem, String componentId, IModel<ExitNotification> rowModel) {
+                IModel<String> phones = rowModel.map(ExitNotification::getCaptain).map(Person::getPhones).map(list -> String.join("; ", list));
+                cellItem.add(new Label(componentId, phones.map(str -> String.format("%s...", StringUtils.substring(str, 0, 20)))));
+                cellItem.add(new AttributeModifier("title", phones));
+                cellItem.add(new AttributeModifier("data-toggle", "tooltip"));
+            }
+        });
         columns.add(new PropertyColumn(new ResourceModel("type"), "type", "boat.type"));
         columns.add(new PropertyColumn(new ResourceModel("model"), "model", "boat.model"));
         columns.add(new PropertyColumn(new ResourceModel("tailNumber"), "tailNumber", "boat.tailNumber"));
@@ -104,7 +157,30 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
                 return "d-none d-lg-table-cell";
             }
         });
-        columns.add(new PropertyColumn(new ResourceModel("returnDateTime"), "returnDateTime", "returnDateTime"));
+        columns.add(new AbstractColumn<ExitNotification, String>(new ResourceModel("returnDateTime"), "returnDateTime") {
+            @Override
+            public void populateItem(Item<ICellPopulator<ExitNotification>> cellItem, String componentId, IModel<ExitNotification> rowModel) {
+                if (rowModel.map(ExitNotification::getReturnDateTime).map(dt -> true).orElse(false).getObject()) {
+                    cellItem.add(new Label(componentId, rowModel.map(ExitNotification::getReturnDateTime)));
+                } else {
+                    cellItem.setOutputMarkupId(true);
+                    AbstractLink link = new AjaxLink<ExitNotification>(componentId, rowModel) {
+                        @Override
+                        public void onClick(AjaxRequestTarget target) {
+                            target.add(cellItem);
+                            ExitNotification exitNotification = rowModel.getObject();
+                            exitNotification.setReturnDateTime(LocalDateTime.now(SmallCraftWebSession.get().getZoneId()));
+                            exitNotification = repository.save(exitNotification);
+                            rowModel.setObject(exitNotification);
+                        }
+                    };
+                    link.setOutputMarkupId(true);
+                    link.setEscapeModelStrings(false);
+                    link.setBody(Model.of("<span class='btn btn-outline-secondary'><span class='fa fa-sign-in'></span><span>"));
+                    cellItem.add(link);
+                }
+            }
+        });
         columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("unit"), "unit.name", row -> Optional.ofNullable(row).map(ExitNotification::getUnit).map(Unit::getName).orElse(null)) {
             @Override
             public String getCssClass() {
@@ -151,6 +227,40 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
 
     @Override
     protected Sort sort() {
-        return Sort.by("id");
+
+        return Sort.by(Sort.Order.desc("modifyDate"));
     }
+
+
+    static abstract class NewRowsAjaxTimerBehavior extends AbstractAjaxTimerBehavior {
+
+        final static String COOKIE_NAME = "checkTime";
+
+        LocalDateTime checked = LocalDateTime.now();
+
+        public NewRowsAjaxTimerBehavior(Duration updateInterval) {
+            super(updateInterval);
+        }
+
+
+        @Override
+        public void onConfigure(Component component) {
+            super.beforeRender(component);
+            checked = Optional.ofNullable(new CookieUtils().load(COOKIE_NAME))
+                    .map(cValue -> getComponent().getConverter(Long.class).convertToObject(cValue, Session.get().getLocale()))
+                    .map(longValue -> LocalDateTime.ofInstant(Instant.ofEpochMilli(longValue), ZoneId.systemDefault()))
+                    .orElseGet(LocalDateTime::now);
+        }
+
+        @Override
+        protected void onComponentRendered() {
+            super.onComponentRendered();
+            new CookieUtils().save(COOKIE_NAME, getComponent().getConverter(Long.class).convertToString(System.currentTimeMillis(), Session.get().getLocale()));
+        }
+
+        public boolean isNew(LocalDateTime lastmd) {
+            return Optional.ofNullable(lastmd).map(lmd -> lmd.isAfter(checked)).orElse(false);
+        }
+    }
+
 }
