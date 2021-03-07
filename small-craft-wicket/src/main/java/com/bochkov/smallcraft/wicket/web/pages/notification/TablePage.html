@@ -3,12 +3,13 @@
 <wicket:extend>
     <div wicket:id="filter" class="container">
         <div class="form-group">
-            <label>
-                <input wicket:id="active" type="checkbox">
-                <span>
+            <div class="custom-control custom-checkbox">
+
+                <input wicket:id="active" type="checkbox" class="custom-control-input">
+                <label class="custom-control-label" wicket:for="active">
                     <wicket:message key="active"/>
-                </span>
-            </label>
+                </label>
+            </div>
 
         </div>
     </div>

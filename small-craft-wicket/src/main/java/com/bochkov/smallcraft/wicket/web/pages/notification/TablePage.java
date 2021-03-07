@@ -84,7 +84,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
     protected void onInitialize() {
         super.onInitialize();
         add(new FilterPanel("filter", new CompoundPropertyModel<>(this)));
-        queue(new CheckBox("active"));
+        queue(new CheckBox("active").setOutputMarkupId(true));
     }
 
     @Override
