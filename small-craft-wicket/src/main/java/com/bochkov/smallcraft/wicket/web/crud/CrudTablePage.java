@@ -9,7 +9,6 @@ import lombok.Getter;
 import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
-import org.apache.wicket.StyleAttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.HeaderlessColumn;
@@ -29,7 +28,10 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 
@@ -38,28 +40,19 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     protected WebMarkupContainer container = new WebMarkupContainer("container");
 
+    XLSXDataExportLink exportExcel;
+
+    private ScrollToAnchorBehavior<T> scrollToAnchorBehavior;
+
     protected EntityDataTable<T, ID> table = new EntityDataTable<T, ID>("table", columns(), provider()) {
 
         @Override
         public void onRowCreated(Item<T> row, String id, int index, IModel<T> model) {
             CrudTablePage.this.onRowCreated(table, row, id, index, model);
-            row.add(new StyleAttributeModifier() {
-                @Override
-                protected Map<String, String> update(Map<String, String> oldStyles) {
-                    if (model.combineWith(CrudTablePage.this.getModel(), (e, collection) -> collection.contains(e)).getObject()) {
-                        oldStyles.put("box-shadow", "0 0 30px #44f");
-                    }
-                    return oldStyles;
-                }
-            });
+            //row.add(scrollToAnchorBehavior.classAttributeModifier(model, getModel()));
             row.add(scrollToAnchorBehavior.nameAttributeModifier(model));
         }
     };
-
-
-    XLSXDataExportLink exportExcel;
-
-    private ScrollToAnchorBehavior<T> scrollToAnchorBehavior;
 
     @Getter
     private IModel<String> exportFileName;
@@ -228,7 +221,6 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     public CrudTablePage<T, ID> setSelected(IModel<T> model) {
         scrollToAnchorBehavior.setAnchor(model);
-        setModelObject(Lists.newArrayList(model.getObject()));
         return this;
     }
 }

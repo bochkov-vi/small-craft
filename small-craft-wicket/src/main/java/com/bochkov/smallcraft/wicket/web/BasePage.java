@@ -6,8 +6,8 @@ import com.bochkov.fontawesome.FontAwesomeBehavior;
 import com.bochkov.smallcraft.jpa.entity.Account;
 import com.bochkov.smallcraft.wicket.security.SmallCraftWebSession;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
+import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeBookmarkablePageLink;
 import com.bochkov.smallcraft.wicket.web.login.LoginPage;
-import com.bochkov.smallcraft.wicket.web.pages.boat.TablePage;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import org.apache.wicket.Application;
@@ -15,6 +15,7 @@ import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.MetaDataHeaderItem;
 import org.apache.wicket.markup.html.GenericWebPage;
@@ -90,7 +91,14 @@ public class BasePage<T> extends GenericWebPage<T> {
         for (Class<? extends CrudTablePage> pageClass : classes) {
             IModel title = IModel.of(() -> loadString(pageClass, "title"));
             String iconName = loadString(pageClass, "icon");
-            AbstractLink link = new BookmarkablePageLink<Void>(links.newChildId(), pageClass);
+
+            AuthorizeInstantiation authorizeInstantiation = pageClass.getAnnotation(AuthorizeInstantiation.class);
+            BookmarkablePageLink link = null;
+            if (authorizeInstantiation != null) {
+                link = new AuthorizeBookmarkablePageLink(links.newChildId(), pageClass);
+            } else {
+                link = new BookmarkablePageLink<Void>(links.newChildId(), pageClass);
+            }
             link.add(ActiveLinkBehavior.forBookmarkable());
             link.setEscapeModelStrings(false);
             Label label = new Label("label", title);

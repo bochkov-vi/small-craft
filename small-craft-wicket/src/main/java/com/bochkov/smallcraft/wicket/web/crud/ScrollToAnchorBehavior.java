@@ -62,7 +62,7 @@ public class ScrollToAnchorBehavior<T> extends Behavior {
     }
 
     public String createAnchor(T entity) {
-        return Optional.ofNullable(entity).map(e->component.getConverter(entityClass).convertToString(e, Session.get().getLocale())).orElse(null);
+        return Optional.ofNullable(entity).map(e -> component.getConverter(entityClass).convertToString(e, Session.get().getLocale())).orElse(null);
     }
 
     public AttributeModifier nameAttributeModifier(IModel<T> model) {
@@ -78,4 +78,5 @@ public class ScrollToAnchorBehavior<T> extends Behavior {
         this.anchor = createAnchor(entity);
         return this;
     }
+
 }

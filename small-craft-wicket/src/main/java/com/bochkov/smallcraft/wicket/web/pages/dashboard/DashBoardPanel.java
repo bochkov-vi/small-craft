@@ -6,19 +6,29 @@ import com.bochkov.smallcraft.jpa.entity.Notification;
 import com.bochkov.smallcraft.jpa.repository.BoatRepository;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
+import com.bochkov.smallcraft.jpa.repository.UnitRepository;
+import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnit;
 import com.bochkov.wicket.component.table.XLSXDataExportLink;
+import com.bochkov.wicket.data.provider.ListModelDataProvider;
+import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.AjaxLazyLoadPanel;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.CheckBox;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.panel.GenericPanel;
 import org.apache.wicket.markup.repeater.Item;
-import org.apache.wicket.markup.repeater.data.ListDataProvider;
+import org.apache.wicket.markup.repeater.data.IDataProvider;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -42,6 +52,13 @@ public class DashBoardPanel extends GenericPanel<LocalDate> {
     @Inject
     ExitNotificationRepository exitNotificationRepository;
 
+    @Inject
+    UnitRepository unitRepository;
+
+    SessionSelectUnit unit = new SessionSelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id)));
+
+    FormComponent<Boolean> includeUnitChilds = new CheckBox("includeUnitChilds", Model.of(true));
+
     public DashBoardPanel(String id) {
         super(id);
     }
@@ -54,6 +71,17 @@ public class DashBoardPanel extends GenericPanel<LocalDate> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        Form form = new Form<Void>("form");
+        form.add(unit, includeUnitChilds);
+        add(form);
+
+        IDataProvider provider = new ListModelDataProvider<RowData>(() -> createData()) {
+            @Override
+            public IModel<RowData> model(RowData object) {
+                return Model.of(object);
+            }
+
+        };
         DataTable table = new DataTable<RowData, String>("table", Lists.newArrayList(
                 new PropertyColumn<RowData, String>(new ResourceModel("unitLabel"), "label", "label"),
                 new PropertyColumn<RowData, String>(new ResourceModel("unitValue"), "value", "value") {
@@ -74,23 +102,45 @@ public class DashBoardPanel extends GenericPanel<LocalDate> {
                         });
                     }
                 }
-        ), new ListDataProvider(createData()), 50);
+        ), provider, 50);
         add(table);
-        add(new XLSXDataExportLink("excel",table,"МПС"));
+        add(new XLSXDataExportLink("excel", table, "МПС"));
+        unit.add(new AjaxFormComponentUpdatingBehavior("change") {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(table);
+            }
+        });
+        includeUnitChilds.add(new AjaxFormComponentUpdatingBehavior("change") {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(table);
+            }
+        });
+        table.setOutputMarkupId(true);
     }
+
 
     public List<RowData> createData() {
         List<RowData> data = Lists.newArrayList();
-        RowData row = RowData.create("На учете МПС", () -> boatRepository.count((r, q, b) -> b.and(
+        Specification<Boat> boatAdditionlSpecification = unit.getModel().combineWith(includeUnitChilds.getModel(), (u, i) -> {
+            if (i) {
+                return u.getAllChildsAndThis();
+            } else {
+                return Lists.newArrayList(u);
+            }
+        }).map(uList -> (Specification<Boat>) (r, q, b) -> r.get("unit").in(uList)).getObject();
+        RowData row = RowData.create("На учете МПС", () -> boatRepository.count(Specification.where(boatAdditionlSpecification).and((Specification<Boat>) (r, q, b) -> b.and(
                 b.lessThanOrEqualTo(r.get("registrationDate"), getModelObject()),
-                b.or(b.greaterThan(r.get("expirationDate"), getModelObject()), r.get("expirationDate").isNull()))));
+                b.or(b.greaterThan(r.get("expirationDate"), getModelObject()), r.get("expirationDate").isNull())))
+        ));
         data.add(row);
-        Specification<Boat> boatAdditionlSpecification = null;
 
         //boats
         data.add(RowData.create("Всего снято с учета", () -> {
             return boatRepository.count(Specification.where(boatAdditionlSpecification).and((r, q, b) -> b.and(b.lessThanOrEqualTo(r.get("registrationDate"), getModelObject()),
-                    b.or(b.lessThanOrEqualTo(r.get("expirationDate"), getModelObject())))));
+                    b.or(b.lessThanOrEqualTo(r.get("expirationDate"), getModelObject()))))
+            );
         }));
         data.add(RowData.create(String.format("Поставлено на учет в %s году", getModel().map(LocalDate::getYear).orElse(null).getObject()), () -> {
             return boatRepository.count(Specification.where(boatAdditionlSpecification).and((r, q, b) -> b.and(b.lessThanOrEqualTo(r.get("registrationDate"), getModel().map(d -> d.with(TemporalAdjusters.lastDayOfYear())).getObject()),
@@ -101,13 +151,27 @@ public class DashBoardPanel extends GenericPanel<LocalDate> {
                     b.greaterThanOrEqualTo(r.get("expirationDate"), getModel().map(d -> d.with(TemporalAdjusters.firstDayOfYear())).getObject()))));
         }));
 //notifications
-        Specification<Notification> notificationSpecification = null;
+        Specification<Notification> notificationSpecification = unit.getModel().combineWith(includeUnitChilds.getModel(), (u, i) -> {
+            if (i) {
+                return u.getAllChildsAndThis();
+            } else {
+                return Lists.newArrayList(u);
+            }
+        }).map(uList -> (Specification<Notification>) (r, q, b) -> r.get("unit").in(uList)).getObject();
         data.add(RowData.create("Всего поступило уведомлений", () -> notificationRepository.count(Specification.where(notificationSpecification))));
         data.add(RowData.create(String.format("Поступило уведомлений на %s год", getModel().map(LocalDate::getYear).getObject()), () -> notificationRepository.count(
                 Specification.where(notificationSpecification).and((r, q, b) -> b.equal(r.get("year"), getModel().map(LocalDate::getYear).getObject()))
         )));
 //exits
-        Specification<ExitNotification> s = null;
+        Specification<ExitNotification> s = unit.getModel().combineWith(includeUnitChilds.getModel(), (u, i) -> {
+            if (i) {
+                return u.getAllChildsAndThis();
+
+            } else {
+                return Lists.newArrayList(u);
+            }
+        }).map(uList -> (Specification<ExitNotification>) (r, q, b) -> r.get("unit").in(uList)).getObject();
+        ;
         int hours = 24;
         data.add(RowData.create(String.format("Выходило за последние %s часа", hours), () ->
                 exitNotificationRepository.count(Specification.where(s).and((r, q, b) -> {
