@@ -2,6 +2,7 @@ package com.bochkov.smallcraft.jpa.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,10 +13,8 @@ import lombok.experimental.Accessors;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Entity
 @Getter
@@ -37,7 +36,7 @@ public class Notification extends AbstractEntity<Long> {
 
     @ManyToOne
     @JoinColumn(name = "id_captain", nullable = false)
-            @JsonDeserialize()
+    @JsonDeserialize()
     Person captain;
 
     @ManyToOne
@@ -73,7 +72,8 @@ public class Notification extends AbstractEntity<Long> {
 
     @Override
     public String toString() {
-        return Stream.of(number, boat, captain, unit).filter(Objects::nonNull).map(Objects::toString).collect(Collectors.joining(" "));
+        String boatString = Optional.ofNullable(boat).map(bt->Joiner.on(" ").skipNulls().join(bt.getType(),bt.getModel(),bt.getTailNumber())).orElse("-");
+        return String.format("УХД №%1s от %3$td.%3$tm.%3$ty, %2s (%4$s)", number, Optional.ofNullable(captain).map(Person::getFio).orElse("ФИО"), date, boatString);
     }
 
     public Notification setActivity(String... activity) {

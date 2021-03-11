@@ -4,38 +4,31 @@
 <wicket:extend>
     <style>
         label {
-            text-overflow: clip;
+            text-overflow: ellipsis !important;
             white-space: nowrap;
             overflow: hidden;
         }
     </style>
     <div wicket:id="container" class="container">
         <form wicket:id="form">
-            <div class="p-3">
-                <button wicket:id="btn-save" class="btn btn-outline-primary mr-sm-5" type="submit">
+            <div class="p-md-3">
+                <button wicket:id="btn-save" class="btn btn-outline-primary mr-md-5" type="submit">
                     <span class="fa fa-save"></span>
                     <wicket:message key="save"/>
                 </button>
-
-                <button wicket:id="btn-back" class="btn btn-outline-primary ml-sm-5">
+                <button wicket:id="btn-back" class="btn btn-outline-primary ml-md-5">
                     <span class="fa fa-mail-reply"></span>
                     <wicket:message key="back"/>
                 </button>
-
-
                 <div wicket:id="btn-clone" class="btn btn-outline-info">
                     <span class="fa fa-copy"></span>
                     <wicket:message key="clone"/>
                 </div>
-
-
                 <div wicket:id="btn-new" class="btn btn-outline-primary">
                     <span class="fa fa-plus"></span>
                     <wicket:message key="new-row-label"/>
                 </div>
-
-
-                <div wicket:id="btn-delete" class="btn btn-outline-danger ml-sm-5">
+                <div wicket:id="btn-delete" class="btn btn-outline-danger ml-md-5">
                     <span class="fa fa-close"></span>
                 </div>
             </div>

@@ -15,6 +15,7 @@ import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import lombok.experimental.Accessors;
+import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
@@ -82,7 +83,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
         }
     }.setCanSelect(true);
 
-    FormComponent<Notification> notification = new SelectNotification("notification", PersistableModel.of(id -> notificationRepository.findById(id))){
+    FormComponent<Notification> notification = new SelectNotification("notification", PersistableModel.of(id -> notificationRepository.findById(id))) {
 
         public void onUpdate(AjaxRequestTarget target) {
             Optional<Notification> optional = Optional.ofNullable(getModelObject());
@@ -167,6 +168,17 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        WebMarkupContainer content = new WebMarkupContainer("content");
+        content.setOutputMarkupId(true);
+        add(content);
+
+        pier.setOutputMarkupId(true);
+        regions.setOutputMarkupId(true);
+        setOutputMarkupId(true);
+        Optional<ExitNotification> entity = Optional.ofNullable(getModelObject());
+        captainEqOwner.setObject(Objects.equals(entity.map(ExitNotification::getBoat).map(Boat::getPerson).orElse(null), entity.map(ExitNotification::getCaptain).orElse(null)));
+        queue(id, estimatedReturnDateTime, exitCallDateTime, exitDateTime, returnCallDateTime, returnDateTime, pier, regions, boat, unit, activities, notification);
+        WebMarkupContainer captainConteiner = new WebMarkupContainer("captain-container");
         notification.add(new AjaxFormComponentUpdatingBehavior("change") {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
@@ -174,14 +186,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
                 target.add(FormComponentInputPanel.this);
             }
         });
-        pier.setOutputMarkupId(true);
-        regions.setOutputMarkupId(true);
-        setOutputMarkupId(true);
-        Optional<ExitNotification> entity = Optional.ofNullable(getModelObject());
-        captainEqOwner.setObject(Objects.equals(entity.map(ExitNotification::getBoat).map(Boat::getPerson).orElse(null), entity.map(ExitNotification::getCaptain).orElse(null)));
-        add(id, estimatedReturnDateTime, exitCallDateTime, exitDateTime, returnCallDateTime, returnDateTime, pier, regions, boat, unit, activities, notification);
-        WebMarkupContainer captainConteiner = new WebMarkupContainer("captain-container");
-        add(captainConteiner.setOutputMarkupId(true));
+        queue(captainConteiner.setOutputMarkupId(true));
         captainConteiner.add(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -192,16 +197,17 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
 
 
         captainConteiner.add(captain);
-        add(new AjaxLink<Notification>("edit-notification", LambdaModel.of(getModel(), ExitNotification::getNotification, ExitNotification::setNotification)) {
+        Component editNotification = new AjaxLink<Notification>("edit-notification", LambdaModel.of(getModel(), ExitNotification::getNotification, ExitNotification::setNotification)) {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 Page backPg = getPage();
 
-                CrudEditPage notificationPage = new EditPage(getModel()) ;
+                CrudEditPage notificationPage = new EditPage(getModel());
                 notificationPage.setBackPage(backPg);
                 setResponsePage(notificationPage);
             }
-        });
+        };
+        queue(editNotification);
     }
 
     @Override

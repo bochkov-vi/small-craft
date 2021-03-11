@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.wicket.component.duplicate;
 
+import com.bochkov.smallcraft.wicket.model.CovertableEntityModel;
 import org.apache.wicket.Component;
 import org.apache.wicket.IRequestListener;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
@@ -134,5 +135,7 @@ public abstract class DuplicateEntityBehavior<T, E> extends AbstractDefaultAjaxB
 
     }
 
-    public abstract IModel<E> newModel(E entity);
+    public IModel<E> newModel(E entity){
+        return CovertableEntityModel.of(entity);
+    }
 }

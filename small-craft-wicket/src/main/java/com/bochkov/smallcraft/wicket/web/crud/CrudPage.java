@@ -59,7 +59,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
 
     @Getter
     @Setter
-    Consumer<IModel<T>> onBack = new SerializableConsumer<IModel<T>>() {
+    SerializableConsumer<IModel<T>> onBack = new SerializableConsumer<IModel<T>>() {
         @Override
         public void accept(IModel<T> tiModel) {
             if (backPage != null) {
@@ -210,7 +210,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         super.onConfigure();
     }
 
-    public void addOnBack(Consumer<IModel<T>> consumer) {
+    public void addOnBack(SerializableConsumer<IModel<T>> consumer) {
         this.onBack = onBack.andThen(consumer);
     }
 }

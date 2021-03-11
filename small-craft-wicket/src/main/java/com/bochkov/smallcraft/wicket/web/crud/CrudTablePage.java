@@ -188,7 +188,12 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         }
         page.setBackPage(this);
         scrollToAnchorBehavior.setAnchor(model);
+        onEditPageCreated(page);
         return page;
+    }
+
+    public void onEditPageCreated(CrudEditPage<T, ID> page) {
+
     }
 
     private CrudEditPage<T, ID> createEditPage() {

@@ -1,8 +1,10 @@
 package com.bochkov.smallcraft.jpa.repository;
 
+import com.bochkov.data.jpa.mask.MaskableProperty;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.List;
 import java.util.Optional;
 
 @SpringBootTest
@@ -22,6 +25,13 @@ public class ExitNotificationRepositoryTest {
     char[] chars = "0123456789абвгдеиклмнопрстуя".toUpperCase().toCharArray();
 
     BiMap<Character, Character> map = HashBiMap.create();
+
+
+    @Test
+    public void findByMask(){
+        List list = repository.findAll(MaskableProperty.maskSpecification("тест","boat.tailNumber", "captain.lastName", "boat.registrationNumber", "boat.model"));
+        Assert.assertFalse(list.isEmpty());
+    }
 
     @Before
     public void init() {

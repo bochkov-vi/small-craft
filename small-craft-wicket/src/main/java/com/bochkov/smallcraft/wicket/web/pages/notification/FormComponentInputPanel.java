@@ -3,6 +3,7 @@ package com.bochkov.smallcraft.wicket.web.pages.notification;
 import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
+import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.pages.boat.SelectPier;
 import com.bochkov.smallcraft.wicket.web.pages.legalPerson.FormComponentInput;
@@ -14,6 +15,7 @@ import com.google.common.collect.Sets;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.FormComponent;
@@ -32,6 +34,7 @@ import org.apache.wicket.validation.validator.PatternValidator;
 import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -113,6 +116,9 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        WebMarkupContainer container = new WebMarkupContainer("content");
+        add(container);
+        container.setOutputMarkupId(true);
         /*voiceCall.add(new IValidator<Boolean>() {
             @Override
             public void validate(IValidatable<Boolean> validatable) {
@@ -154,10 +160,10 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
         captain.setOutputMarkupId(true);
         setOutputMarkupId(true);
-        add(voiceCall,pier, regions, captain, boat, legalPerson, date, dateFrom, dateTo, activities, timeOfDay, tck, id, number, year, unit);
+        queue(voiceCall, pier, regions, captain, boat, legalPerson, date, dateFrom, dateTo, activities, timeOfDay, tck, id, number, year, unit);
         legalPerson.setVisible(false).setEnabled(false);
         tck.setOutputMarkupId(true);
-        add(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {
+        queue(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 captainEqOwner.setObject(!captainEqOwner.getObject());
@@ -170,6 +176,18 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
             protected void onUpdate(AjaxRequestTarget target) {
                 dateFrom.setModelObject(date.getModelObject());
                 target.add(dateFrom);
+            }
+        });
+        number.add(new OnChangeDuplicateBehavior<Integer, Notification>(getModel(), Notification.class) {
+            @Override
+            public void resolveDuplicate(AjaxRequestTarget target, Notification entity) {
+                target.add(container);
+                setModelObject(entity);
+            }
+
+            @Override
+            public List<Notification> findDuplicates(Integer number) {
+                return notificationRepository.findByYearAndNumber(year.getModelObject(), number);
             }
         });
         FormComponentErrorBehavior.append(this);
@@ -206,23 +224,21 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     @Override
     protected void initBeforeRenderer() {
-
-        Notification e = getModelObject();
-        id.setModelObject(e);
-        unit.setModelObject(e.getUnit());
-        year.setModelObject(e.getYear());
-        number.setModelObject(e.getNumber());
-        date.setModelObject(e.getDate());
-        captain.setModelObject(e.getCaptain());
-        boat.setModelObject(e.getBoat());
-        dateTo.setModelObject(e.getDateTo());
-        dateFrom.setModelObject(e.getDateFrom());
-        activities.setModelObject(Optional.ofNullable(e.getActivities()).map(Sets::newHashSet).orElse(null));
-        regions.setModelObject(Optional.ofNullable(e.getRegions()).map(Sets::newHashSet).orElse(null));
-        tck.setModelObject(e.getTck());
-        voiceCall.setModelObject(e.getCanVoiceCall());
-        timeOfDay.setModelObject(e.getTimeOfDay());
-        pier.setModelObject(e.getPier());
+        id.setModelObject(getModelObject());
+        unit.setModelObject(getModel().map(Notification::getUnit).getObject());
+        year.setModelObject(getModel().map(Notification::getYear).getObject());
+        number.setModelObject(getModel().map(Notification::getNumber).getObject());
+        date.setModelObject(getModel().map(Notification::getDate).getObject());
+        captain.setModelObject(getModel().map(Notification::getCaptain).getObject());
+        boat.setModelObject(getModel().map(Notification::getBoat).getObject());
+        dateTo.setModelObject(getModel().map(Notification::getDateTo).getObject());
+        dateFrom.setModelObject(getModel().map(Notification::getDateFrom).getObject());
+        activities.setModelObject(getModel().map(Notification::getActivities).map(Sets::newHashSet).getObject());
+        regions.setModelObject(getModel().map(Notification::getRegions).map(Sets::newHashSet).getObject());
+        tck.setModelObject(getModel().map(Notification::getTck).getObject());
+        voiceCall.setModelObject(getModel().map(Notification::getCanVoiceCall).getObject());
+        timeOfDay.setModelObject(getModel().map(Notification::getTimeOfDay).getObject());
+        pier.setModelObject(getModel().map(Notification::getPier).getObject());
 
     }
 

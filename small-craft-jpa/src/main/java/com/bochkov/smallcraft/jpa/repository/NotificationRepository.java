@@ -43,7 +43,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     Optional<Notification> findTopByBoatOrderByNumberDesc(Boat boat);
 
     default Optional<Notification> findTopByBoatOrderByNumberDesc(Boat boat, LocalDate date) {
-        return findTopByBoatAndDateToGreaterThanEqualOrderByNumberDesc(boat,date);
+        return findTopByBoatAndDateToGreaterThanEqualOrderByNumberDesc(boat, date);
     }
 
     Optional<Notification> findTopByBoatAndDateToGreaterThanEqualOrderByNumberDesc(Boat boat, LocalDate date);
@@ -72,4 +72,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     default List<Notification> findByNumberAndPeriod(Integer number, LocalDate dateFrom, LocalDate dateTo) {
         return findByNumberAndDateToGreaterThanEqualAndDateFromLessThanEqual(number, dateFrom, dateTo);
     }
+
+    List<Notification> findByYearAndNumber(Integer year, Integer number);
 }

@@ -40,10 +40,10 @@ public class SelectNotification extends Select2Choice<Notification> {
 
     ChoiceProvider<Notification> createProvider() {
         ChoiceProvider<Notification> provider = new MaskableChoiceProvider<Notification>(Notification.class,
-                "boat.tailNumber", "captain.lastName", "boat.registrationNumber", "boat.model") {
+                "number","boat.tailNumber", "captain.lastName", "boat.registrationNumber", "boat.model") {
             @Override
             protected Page<Notification> findAll(Specification<Notification> specification, Pageable pageable) {
-                specification = specification.and(Optional.ofNullable(onlyActive).map(aboolean->(Specification<Notification>) (r, q, b) -> b.lessThanOrEqualTo(r.get("dateTo"), LocalDate.now())).orElse(null));
+                specification = specification.and(Optional.ofNullable(onlyActive).map(aboolean->(Specification<Notification>) (r, q, b) -> b.greaterThanOrEqualTo(r.get("dateTo"), LocalDate.now())).orElse(null));
                 return repository.findAll(specification, pageable);
             }
         };

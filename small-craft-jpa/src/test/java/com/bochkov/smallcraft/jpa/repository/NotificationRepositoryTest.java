@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.jpa.repository;
 
+import com.bochkov.data.jpa.mask.MaskableProperty;
 import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.Notification;
 import com.bochkov.smallcraft.jpa.entity.Unit;
@@ -13,8 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.LocalDate;
-import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 import java.util.Optional;
 
 @SpringBootTest
@@ -31,10 +32,16 @@ public class NotificationRepositoryTest extends BoatRepositoryTest {
                 .setDate(LocalDate.now().with(TemporalAdjusters.firstDayOfYear()))
                 .setDateFrom(firstDateOfYear())
                 .setDateTo(lastDateOfYear())
-                .setRegions(Sets.newHashSet("region1","region2"))
+                .setRegions(Sets.newHashSet("region1", "region2"))
                 .setTck(false)
                 .setTimeOfDay("light time of day")
                 .setUnit(new Unit("test unit 2"));
+    }
+
+    @Test
+    public void findByMask() {
+        List list = notificationRepository.findAll(MaskableProperty.maskSpecification("test", "boat.tailNumber", "captain.lastName", "boat.registrationNumber", "boat.model"));
+        Assert.assertFalse(list.isEmpty());
     }
 
     @Test
