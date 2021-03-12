@@ -6,12 +6,15 @@ import com.bochkov.smallcraft.jpa.entity.Notification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,10 +22,20 @@ import java.util.Optional;
 
 public interface ExitNotificationRepository extends JpaRepository<ExitNotification, Long>, JpaSpecificationExecutor<ExitNotification>, ExitNotificationSafeSaveRepository, BaseConverter {
 
+    public static final Specification<ExitNotification> LONG_DATE_TIME_SPECIFICATION =
+                  (r, q, b) -> {
+                    Predicate predicate = null;
+                    Expression exitDateTime = b.function("date", LocalDate.class, r.get("exitDateTime"));
+                    Expression returnDateTime = b.coalesce(b.function("date", LocalDate.class, r.get("returnDateTime")), b.currentDate());
+                    Expression<Integer> diff = b.diff(returnDateTime, exitDateTime);
+                    predicate = b.gt(diff, 0);
+                    return predicate;
+                };
+
+
     default ExitNotification safeSave(ExitNotification entity) {
         return save(prepareSave(entity));
     }
-
 
     @Query(value = "SELECT t.* FROM  exit_notification t WHERE t.id_boat=:idBoat AND t.exit_date_time<=:dateTo AND (t.return_date_time>=:dateFrom OR t.return_date_time IS NULL) ORDER BY t.exit_date_time DESC LIMIT 1", nativeQuery = true)
     Optional<ExitNotification> findLastByBoatAndPeriod(@Param("idBoat") Long idBoat, @Param("dateFrom") LocalDateTime dateFrom, @Param("dateTo") LocalDateTime dateTo);

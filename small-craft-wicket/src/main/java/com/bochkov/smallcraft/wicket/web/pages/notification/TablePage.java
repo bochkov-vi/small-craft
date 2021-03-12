@@ -106,6 +106,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
                 cellItem.add(new AttributeModifier("colspan",
                         rowModel.map(Notification::getBoat).filter(Boat::isNotRegistable).map(b -> 3).orElse(0)
                 ));
+                cellItem.add(new AttributeModifier("title",rowModel.map(Notification::getBoat).map(Boat::getId)));
 
             }
 

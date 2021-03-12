@@ -183,7 +183,8 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
                 getModelObject().putData(notification.getModelObject());
-                target.add(FormComponentInputPanel.this);
+                target.add(pier,regions,activities,notification,captainConteiner,boat);
+                initBeforeRenderer();
             }
         });
         queue(captainConteiner.setOutputMarkupId(true));

@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.beanutils.FluentPropertyBeanIntrospector;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.wicket.Component;
+import org.apache.wicket.Page;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -15,9 +16,13 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.link.AbstractLink;
-import org.apache.wicket.model.*;
+import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.IModelComparator;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
+import org.danekja.java.util.function.serializable.SerializableConsumer;
 import org.danekja.java.util.function.serializable.SerializableSupplier;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.NestedRuntimeException;
@@ -125,8 +130,8 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     }
 
     public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<T> model) {
-        if (backPage != null) {
-            setResponsePage(backPage);
+        if (getOnBack() != null) {
+            getOnBack().accept(model);
         }
     }
 
@@ -145,7 +150,8 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         CrudEditPage<T, ID> editPage = BeanUtils.instantiateClass(getClass());
         editPage.setModel(newModel);
         editPage.setResponsePage(getPage());
-        editPage.setBackPage(this);
+        Page _this = this;
+        editPage.addOnBack((SerializableConsumer<IModel<T>>) tiModel -> setResponsePage(_this));
         if (target.isPresent()) {
             target.get().add(editPage);
         } else {
@@ -156,7 +162,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
 
     public void onAddRow() {
         CrudEditPage<T, ID> page = BeanUtils.instantiateClass(this.getClass());
-        page.setBackPage(getBackPage());
+        page.addOnBack(this.getOnBack());
         setResponsePage(page);
     }
 
@@ -177,7 +183,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         Component addButton = createAddRowButton("btn-new");
         form.add(addButton);
 
-        Component deleteButton = createDeleteButton("btn-delete", getModel(), new ResourceModel("delete").wrapOnAssignment(this));
+        Component deleteButton = createDeleteButton("btn-delete", getModel());
         form.add(deleteButton);
         form.add(createBackButton("btn-back"));
         form.add(createInputPanel("input-panel", getModel()));
@@ -186,6 +192,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
         container.setOutputMarkupId(true);
         add(container);
     }
+
 
     protected abstract Component createInputPanel(String id, IModel<T> model);
 
@@ -245,8 +252,8 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     @Override
     public void onAfterDelete(AjaxRequestTarget target) {
         super.onAfterDelete(target);
-        if (backPage != null) {
-            setResponsePage(backPage);
+        if (getOnBack() != null) {
+            getOnBack().accept(null);
         }
     }
 

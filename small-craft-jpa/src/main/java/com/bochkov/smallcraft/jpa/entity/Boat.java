@@ -49,7 +49,7 @@ public class Boat extends AbstractEntity<Long> {
     Person person;
 
     @ManyToOne
-    @JoinColumn(name = "id_unit")
+    @JoinColumn(name = "id_unit" ,nullable = false)
     Unit unit;
 
     @Column(nullable = false,columnDefinition = "boolean not null default true")

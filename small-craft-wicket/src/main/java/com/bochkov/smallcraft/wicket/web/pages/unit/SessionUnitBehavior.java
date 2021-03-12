@@ -5,7 +5,6 @@ import org.apache.wicket.Component;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.util.visit.IVisit;
@@ -19,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-public class SessionUnitBehavior<C extends FormComponent<Long> & IIdUnitSelect> extends Behavior {
+public class SessionUnitBehavior<C extends FormComponent<Long> & IIdUnitSelect> extends AjaxFormComponentUpdatingBehavior {
 
     static String COOKIENAME = "id_unit";
 
@@ -27,51 +26,35 @@ public class SessionUnitBehavior<C extends FormComponent<Long> & IIdUnitSelect> 
 
     C component;
 
-    CookieGenerator cookieGenerator(){
+
+    public SessionUnitBehavior() {
+        super("change");
+    }
+
+    CookieGenerator cookieGenerator() {
         CookieGenerator cookieGenerator = new CookieGenerator();
         cookieGenerator.setCookieName(COOKIENAME);
         cookieGenerator.setCookieMaxAge((int) TimeUnit.DAYS.toSeconds(30));
         return cookieGenerator;
     }
-    @Override
-    public void bind(Component cmp) {
-        super.bind(component);
 
-        this.component = (C) cmp;
-        component.setOutputMarkupId(true);
-        component.add(new AjaxFormComponentUpdatingBehavior("change") {
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-                component.getForm().visitFormComponents(new IVisitor<FormComponent<?>, Object>() {
-                    @Override
-                    public void component(FormComponent<?> cmp, IVisit<Object> visit) {
-                        if (cmp instanceof IIdUnitSelect) {
-                            if (cmp.getOutputMarkupId()) {
-                                target.add(cmp);
-                                ((IIdUnitSelect) cmp).setIdUnit(component.getIdUnit());
-                            }
-                        }
-                    }
-                });
-            }
-        });
-    }
 
     @Override
     public void onConfigure(Component component) {
         super.onConfigure(component);
-        C cmp = (C) component;
-        if (cmp.getIdUnit() == null) {
-            cmp.setIdUnit(getIdUnitFromCookie());
-        }
+
     }
 
+    protected void onComponentRendered() {
+        putInUnitToCookie(component.getIdUnit());
+    }
 
     @Override
-    public void afterRender(Component component) {
-        putInUnitToCookie(((C) component).getIdUnit());
-        super.afterRender(component);
-
+    protected void onBind() {
+        this.component = (C) getComponent();
+        if (component.getConvertedInput() == null) {
+            component.setIdUnit(getIdUnitFromCookie());
+        }
     }
 
     public void putInUnitToCookie(Long id) {
@@ -83,5 +66,21 @@ public class SessionUnitBehavior<C extends FormComponent<Long> & IIdUnitSelect> 
         Cookie cookie = WebUtils.getCookie((HttpServletRequest) RequestCycle.get().getRequest().getContainerRequest(), COOKIENAME);
         Long id = Optional.ofNullable(cookie).map(Cookie::getValue).map(str -> component.getConverter(Unit.class).convertToObject(str, Session.get().getLocale())).map(Unit::getId).orElse(null);
         return id;
+    }
+
+    @Override
+    protected void onUpdate(AjaxRequestTarget target) {
+        Long idUnit = component.getIdUnit();
+        component.getForm().visitFormComponents(new IVisitor<FormComponent<?>, Object>() {
+            @Override
+            public void component(FormComponent<?> cmp, IVisit<Object> visit) {
+                if (cmp instanceof IIdUnitSelect) {
+                    if (cmp.getOutputMarkupId()) {
+                        target.add(cmp);
+                        ((IIdUnitSelect) cmp).setIdUnit(idUnit);
+                    }
+                }
+            }
+        });
     }
 }

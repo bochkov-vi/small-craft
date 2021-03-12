@@ -68,7 +68,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
 
     FormComponent<String> tailNumber = new TextField<>("tailNumber", Model.of());
 
-    FormComponent<Unit> unit = new SessionSelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id))).setRequired(true);
+    FormComponent<Unit> unit = new SessionSelectUnit("unit", PersistableModel.of(id -> unitRepository.findById(id))).setRequired(true).setRequired(true);
 
     FormComponent<String> type = new SelectType("type", Model.of()).setRequired(true);
 
@@ -89,13 +89,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
 
     FormComponent<Boolean> notRegistable = new CheckBox("notRegistable", Model.of(false));
 
-    WebMarkupContainer registrationPanel = new WebMarkupContainer("registrationPanel") {
-        @Override
-        protected void onConfigure() {
-            super.onConfigure();
-            registrationPanel.setVisible(!notRegistable.getModelObject());
-        }
-    };
+    WebMarkupContainer registrationPanel = new WebMarkupContainer("registrationPanel") ;
 
     public FormComponentInputPanel(String id, IModel<Boat> model) {
         super(id, model);
@@ -105,12 +99,31 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
     protected void onInitialize() {
         super.onInitialize();
         setOutputMarkupId(true);
+
+        //============REGISTRATION INPUTS
         add(registrationPanel);
         registrationPanel.setOutputMarkupId(true);
-        registrationPanel.add(registrationDate, registrationNumber, expirationDate, unit, buildYear, serialNumber);
-        add(id, selectBoat, tailNumber, model,  type);
+        WebMarkupContainer registrationContent = new WebMarkupContainer("registrationContent"){
+            @Override
+            protected void onConfigure() {
+                super.onConfigure();
+                setVisible(!notRegistable.getModelObject());
+            }
+        };
+        registrationContent.setOutputMarkupId(true);
+        queue(unit);
+        registrationContent.add(registrationDate, registrationNumber, expirationDate,  buildYear, serialNumber);
+        registrationPanel.add(registrationContent);
+        add(id, selectBoat, tailNumber, model, type);
         add(notRegistable);
-
+        registrationNumber.setOutputMarkupId(true);
+        registrationContent.add(new AjaxLink<Void>("generateNewNumber") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                target.add(registrationNumber);
+                registrationNumber.setModelObject(boatNumberSeqRepository.nextValue());
+            }
+        });
 
         tailNumber.add(new OnChangeDuplicateBehavior<String, Boat>(getModel(), Boat.class) {
             @Override
@@ -144,6 +157,21 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
             }
         });*/
         tailNumber.setOutputMarkupId(true);
+
+        //==========================================================================
+        //==========================================================================
+        notRegistable.add(new AjaxFormComponentUpdatingBehavior("change") {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(registrationPanel);
+                if (getModelObject() != null) {
+                    getModelObject().setNotRegistable(notRegistable.getModelObject());
+                }
+            }
+        });
+        //===========================================================================
+
+
         FormComponentErrorBehavior.append(this);
         add(person);
         setOutputMarkupId(true);
@@ -174,23 +202,8 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
         };
         btnAddLegal.add(new Label("btn-add-legal-person-label", legalPersonExists.map(val -> getString("enableLegalPerson." + !val))));
         legalPersonPanel.add(btnAddLegal, legalPerson);
-        registrationNumber.setOutputMarkupId(true);
-        registrationPanel.add(new AjaxLink<Void>("generateNewNumber") {
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                target.add(registrationNumber);
-                registrationNumber.setModelObject(boatNumberSeqRepository.nextValue());
-            }
-        });
-        notRegistable.add(new AjaxFormComponentUpdatingBehavior("change") {
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-                target.add(FormComponentInputPanel.this);
-                if (getModelObject() != null) {
-                    getModelObject().setNotRegistable(notRegistable.getModelObject());
-                }
-            }
-        });
+
+
     }
 
 

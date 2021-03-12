@@ -24,6 +24,7 @@ import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.EnumChoiceRenderer;
 import org.apache.wicket.markup.html.form.FormComponent;
@@ -69,6 +70,8 @@ public class TablePage extends CrudTablePage<Boat, Long> {
 
     Expirated expire;
 
+    Boolean notRegistable = false;
+
     public TablePage(PageParameters parameters) {
         super(Boat.class, parameters);
     }
@@ -80,6 +83,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         add(filter);
         FormComponent<BoatFilterPanel.Expirated> expiratedDropDownChoice = new DropDownChoice<>("expire", com.google.common.collect.Lists.newArrayList(BoatFilterPanel.Expirated.values()), new EnumChoiceRenderer<>(getPage())).setNullValid(true);
         filter.add(expiratedDropDownChoice);
+        filter.add(new CheckBox("notRegistable").setOutputMarkupId(true));
     }
 
     @Override
@@ -170,7 +174,11 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         Specification<Boat> specification = Specification.where(null);
 
         specification = specification.and(Optional.ofNullable(quickSearch).map(str -> MaskableProperty.<Boat>maskSpecification(str, "registrationNumber", "tailNumber", "person.lastName", "legalPerson.name", "model")).orElse(null));
-        specification = specification.and(Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).map(unitEntity -> Hierarchicals.getAllChildIds(true, unitEntity)).filter(list -> !list.isEmpty()).map(list -> (Specification<Boat>) (r, q, b) -> r.get("unit").get("id").in(list)).orElse(null));
+        if (includeUnitChilds) {
+            specification = specification.and(Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).map(unitEntity -> Hierarchicals.getAllChildIds(true, unitEntity)).filter(list -> !list.isEmpty()).map(list -> (Specification<Boat>) (r, q, b) -> r.get("unit").get("id").in(list)).orElse(null));
+        } else {
+            specification = specification.and(Optional.ofNullable(unit).map(id -> (Specification<Boat>) (r, q, b) -> b.equal(r.get("unit").get("id"), id)).orElse(null));
+        }
         specification = specification.and(Optional.ofNullable(expire).map(exp ->
                 (Specification<Boat>) (r, q, b) -> {
                     Path path = r.get("expirationDate");
@@ -187,6 +195,9 @@ public class TablePage extends CrudTablePage<Boat, Long> {
                         }
                     }
                 }).orElse(null));
+        if (notRegistable != null && notRegistable) {
+            specification = specification.and((r, q, b) -> b.isTrue(r.get("notRegistable")));
+        }
         return specification;
     }
 

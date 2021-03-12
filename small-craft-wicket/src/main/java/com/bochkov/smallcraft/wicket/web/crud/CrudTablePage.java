@@ -167,7 +167,9 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     }
 
     public void onAddRow(Optional<AjaxRequestTarget> target) {
-        setResponsePage(createEditPage().setBackPage(this));
+        CrudEditPage editPage = createEditPage();
+        editPage.addOnBack(CrudPage.goBackToPage(this));
+        setResponsePage(editPage);
     }
 
     public abstract Class<? extends CrudEditPage<T, ID>> getEditPageClass();
@@ -186,7 +188,7 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
             page = createEditPage();
             page.setModel(model);
         }
-        page.setBackPage(this);
+        page.addOnBack(CrudPage.goBackToPage(this));
         scrollToAnchorBehavior.setAnchor(model);
         onEditPageCreated(page);
         return page;

@@ -18,10 +18,7 @@ import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
-import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.ClassAttributeModifier;
-import org.apache.wicket.Component;
-import org.apache.wicket.Session;
+import org.apache.wicket.*;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
@@ -61,6 +58,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -88,6 +86,8 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     NewRowsAjaxTimerBehavior newRowsAjaxTimerBehavior;
 
     Boolean includeUnitChilds = true;
+
+    Boolean longDateTime = false;
 
     LocalDateTime lastModifiedDate = LocalDateTime.now();
 
@@ -121,6 +121,14 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
             }
         });
         filterPanel.add(onExitFormComponent);
+        FormComponent<Boolean> longDateTimeComponent = new CheckBox("longDateTime");
+        longDateTimeComponent.add(new AjaxFormComponentUpdatingBehavior("change") {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.add(getPage());
+            }
+        });
+        filterPanel.add(longDateTimeComponent);
 
         container.setOutputMarkupId(true);
         super.onInitialize();
@@ -158,14 +166,32 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
         columns.add(new PropertyColumn(new ResourceModel("notification.number"), "notification.number", "notification.number"));
         columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("id"), "id", en -> repository.convert(en.getId())));
         columns.add(new PropertyColumn(new ResourceModel("captain"), "captain", "captain.fio"));
-        columns.add(new LambdaColumn<ExitNotification,String>(new ResourceModel("phones"),n->Optional.ofNullable(n.getCaptain()).map(Person::getPhones).map(list-> Joiner.on("; ").join(list)).orElse(null)) {
+        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("phones"), n -> Optional.ofNullable(n.getCaptain()).map(Person::getPhones).map(list -> Joiner.on("; ").join(list)).orElse(null)) {
 
             @Override
             public void populateItem(Item<ICellPopulator<ExitNotification>> cellItem, String componentId, IModel<ExitNotification> rowModel) {
                 IModel<String> phones = rowModel.map(ExitNotification::getCaptain).map(Person::getPhones).map(list -> String.join("; ", list));
-                cellItem.add(new Label(componentId, phones.map(str -> String.format("%s...", StringUtils.substring(str, 0, 20)))));
+                Label label = new Label(componentId, phones.map(str -> String.format("%s...", StringUtils.substring(str, 0, 17))));
+                cellItem.add(label);
                 cellItem.add(new AttributeModifier("title", phones));
                 cellItem.add(new AttributeModifier("data-toggle", "tooltip"));
+                label.add(new ClassAttributeModifier() {
+                    @Override
+                    protected Set<String> update(Set<String> oldClasses) {
+
+                        oldClasses.add("d-block");
+                        return oldClasses;
+                    }
+                });
+                label.add(new StyleAttributeModifier() {
+                    @Override
+                    protected Map<String, String> update(Map<String, String> oldStyles) {
+                        oldStyles.put("text-overflow", "ellipsis");
+                        //oldStyles.put("display", "block");
+                        oldStyles.put("white-space", "nowrap");
+                        return oldStyles;
+                    }
+                });
             }
         });
         columns.add(new PropertyColumn(new ResourceModel("type"), "type", "boat.type"));
@@ -187,7 +213,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
                     cellItem.add(new Label(componentId, rowModel.map(ExitNotification::getReturnDateTime)));
                 } else {
                     cellItem.setOutputMarkupId(true);
-                    AbstractLink link = new AjaxLink<ExitNotification>(componentId, PersistableModel.of(rowModel.getObject(),id->repository.findById(id))) {
+                    AbstractLink link = new AjaxLink<ExitNotification>(componentId, PersistableModel.of(rowModel.getObject(), id -> repository.findById(id))) {
                         @Override
                         public void onClick(AjaxRequestTarget target) {
                             target.add(table);
@@ -245,8 +271,12 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
         } else {
             where = where.and(Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).map(entity -> Hierarchicals.getAllChildIds(true, entity)).map(u -> (Specification<ExitNotification>) (r, q, b) -> r.get("unit").get("id").in(u)).orElse(null));
         }
+        Optional<Specification<ExitNotification>> longDateTimeSpecification = Optional.ofNullable(longDateTime).filter(aBoolean -> aBoolean).map(aBoolean -> ExitNotificationRepository.LONG_DATE_TIME_SPECIFICATION);
+        where = where.and(longDateTimeSpecification.orElse(null));
+
         return where;
     }
+
 
     @Override
     protected Sort sort() {
@@ -281,8 +311,8 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     public boolean isLongTimeExitNotification(ExitNotification exitNotification) {
         boolean result = false;
         Optional<ExitNotification> e = Optional.ofNullable(exitNotification);
-        result = e.map(n -> isLongTime(n.getExitDateTime(), n.getExitDateTime())).orElse(false)
-                || e.map(n -> isLongTime(n.getExitDateTime(), LocalDateTime.now())).orElse(false);
+        result = e.map(n -> isLongTime(n.getExitDateTime(), n.getReturnDateTime())).orElse(false)
+                || e.map(n -> n.getReturnDateTime() == null && isLongTime(n.getExitDateTime(), LocalDateTime.now())).orElse(false);
         return result;
 
     }
@@ -292,7 +322,8 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
         TablePage tablePage = this;
         page.addOnBack(model -> {
             tablePage.lastModifiedDate = model.map(AbstractAuditableEntity::getModifyDate).getObject();
-            tablePage.newRowsAjaxTimerBehavior.checked=LocalDateTime.now();
+            tablePage.newRowsAjaxTimerBehavior.checked = LocalDateTime.now();
+            newRowsAjaxTimerBehavior.updateCookie();
             RequestCycle.get().setResponsePage(tablePage);
         });
     }
@@ -320,6 +351,10 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
         @Override
         protected void onComponentRendered() {
             super.onComponentRendered();
+            updateCookie();
+        }
+
+        public void updateCookie() {
             new CookieUtils().save(COOKIE_NAME, getComponent().getConverter(Long.class).convertToString(System.currentTimeMillis(), Session.get().getLocale()));
         }
 

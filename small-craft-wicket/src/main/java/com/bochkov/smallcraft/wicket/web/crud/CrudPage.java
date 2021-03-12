@@ -7,7 +7,6 @@ import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeAjaxLink;
 import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeLink;
 import com.bochkov.wicket.jpa.model.PersistableModel;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.Component;
@@ -20,6 +19,7 @@ import org.apache.wicket.feedback.IFeedbackMessageFilter;
 import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.*;
+import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.danekja.java.util.function.serializable.SerializableConsumer;
 import org.springframework.core.NestedRuntimeException;
@@ -28,16 +28,9 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.io.Serializable;
 import java.util.Set;
-import java.util.function.Consumer;
 
 @Accessors(chain = true)
 public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Serializable> extends BasePage<T> {
-
-
-    @Getter
-    @Setter
-    protected Page backPage;
-
 
     protected org.slf4j.Logger log;
 
@@ -58,13 +51,9 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
     protected Class<ENTITY> entityClass;
 
     @Getter
-    @Setter
-    SerializableConsumer<IModel<T>> onBack = new SerializableConsumer<IModel<T>>() {
+    private SerializableConsumer<IModel<T>> onBack = new SerializableConsumer<IModel<T>>() {
         @Override
         public void accept(IModel<T> tiModel) {
-            if (backPage != null) {
-                setResponsePage(backPage);
-            }
         }
     };
 
@@ -84,6 +73,15 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         super(parameters);
         this.entityClass = entityClass;
         log = org.slf4j.LoggerFactory.getLogger(this.getClass());
+    }
+
+    public static <E> SerializableConsumer<IModel<E>> goBackToPage(Page backPage) {
+        return new SerializableConsumer<IModel<E>>() {
+            @Override
+            public void accept(IModel<E> tiModel) {
+                RequestCycle.get().setResponsePage(backPage);
+            }
+        };
     }
 
     protected abstract <R extends CrudRepository<ENTITY, ID>> R getRepository();
@@ -129,19 +127,17 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         return new AuthorizeLink<T>(id, getModel()) {
             @Override
             public void onClick() {
-                onBack(getModel());
+                if (onBack != null) {
+                    onBack.accept(getModel());
+                }
             }
 
             @Override
             protected void onConfigure() {
                 super.onConfigure();
-                this.setVisible(backPage != null);
+                this.setVisible(onBack != null);
             }
         };
-    }
-
-    public void onBack(IModel<T> model) {
-        this.onBack.accept(model);
     }
 
     public void onRequestDelete(AjaxRequestTarget target, IModel<ENTITY> model) {
@@ -150,7 +146,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         deletePanel.show(target);
     }
 
-    public final Component createDeleteButton(String id, IModel model, IModel<String> label) {
+    public Component createDeleteButton(String id, IModel<ENTITY> model, IModel<String> label) {
         AbstractLink button = null;
 
         button = createDeleteButton(id, model);
@@ -212,5 +208,8 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
 
     public void addOnBack(SerializableConsumer<IModel<T>> consumer) {
         this.onBack = onBack.andThen(consumer);
+    }
+    public void setBackPage(Page page){
+        addOnBack(goBackToPage(page));
     }
 }
