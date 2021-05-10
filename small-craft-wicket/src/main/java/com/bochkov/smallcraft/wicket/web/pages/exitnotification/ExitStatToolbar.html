@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:head>
+    <style>
+        .lazy div {
+            display: inline;
+        }
+    </style>
+</wicket:head>
+<wicket:panel>
+    <tr>
+        <td wicket:id="content">
+            <div class="d-block"><span>Всего на выходе:</span><span class="lazy" wicket:id="totalOnExit"></span></div>
+            <div><span>Выходило за сутки:</span><span class="lazy" wicket:id="onExitForDay"></span></div>
+            <div><span>Вернулось за сутки:</span><span class="lazy" wicket:id="returnsForDay"></span></div>
+            <div><span>На выходе с ночевкой:</span><span class="lazy" wicket:id="totalOnExitLongTime"></span></div>
+        </td>
+    </tr>
+
+</wicket:panel>
+</body>
+</html>

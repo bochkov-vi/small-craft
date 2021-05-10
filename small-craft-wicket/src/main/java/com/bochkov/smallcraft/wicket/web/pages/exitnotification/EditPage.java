@@ -4,7 +4,6 @@ import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import org.apache.wicket.Component;
-import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
@@ -42,6 +41,7 @@ public class EditPage extends CrudEditPage<ExitNotification, Long> {
     @Override
     protected void onInitialize() {
         super.onInitialize();
+        this.feedback.setEscapeModelStrings(false);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class EditPage extends CrudEditPage<ExitNotification, Long> {
 
     @Override
     public void onSave(Optional<AjaxRequestTarget> target, IModel<ExitNotification> model) {
-        ExitNotification notification = model.getObject();
+        ExitNotification exitNotification = model.getObject();
         super.onSave(target, model);
     }
 

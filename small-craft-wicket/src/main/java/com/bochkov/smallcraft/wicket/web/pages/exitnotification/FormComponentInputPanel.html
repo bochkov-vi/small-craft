@@ -5,6 +5,7 @@
     <div class="card mt-md-3 mt-1 border-primary ">
         <div wicket:id="content" class="card-body  ">
             <input wicket:id="id" type="hidden">
+            <div wicket:id="number-code" class="border border-success rounded h2">[Exit Notification Number]</div>
             <div class="form-row">
                 <div class="form-group col-md-2">
                     <label wicket:for="exitCallDateTime">
@@ -83,18 +84,8 @@
         </div>
     </div>
 
-    <div wicket:id="captain-container" class="card border-info mt-1 mt-md-3">
-        <div class="card-header bg-info">
-            <label wicket:for="captain">
-                <wicket:message key="captain"/>
-            </label>
-        </div>
-        <div wicket:id="btn-captain-eq-owner" class="btn btn-outline-primary">
-            <span class="fa fa-plus"></span>
-            <span wicket:id="btn-captain-eq-owner-label">[btn-captain-eq-owner-label]</span>
-        </div>
-        <div class="card-body " wicket:id="captain"></div>
-    </div>
+
+    <div wicket:id="captain"></div>
 
     <div class="card border-success mt-1 mt-md-3">
         <div class="card-header bg-success">

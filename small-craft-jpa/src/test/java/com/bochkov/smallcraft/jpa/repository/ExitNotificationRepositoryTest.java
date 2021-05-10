@@ -2,6 +2,8 @@ package com.bochkov.smallcraft.jpa.repository;
 
 import com.bochkov.data.jpa.mask.MaskableProperty;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
+import com.bochkov.smallcraft.jpa.entity.Notification;
+import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import org.junit.Assert;
@@ -16,6 +18,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +32,29 @@ public class ExitNotificationRepositoryTest {
     char[] chars = "0123456789абвгдеиклмнопрстуя".toUpperCase().toCharArray();
 
     BiMap<Character, Character> map = HashBiMap.create();
+
+    @Autowired
+    UnitRepository unitRepository;
+
+    @Test
+    public void findDuplicates() {
+        Long id = BaseConverter.convert("67");
+
+        Notification notification = repository.findById(id).map(ExitNotification::getNotification).get();
+        Assert.assertNotNull(notification);
+        LocalDateTime d1 = LocalDateTime.now();
+        LocalDateTime d2 = null;
+        Specification specification = (r, q, b) -> {
+            Predicate predicate = b.and(b.equal(r.get("notification"), notification),
+                    b.lessThan(r.get("exitDateTime"), d2 != null ? d2 : LocalDateTime.now()),
+                    b.greaterThan(b.coalesce(r.get("returnDateTime"), LocalDateTime.now()), d1));
+            return predicate;
+        };
+
+        List<ExitNotification> list = repository.findAll(specification);
+        Assert.assertFalse(list.isEmpty());
+
+    }
 
     @Test
     public void findLongTimeExits() {
@@ -68,7 +94,7 @@ public class ExitNotificationRepositoryTest {
     public void convert() {
         repository.findAll().stream().forEach(en -> {
             Long id = en.getId();
-            String str = repository.convert(id);
+            String str = BaseConverter.convert(id);
             System.out.println(str);
         });
     }
@@ -78,4 +104,30 @@ public class ExitNotificationRepositoryTest {
         Optional<ExitNotification> o = repository.findLastModified();
         System.out.println(o.orElse(null));
     }
-}
+
+
+
+    @Test
+    public void countOnExitForDay() {
+        Unit unit = unitRepository.findById(1L).orElse(null);
+        Long result = repository.countOnExitForDay(LocalDate.now(), unit, true);
+        Assert.assertTrue(result>0);
+    }
+    @Test
+    public void countTotalOnExit() {
+        Unit unit = unitRepository.findById(1L).orElse(null);
+        Long result = repository.countTotalOnExit( unit, true);
+        Assert.assertTrue(result>0);
+    }
+    @Test
+    public void countReturnsForDay() {
+        Unit unit = unitRepository.findById(1L).orElse(null);
+        Long result = repository.countReturnsForDay( LocalDate.now(),unit, true);
+        Assert.assertTrue(result>0);
+    }
+    @Test
+    public void countTotalOnExitLongTime() {
+        Unit unit = unitRepository.findById(1L).orElse(null);
+        Long result = repository.countTotalOnExitLongTime( LocalDate.now(),unit, true);
+        Assert.assertTrue(result>0);
+    }    }

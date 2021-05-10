@@ -6,9 +6,9 @@ import com.bochkov.wicket.data.provider.PersistableDataProvider;
 import com.bochkov.wicket.jpa.model.CollectionModel;
 import com.google.common.collect.Lists;
 import lombok.Getter;
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ClassAttributeModifier;
 import org.apache.wicket.Component;
-import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.HeaderlessColumn;
@@ -21,6 +21,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.danekja.java.util.function.serializable.SerializableConsumer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.domain.Sort;
@@ -40,19 +41,11 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     protected WebMarkupContainer container = new WebMarkupContainer("container");
 
+    protected ScrollToAnchorBehavior<T> scrollToAnchorBehavior;
+
+    protected EntityDataTable<T, ID> table = createDataTable("table");
+
     XLSXDataExportLink exportExcel;
-
-    private ScrollToAnchorBehavior<T> scrollToAnchorBehavior;
-
-    protected EntityDataTable<T, ID> table = new EntityDataTable<T, ID>("table", columns(), provider()) {
-
-        @Override
-        public void onRowCreated(Item<T> row, String id, int index, IModel<T> model) {
-            CrudTablePage.this.onRowCreated(table, row, id, index, model);
-            //row.add(scrollToAnchorBehavior.classAttributeModifier(model, getModel()));
-            row.add(scrollToAnchorBehavior.nameAttributeModifier(model));
-        }
-    };
 
     @Getter
     private IModel<String> exportFileName;
@@ -67,6 +60,41 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
 
     public CrudTablePage(Class<T> tClass, PageParameters parameters) {
         super(tClass, parameters);
+    }
+
+    public static <T> Component createEditButton(String id, IModel<T> model, SerializableConsumer<IModel<T>> onEdit, Component parent) {
+        AbstractLink button = null;
+        button = new AuthorizeLink<T>(id, model) {
+            @Override
+            public void onClick() {
+                onEdit.accept(model);
+            }
+        };
+        button.setEscapeModelStrings(false);
+
+        button.setBody(Model.of("<span class='fa fa-pencil'></span>"));
+        button.add(new ClassAttributeModifier() {
+            @Override
+            protected Set<String> update(Set<String> oldClasses) {
+                oldClasses.add("btn");
+                oldClasses.add("btn-outline-info");
+                return oldClasses;
+            }
+        });
+        button.add(new AttributeModifier("title", () -> parent.getString("edit")));
+        return button;
+    }
+
+    protected EntityDataTable<T, ID> createDataTable(String compId) {
+        return new EntityDataTable<T, ID>("table", columns(), provider()) {
+
+            @Override
+            public void onRowCreated(Item<T> row, String id, int index, IModel<T> model) {
+                CrudTablePage.this.onRowCreated(table, row, id, index, model);
+                //row.add(scrollToAnchorBehavior.classAttributeModifier(model, getModel()));
+                row.add(scrollToAnchorBehavior.nameAttributeModifier(model));
+            }
+        };
     }
 
     @Override
@@ -89,11 +117,9 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         add(container);
     }
 
-
-    private ISortableDataProvider<T, String> provider() {
+    protected ISortableDataProvider<T, String> provider() {
         return PersistableDataProvider.of(this::getRepository, this::specification, this::sort);
     }
-
 
     protected List<? extends IColumn<T, String>> columns() {
         List<? extends IColumn<T, String>> result = Lists.newArrayList();
@@ -109,28 +135,8 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     }
 
     public Component createEditButton(String id, IModel<T> model) {
-        AbstractLink button = null;
-        button = new AuthorizeLink<T>(id, model) {
-            @Override
-            public void onClick() {
-                onEdit(getModel());
-            }
-        };
-        button.setEscapeModelStrings(false);
-
-        button.setBody(Model.of("<span class='fa fa-pencil'></span>"));
-        button.add(new ClassAttributeModifier() {
-            @Override
-            protected Set<String> update(Set<String> oldClasses) {
-                oldClasses.add("btn");
-                oldClasses.add("btn-outline-info");
-                return oldClasses;
-            }
-        });
-
-        return button;
+        return createEditButton(id, model, this::onEdit, this);
     }
-
 
     public IColumn<T, String> createEditColumn() {
         return new HeaderlessColumn<T, String>() {
@@ -149,7 +155,6 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
             }
         };
     }
-
 
     public Component createAddRowButton(String id) {
         return new AuthorizeLink<Void>(id) {
@@ -201,13 +206,6 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
     private CrudEditPage<T, ID> createEditPage() {
         CrudEditPage<T, ID> page = BeanUtils.instantiateClass(getEditPageClass());
         return page;
-    }
-
-    PageParameters pageParametersForModel(IModel<T> model) {
-        PageParameters parameters = new PageParameters();
-        String value = getConverter(getEntityClass()).convertToString(model.getObject(), Session.get().getLocale());
-        parameters.set(0, value);
-        return parameters;
     }
 
     @Override

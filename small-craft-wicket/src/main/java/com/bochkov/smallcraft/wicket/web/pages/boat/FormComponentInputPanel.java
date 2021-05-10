@@ -1,9 +1,6 @@
 package com.bochkov.smallcraft.wicket.web.pages.boat;
 
-import com.bochkov.smallcraft.jpa.entity.Boat;
-import com.bochkov.smallcraft.jpa.entity.LegalPerson;
-import com.bochkov.smallcraft.jpa.entity.Person;
-import com.bochkov.smallcraft.jpa.entity.Unit;
+import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
@@ -25,6 +22,7 @@ import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
+import org.danekja.java.util.function.serializable.SerializableBiConsumer;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -53,13 +51,16 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
     @Setter
     boolean canSelect = false;
 
+    @Getter
+    @Setter
+    SerializableBiConsumer<IModel<Person>, AjaxRequestTarget> onPersonEdit;
 
     IModel<Boolean> legalPersonExists = Model.of(false);
 
     IModel<Boat> selected = PersistableModel.of(id -> boatRepository.findById(id));
 
 
-    FormComponent<Person> person = new com.bochkov.smallcraft.wicket.web.pages.person.FormComponentInputPanel("person",
+    com.bochkov.smallcraft.wicket.web.pages.person.FormComponentInputPanel person = new com.bochkov.smallcraft.wicket.web.pages.person.FormComponentInputPanel("person",
             PersistableModel.of(id -> personRepository.findById(id))).setCanSelect(true);
 
     FormComponent<Boat> id = new HiddenField<>("id", selected, Boat.class);
@@ -97,6 +98,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
 
     @Override
     protected void onInitialize() {
+        person.setOnEdit(onPersonEdit);
         super.onInitialize();
         setOutputMarkupId(true);
 
@@ -203,7 +205,6 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
         btnAddLegal.add(new Label("btn-add-legal-person-label", legalPersonExists.map(val -> getString("enableLegalPerson." + !val))));
         legalPersonPanel.add(btnAddLegal, legalPerson);
 
-
     }
 
 
@@ -268,7 +269,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
         tailNumber.setModelObject(getModel().map(Boat::getTailNumber).getObject());
         serialNumber.setModelObject(getModel().map(Boat::getSerialNumber).getObject());
         buildYear.setModelObject(getModel().map(Boat::getBuildYear).getObject());
-        unit.setModelObject(getModel().map(Boat::getUnit).getObject());
+        unit.setModelObject(getModel().map(Boat::getUnit).orElseGet(() -> unit.getModelObject()).getObject());
         type.setModelObject(getModel().map(Boat::getType).getObject());
         model.setModelObject(getModel().map(Boat::getModel).getObject());
         registrationDate.setModelObject(getModel().map(Boat::getRegistrationDate).getObject());

@@ -11,9 +11,11 @@ import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.filter.FilterPanel;
+import com.bochkov.smallcraft.wicket.security.SmallCraftWebSession;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeLink;
+import com.bochkov.wicket.component.LocalDateTextField;
 import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.base.Joiner;
 import org.apache.commons.compress.utils.Lists;
@@ -43,6 +45,7 @@ import javax.inject.Inject;
 import javax.persistence.criteria.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -72,6 +75,10 @@ public class TablePage extends CrudTablePage<Boat, Long> {
 
     Boolean notRegistable = false;
 
+    LocalDate dateFrom;
+
+    LocalDate dateTo;
+
     public TablePage(PageParameters parameters) {
         super(Boat.class, parameters);
     }
@@ -81,9 +88,11 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         super.onInitialize();
         FilterPanel filter = new FilterPanel("filter", new CompoundPropertyModel<>(this));
         add(filter);
-        FormComponent<BoatFilterPanel.Expirated> expiratedDropDownChoice = new DropDownChoice<>("expire", com.google.common.collect.Lists.newArrayList(BoatFilterPanel.Expirated.values()), new EnumChoiceRenderer<>(getPage())).setNullValid(true);
+        FormComponent<Expirated> expiratedDropDownChoice = new DropDownChoice<>("expire", com.google.common.collect.Lists.newArrayList(Expirated.values()), new EnumChoiceRenderer<>(getPage())).setNullValid(true);
         filter.add(expiratedDropDownChoice);
         filter.add(new CheckBox("notRegistable").setOutputMarkupId(true));
+        filter.add(new LocalDateTextField("dateFrom", getString("dateFormat")));
+        filter.add(new LocalDateTextField("dateTo", getString("dateFormat")));
     }
 
     @Override
@@ -197,6 +206,9 @@ public class TablePage extends CrudTablePage<Boat, Long> {
                 }).orElse(null));
         if (notRegistable != null && notRegistable) {
             specification = specification.and((r, q, b) -> b.isTrue(r.get("notRegistable")));
+        } else {
+            specification = specification.and(Optional.ofNullable(dateFrom).map(df -> (Specification<Boat>) (r, q, b) -> b.greaterThanOrEqualTo(r.get("registrationDate"), df)).orElse(null));
+            specification = specification.and(Optional.ofNullable(dateTo).map(dt -> (Specification<Boat>) (r, q, b) -> b.lessThanOrEqualTo(r.get("registrationDate"), dt)).orElse(null));
         }
         return specification;
     }
@@ -214,6 +226,10 @@ public class TablePage extends CrudTablePage<Boat, Long> {
                 com.bochkov.smallcraft.wicket.web.pages.notification.EditPage notificationPage = new com.bochkov.smallcraft.wicket.web.pages.notification.EditPage(notification.copyWithIfNullGet(() -> {
                     Notification e = new Notification();
                     e.setBoat(rowModel.getObject());
+                    e.setYear(LocalDate.now(SmallCraftWebSession.get().getZoneId()).getYear());
+                    e.setDate(LocalDate.now(SmallCraftWebSession.get().getZoneId()));
+                    e.setDateFrom(LocalDate.now(SmallCraftWebSession.get().getZoneId()));
+                    e.setDateTo(LocalDate.now(SmallCraftWebSession.get().getZoneId()).with(TemporalAdjusters.lastDayOfYear()));
                     return e;
                 }));
                 notificationPage.setBackPage(getPage());
@@ -250,8 +266,8 @@ public class TablePage extends CrudTablePage<Boat, Long> {
                                             .setActivities(notification.map(Notification::getActivities).orElse(null).getObject())
                                             .setRegions(notification.map(Notification::getRegions).orElse(null).getObject())
                                             .setCaptain(rowModel.map(Boat::getPerson).getObject())
-                                            .setExitCallDateTime(LocalDateTime.now())
-                                            .setExitDateTime(LocalDateTime.now());
+                                            .setExitCallDateTime(LocalDateTime.now(SmallCraftWebSession.get().getZoneId()))
+                                            .setExitDateTime(LocalDateTime.now(SmallCraftWebSession.get().getZoneId()));
                                 })
                 );
                 editPage.setBackPage(getPage());

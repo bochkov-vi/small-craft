@@ -3,10 +3,12 @@ package com.bochkov.smallcraft.wicket.web.pages.dashboard;
 import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Notification;
+import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.bochkov.smallcraft.jpa.repository.BoatRepository;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.NotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
+import com.bochkov.smallcraft.wicket.web.pages.boat.TablePage;
 import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnit;
 import com.bochkov.wicket.component.table.XLSXDataExportLink;
 import com.bochkov.wicket.data.provider.ListModelDataProvider;
@@ -14,8 +16,10 @@ import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.AjaxLazyLoadPanel;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable;
@@ -30,15 +34,19 @@ import org.apache.wicket.markup.repeater.data.IDataProvider;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.util.visit.IVisit;
+import org.apache.wicket.util.visit.IVisitor;
+import org.danekja.java.util.function.serializable.SerializableConsumer;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class DashBoardPanel extends GenericPanel<LocalDate> {
@@ -87,7 +95,7 @@ public class DashBoardPanel extends GenericPanel<LocalDate> {
                 new PropertyColumn<RowData, String>(new ResourceModel("unitValue"), "value", "value") {
                     @Override
                     public void populateItem(Item<ICellPopulator<RowData>> item, String componentId, IModel<RowData> rowModel) {
-                        item.add(new AjaxLazyLoadPanel<Label>(componentId, rowModel) {
+                        item.add(new AjaxLazyLoadPanel(componentId, rowModel) {
 
                             @Override
                             protected boolean isContentReady() {
@@ -95,9 +103,22 @@ public class DashBoardPanel extends GenericPanel<LocalDate> {
                             }
 
                             @Override
-                            public Label getLazyLoadComponent(String markupId) {
+                            public Component getLazyLoadComponent(String markupId) {
                                 IModel model = rowModel.map(row -> row.getValue());
-                                return new Label(markupId, model);
+                                IModel<Consumer<AjaxRequestTarget>> consumer = rowModel.map(RowData::getOnclick);
+                                Component component = null;
+                               /* if (consumer != null && consumer.isPresent().getObject()) {
+                                    component = new AjaxLink<Consumer<AjaxRequestTarget>>(markupId,consumer) {
+                                        @Override
+                                        public void onClick(AjaxRequestTarget target) {
+                                            this.getModelObject().accept(target);
+                                        }
+                                    }.setBody(model);
+                                } else {
+
+                                }*/
+                                component = new Label(markupId, model);
+                                return component;
                             }
                         });
                     }
@@ -130,25 +151,36 @@ public class DashBoardPanel extends GenericPanel<LocalDate> {
                 return Lists.newArrayList(u);
             }
         }).map(uList -> (Specification<Boat>) (r, q, b) -> r.get("unit").in(uList)).getObject();
-        RowData row = RowData.create("На учете МПС", () -> boatRepository.count(Specification.where(boatAdditionlSpecification).and((Specification<Boat>) (r, q, b) -> b.and(
-                b.lessThanOrEqualTo(r.get("registrationDate"), getModelObject()),
-                b.or(b.greaterThan(r.get("expirationDate"), getModelObject()), r.get("expirationDate").isNull())))
-        ));
+        RowData row = RowData.create("На учете МПС", () -> boatRepository.registeredCount(boatAdditionlSpecification, getModelObject()));
+        /*row.setOnclick((target)->{
+            TablePage boatPage = new TablePage(null){
+                @Override
+                protected void onInitialize() {
+                    super.onInitialize();
+                    visitChildren(FormComponent.class, new IVisitor<FormComponent, Object>() {
+                        @Override
+                        public void component(FormComponent cmp, IVisit<Object> visit) {
+                            if(Objects.equals("unit",cmp.getId())){
+                                cmp.setModelObject(unit.getModel().map(Unit::getId).getObject());
+                            }
+                        }
+                    });
+                }
+            };
+            setResponsePage(boatPage);
+        });*/
         data.add(row);
 
         //boats
         data.add(RowData.create("Всего снято с учета", () -> {
-            return boatRepository.count(Specification.where(boatAdditionlSpecification).and((r, q, b) -> b.and(b.lessThanOrEqualTo(r.get("registrationDate"), getModelObject()),
-                    b.or(b.lessThanOrEqualTo(r.get("expirationDate"), getModelObject()))))
-            );
+            return boatRepository.unregisteredCount(boatAdditionlSpecification, getModelObject());
         }));
+
         data.add(RowData.create(String.format("Поставлено на учет в %s году", getModel().map(LocalDate::getYear).orElse(null).getObject()), () -> {
-            return boatRepository.count(Specification.where(boatAdditionlSpecification).and((r, q, b) -> b.and(b.lessThanOrEqualTo(r.get("registrationDate"), getModel().map(d -> d.with(TemporalAdjusters.lastDayOfYear())).getObject()),
-                    b.greaterThanOrEqualTo(r.get("registrationDate"), getModel().map(d -> d.with(TemporalAdjusters.firstDayOfYear())).getObject()))));
+            return boatRepository.registeredCount(boatAdditionlSpecification, getModel().map(LocalDate::getYear).getObject());
         }));
         data.add(RowData.create(String.format("Снято с учета в %s году", getModel().map(LocalDate::getYear).orElse(null).getObject()), () -> {
-            return boatRepository.count(Specification.where(boatAdditionlSpecification).and((r, q, b) -> b.and(b.lessThanOrEqualTo(r.get("expirationDate"), getModel().map(d -> d.with(TemporalAdjusters.lastDayOfYear())).getObject()),
-                    b.greaterThanOrEqualTo(r.get("expirationDate"), getModel().map(d -> d.with(TemporalAdjusters.firstDayOfYear())).getObject()))));
+            return boatRepository.unregisteredCount(boatAdditionlSpecification, getModel().map(LocalDate::getYear).getObject());
         }));
 //notifications
         Specification<Notification> notificationSpecification = unit.getModel().combineWith(includeUnitChilds.getModel(), (u, i) -> {
@@ -193,6 +225,8 @@ public class DashBoardPanel extends GenericPanel<LocalDate> {
         Object value;
 
         boolean ready = false;
+
+        private SerializableConsumer<AjaxRequestTarget> onclick = null;
 
         public RowData(String label) {
             this.label = label;

@@ -7,6 +7,7 @@ import com.bochkov.smallcraft.jpa.entity.AbstractAuditableEntity;
 import com.bochkov.smallcraft.jpa.entity.ExitNotification;
 import com.bochkov.smallcraft.jpa.entity.Person;
 import com.bochkov.smallcraft.jpa.entity.Unit;
+import com.bochkov.smallcraft.jpa.repository.BaseConverter;
 import com.bochkov.smallcraft.jpa.repository.ExitNotificationRepository;
 import com.bochkov.smallcraft.jpa.repository.UnitRepository;
 import com.bochkov.smallcraft.wicket.component.filter.FilterPanel;
@@ -24,6 +25,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.head.IHeaderResponse;
@@ -35,10 +37,7 @@ import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.repeater.Item;
-import org.apache.wicket.model.CompoundPropertyModel;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
-import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.*;
 import org.apache.wicket.request.IRequestHandler;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.handler.resource.ResourceReferenceRequestHandler;
@@ -57,6 +56,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -89,7 +89,6 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
 
     Boolean longDateTime = false;
 
-    LocalDateTime lastModifiedDate = LocalDateTime.now();
 
     public TablePage(PageParameters parameters) {
         super(ExitNotification.class, parameters);
@@ -99,17 +98,39 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
         return dateFrom != null && dateTo != null && ChronoUnit.DAYS.between(dateFrom.toLocalDate(), dateTo.toLocalDate()) > 0;
     }
 
+    public static Instant toInstant(LocalDateTime localDateTime) {
+        Instant instant = localDateTime.atZone(SmallCraftWebSession.get().getZoneId()).toInstant();
+        return instant;
+    }
+
     @Override
     public ExitNotificationRepository getRepository() {
         return repository;
     }
 
     @Override
+    protected EntityDataTable<ExitNotification, Long> createDataTable(String compId) {
+
+        EntityDataTable<ExitNotification, Long> table = super.createDataTable(compId);
+        List<AbstractToolbar> toolbars = Lists.newArrayList();
+        toolbars.add(new ExitStatToolbar(table, LoadableDetachableModel.of(() -> Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).orElse(null)), ((IModel<Boolean>) () -> includeUnitChilds).orElse(Boolean.FALSE)));
+        table.setTopToolbarsFirst(toolbars);
+        table.add(new Behavior() {
+            @Override
+            public void afterRender(Component component) {
+                newRowsAjaxTimerBehavior.updateCookie();
+            }
+        });
+        return table;
+    }
+
+    @Override
     protected void onInitialize() {
         FilterPanel filterPanel = new FilterPanel("filter", new CompoundPropertyModel<>(this));
         add(filterPanel);
-        dateFrom = LocalDateTime.from(LocalDate.now().atStartOfDay(SmallCraftWebSession.get().getZoneId()));
-        dateTo = dateFrom.plusDays(1);
+        filterPanel.setOutputMarkupId(true);
+        dateFrom = getDefaultDateFrom();
+        dateTo = getDefaultDateTo();
         filterPanel.add(new LocalDateTimeTextFieldCalendar("dateFrom", getString("dateTimeFormat")));
         filterPanel.add(new LocalDateTimeTextFieldCalendar("dateTo", getString("dateTimeFormat")));
 
@@ -137,14 +158,87 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
             @Override
             protected void onTimer(AjaxRequestTarget target) {
                 LocalDateTime lmd = repository.findLastModified().map(AbstractAuditableEntity::getModifyDate).orElse(null);
-                if (lastModifiedDate.isBefore(lmd)) {
+                if (newRowsAjaxTimerBehavior.isNew(lmd)) {
                     target.add(container);
                     target.appendJavaScript("play();");
-                    lastModifiedDate = lmd;
                 }
             }
         };
         add(newRowsAjaxTimerBehavior);
+
+        filterPanel.add(new AjaxLink<Void>("day-forward") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                LocalDateTime d1 = dateFrom != null ? dateFrom : getDefaultDateFrom();
+                d1 = d1.plusDays(1);
+                LocalDateTime d2 = d1.plusDays(1);
+                dateTo = d2;
+                dateFrom = d1;
+                target.add(filterPanel);
+                target.add(table);
+            }
+        }.setBody(new StringResourceModel("day-forward").setParameters(1)).setEscapeModelStrings(false));
+        filterPanel.add(new AjaxLink<Void>("month-forward") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                LocalDateTime d1 = dateFrom != null ? dateFrom : getDefaultDateFrom();
+                d1 = d1.toLocalDate().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+                d1 = d1.plusMonths(1);
+                LocalDateTime d2 = d1.plusMonths(1);
+                dateTo = d2;
+                dateFrom = d1;
+                target.add(filterPanel);
+                target.add(table);
+            }
+        }.setBody(new StringResourceModel("month-forward").setParameters(1)).setEscapeModelStrings(false));
+        filterPanel.add(new AjaxLink<Void>("day-backward") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                LocalDateTime d1 = dateFrom != null ? dateFrom : getDefaultDateFrom();
+                d1 = d1.minusDays(1);
+                LocalDateTime d2 = d1.plusDays(1);
+                dateTo = d2;
+                dateFrom = d1;
+                target.add(filterPanel);
+                target.add(table);
+            }
+        }.setBody(new StringResourceModel("day-backward").setParameters(1)).setEscapeModelStrings(false));
+        filterPanel.add(new AjaxLink<Void>("month-backward") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                LocalDateTime d1 = dateFrom != null ? dateFrom : getDefaultDateFrom();
+                d1 = d1.toLocalDate().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+                d1 = d1.minusMonths(1);
+                LocalDateTime d2 = d1.plusMonths(1);
+                dateTo = d2;
+                dateFrom = d1;
+                target.add(filterPanel);
+                target.add(table);
+            }
+        }.setBody(new StringResourceModel("month-backward").setParameters(1)).setEscapeModelStrings(false));
+        filterPanel.add(new AjaxLink<Void>("today") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                LocalDateTime d1 = getDefaultDateFrom();
+                LocalDateTime d2 = d1.plusDays(1);
+                dateTo = d2;
+                dateFrom = d1;
+                target.add(filterPanel);
+                target.add(table);
+            }
+        }.setBody(new ResourceModel("today")).setEscapeModelStrings(false));
+        filterPanel.add(new AjaxLink<Void>("current-month") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                LocalDateTime d1 = getDefaultDateFrom().with(TemporalAdjusters.firstDayOfMonth());
+                LocalDateTime d2 = d1.plusMonths(1);
+                dateTo = d2;
+                dateFrom = d1;
+                target.add(filterPanel);
+                target.add(table);
+            }
+        }.setBody(new ResourceModel("current-month")).setEscapeModelStrings(false));
+
     }
 
     @Override
@@ -164,8 +258,20 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
             }
         });
         columns.add(new PropertyColumn(new ResourceModel("notification.number"), "notification.number", "notification.number"));
-        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("id"), "id", en -> repository.convert(en.getId())));
-        columns.add(new PropertyColumn(new ResourceModel("captain"), "captain", "captain.fio"));
+        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("id"), "id", en -> BaseConverter.convert(en.getId())){
+            @Override
+            public void populateItem(Item<ICellPopulator<ExitNotification>> item, String componentId, IModel<ExitNotification> rowModel) {
+                super.populateItem(item, componentId, rowModel);
+                item.add(new AttributeAppender("title",rowModel.map(ExitNotification::getId)));
+            }
+        });
+        columns.add(new PropertyColumn<ExitNotification, String>(new ResourceModel("captain"), "captain", "captain.fio") {
+            @Override
+            public void populateItem(Item<ICellPopulator<ExitNotification>> item, String componentId, IModel<ExitNotification> rowModel) {
+                super.populateItem(item, componentId, rowModel);
+                item.add(new AttributeAppender("title", rowModel.map(ExitNotification::getCaptain).map(Person::getFullFio)));
+            }
+        });
         columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("phones"), n -> Optional.ofNullable(n.getCaptain()).map(Person::getPhones).map(list -> Joiner.on("; ").join(list)).orElse(null)) {
 
             @Override
@@ -220,11 +326,12 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
                             ExitNotification exitNotification = getModelObject();
                             exitNotification.setReturnDateTime(LocalDateTime.now(SmallCraftWebSession.get().getZoneId()));
                             exitNotification = repository.save(exitNotification);
+                            newRowsAjaxTimerBehavior.updateCookie();
                         }
                     };
                     link.setOutputMarkupId(true);
                     link.setEscapeModelStrings(false);
-                    link.setBody(Model.of("<span class='btn btn-outline-secondary'><span class='fa fa-sign-in'></span><span>"));
+                    link.setBody(Model.of(String.format("<span class='btn btn-outline-secondary' title='%s'><span class='fa fa-sign-in'></span><span>", getString("setReturnDateTime"))));
                     cellItem.add(link);
                 }
             }
@@ -237,7 +344,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
         });
 
 //        columns.add(new PropertyColumn(new ResourceModel("activity"), "activity", "activity"));
-
+        columns.add(new PropertyColumn(new ResourceModel("creator"), "creator", "creator"));
         columns.add(createEditColumn());
         columns.add(createDeleteColumn());
         return columns;
@@ -247,7 +354,6 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     public Class<? extends CrudEditPage<ExitNotification, Long>> getEditPageClass() {
         return EditPage.class;
     }
-
 
     @Override
     protected Specification<ExitNotification> specification() {
@@ -263,8 +369,11 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
                 r.get("returnDateTime").isNull())
         ).orElse(null));
         where = where.and(Optional.ofNullable(quickSearch).map(str -> MaskableProperty.maskSpecification(str,
-                Lists.newArrayList("notification.number", "captain.lastName", "boat.tailNumber", "captain.phones", "boat.registrationNumber")
-        )).orElse(null));
+                Lists.newArrayList("notification.number", "captain.lastName", "boat.tailNumber", "captain.phones", "boat.person.lastName", "boat.person.phones", "boat.registrationNumber", "boat.model")
+        ).or((r, q, b) -> {
+            Long code = BaseConverter.convert(str);
+            return b.equal(r.get("id"), code);
+        })).orElse(null));
         where = where.and(Optional.ofNullable(dateTo).map(dt -> (Specification<ExitNotification>) (r, q, b) -> b.lessThanOrEqualTo(r.get("exitDateTime"), dt)).orElse(null));
         if (includeUnitChilds == null || !includeUnitChilds) {
             where = where.and(Optional.ofNullable(unit).map(u -> (Specification<ExitNotification>) (r, q, b) -> r.get("unit").get("id").in(u)).orElse(null));
@@ -276,7 +385,6 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
 
         return where;
     }
-
 
     @Override
     protected Sort sort() {
@@ -321,18 +429,34 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     public void onEditPageCreated(CrudEditPage<ExitNotification, Long> page) {
         TablePage tablePage = this;
         page.addOnBack(model -> {
-            tablePage.lastModifiedDate = model.map(AbstractAuditableEntity::getModifyDate).getObject();
-            tablePage.newRowsAjaxTimerBehavior.checked = LocalDateTime.now();
             newRowsAjaxTimerBehavior.updateCookie();
             RequestCycle.get().setResponsePage(tablePage);
         });
+    }
+
+    @Override
+    protected void onConfigure() {
+        super.onConfigure();
+        newRowsAjaxTimerBehavior.updateCookie();
+    }
+
+    LocalDateTime getDefaultDateFrom() {
+        ZoneId zoneId = SmallCraftWebSession.get().getZoneId();
+        LocalDateTime localDateTime = LocalDate.now(zoneId).atStartOfDay();
+        return localDateTime;
+    }
+
+    LocalDateTime getDefaultDateTo() {
+        ZoneId zoneId = SmallCraftWebSession.get().getZoneId();
+        LocalDateTime localDateTime = LocalDate.now(zoneId).atStartOfDay().plusDays(1);
+        return localDateTime;
     }
 
     static abstract class NewRowsAjaxTimerBehavior extends AbstractAjaxTimerBehavior {
 
         final static String COOKIE_NAME = "checkTime";
 
-        private LocalDateTime checked = LocalDateTime.now();
+        private Instant checked = Instant.now();
 
         public NewRowsAjaxTimerBehavior(Duration updateInterval) {
             super(updateInterval);
@@ -342,10 +466,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
         @Override
         public void onConfigure(Component component) {
             super.beforeRender(component);
-            checked = Optional.ofNullable(new CookieUtils().load(COOKIE_NAME))
-                    .map(cValue -> getComponent().getConverter(Long.class).convertToObject(cValue, Session.get().getLocale()))
-                    .map(longValue -> LocalDateTime.ofInstant(Instant.ofEpochMilli(longValue), ZoneId.systemDefault()))
-                    .orElseGet(LocalDateTime::now);
+            checked = fromCookie();
         }
 
         @Override
@@ -354,11 +475,24 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
             updateCookie();
         }
 
-        public void updateCookie() {
-            new CookieUtils().save(COOKIE_NAME, getComponent().getConverter(Long.class).convertToString(System.currentTimeMillis(), Session.get().getLocale()));
+
+        private void updateCookie() {
+            checked = Instant.now();
+            new CookieUtils().save(COOKIE_NAME, getComponent().getConverter(Long.class).convertToString(checked.toEpochMilli(), Session.get().getLocale()));
+        }
+
+        private Instant fromCookie() {
+            return Optional.ofNullable(new CookieUtils().load(COOKIE_NAME))
+                    .map(cValue -> getComponent().getConverter(Long.class).convertToObject(cValue, Session.get().getLocale()))
+                    .map(longValue -> Instant.ofEpochMilli(longValue))
+                    .orElseGet(Instant::now);
         }
 
         public boolean isNew(LocalDateTime lastmd) {
+            return Optional.ofNullable(lastmd).map(lmd -> checked.isBefore(toInstant(lmd))).orElse(false);
+        }
+
+        public boolean isNew(Instant lastmd) {
             return Optional.ofNullable(lastmd).map(lmd -> checked.isBefore(lmd)).orElse(false);
         }
     }

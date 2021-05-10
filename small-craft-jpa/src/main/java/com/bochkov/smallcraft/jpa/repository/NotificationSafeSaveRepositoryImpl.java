@@ -1,5 +1,6 @@
 package com.bochkov.smallcraft.jpa.repository;
 
+import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.Notification;
 import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +26,14 @@ class NotificationSafeSaveRepositoryImpl implements NotificationSafeSaveReposito
     @Transactional
     public Notification preapreSave(Notification entity) {
         Optional<Notification> e = Optional.ofNullable(entity);
-        e.map(Notification::getCaptain).ifPresent(
-                captain -> entity.setCaptain(personRepository.save(captain)));
         e.map(Notification::getBoat).ifPresent(
                 boat -> entity.setBoat(boatRepository.safeSave(boat)));
+        if(entity.getCaptain()==null){
+            entity.setCaptain(e.map(Notification::getBoat).map(Boat::getPerson).orElse(null));
+        }
+        e.map(Notification::getCaptain).ifPresent(
+                captain -> entity.setCaptain(personRepository.save(captain)));
+
         if (entity != null) {
             if (entity.getNumber() == null) {
                 entity.setNumber(seqRepository.nextValue(entity.getYear()));

@@ -5,11 +5,10 @@ import com.bochkov.smallcraft.jpa.entity.*;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
+import com.bochkov.smallcraft.wicket.web.crud.CrudPage;
 import com.bochkov.smallcraft.wicket.web.pages.boat.SelectPier;
 import com.bochkov.smallcraft.wicket.web.pages.notification.EditPage;
-import com.bochkov.smallcraft.wicket.web.pages.notification.SelectActivity;
-import com.bochkov.smallcraft.wicket.web.pages.notification.SelectNotification;
-import com.bochkov.smallcraft.wicket.web.pages.notification.SelectRegion;
+import com.bochkov.smallcraft.wicket.web.pages.notification.*;
 import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnit;
 import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.base.Strings;
@@ -20,18 +19,30 @@ import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.behavior.AbstractAjaxBehavior;
+import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.HiddenField;
-import org.apache.wicket.model.*;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.IModelComparator;
+import org.apache.wicket.model.LambdaModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.CollectionModel;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.IValidator;
+import org.springframework.data.jpa.domain.Specification;
 
 import javax.inject.Inject;
+import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Accessors(chain = true)
 public class FormComponentInputPanel extends CompositeInputPanel<ExitNotification> {
@@ -73,15 +84,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
 
     FormComponent<Boat> boat = new com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel("boat", PersistableModel.of(id -> boatRepository.findById(id))).setCanSelect(true);
 
-    IModel<Boolean> captainEqOwner = Model.of(true);
-
-    FormComponent<Person> captain = new com.bochkov.smallcraft.wicket.web.pages.person.FormComponentInputPanel("captain", PersistableModel.of(id -> personRepository.findById(id))) {
-        @Override
-        protected void onConfigure() {
-            super.onConfigure();
-            setVisible(!captainEqOwner.getObject()).setEnabled(!captainEqOwner.getObject());
-        }
-    }.setCanSelect(true);
+    FormComponent<Person> captain = new CaptainPanel("captain", PersistableModel.of(id -> personRepository.findById(id)), boat.getModel().map(Boat::getPerson));
 
     FormComponent<Notification> notification = new SelectNotification("notification", PersistableModel.of(id -> notificationRepository.findById(id))) {
 
@@ -109,9 +112,6 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
         super(id, model);
     }
 
-    public Boolean getCaptainEqOwner() {
-        return captainEqOwner.getObject();
-    }
 
     @Override
     public void convertInput() {
@@ -130,14 +130,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
         e.setReturnCallDateTime(returnCallDateTime.getConvertedInput());
         e.setReturnDateTime(returnDateTime.getConvertedInput());
         e.setActivities(activities.getConvertedInput() != null ? Sets.newHashSet(activities.getConvertedInput()) : null);
-        if (captainEqOwner.getObject()) {
-            Person cap = Optional.ofNullable(boat.getConvertedInput()).map(Boat::getPerson).orElse(null);
-            if (cap != null) {
-                e.setCaptain(cap);
-            }
-        } else {
-            e.setCaptain(captain.getConvertedInput());
-        }
+        e.setCaptain(captain.getConvertedInput());
         e.setEstimatedReturnDateTime(estimatedReturnDateTime.getConvertedInput());
         setConvertedInput(e);
     }
@@ -146,7 +139,8 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
     protected void initBeforeRenderer() {
         id.setModelObject(getModelObject());
         boat.setModelObject(getModel().map(ExitNotification::getBoat).orElse(null).getObject());
-        unit.setModelObject(getModel().map(ExitNotification::getUnit).getObject());
+        Unit u = getModel().map(ExitNotification::getUnit).orElseGet(() -> unit.getModelObject()).getObject();
+        unit.setModelObject(u);
         captain.setModelObject(getModel().map(ExitNotification::getCaptain).orElse(null).getObject());
         exitCallDateTime.setModelObject(getModel().map(ExitNotification::getExitCallDateTime).orElse(null).getObject());
         exitDateTime.setModelObject(getModel().map(ExitNotification::getExitDateTime).orElse(null).getObject());
@@ -168,36 +162,33 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
     @Override
     protected void onInitialize() {
         super.onInitialize();
+
         WebMarkupContainer content = new WebMarkupContainer("content");
         content.setOutputMarkupId(true);
         add(content);
-
+        content.add(new Label("number-code", id.getModel().map(ExitNotification::getId).map(BaseConverter::convert)) {
+            @Override
+            protected void onConfigure() {
+                super.onConfigure();
+                setVisible(!Strings.isNullOrEmpty(this.getDefaultModelObjectAsString()));
+            }
+        });
         pier.setOutputMarkupId(true);
         regions.setOutputMarkupId(true);
         setOutputMarkupId(true);
         Optional<ExitNotification> entity = Optional.ofNullable(getModelObject());
-        captainEqOwner.setObject(Objects.equals(entity.map(ExitNotification::getBoat).map(Boat::getPerson).orElse(null), entity.map(ExitNotification::getCaptain).orElse(null)));
         queue(id, estimatedReturnDateTime, exitCallDateTime, exitDateTime, returnCallDateTime, returnDateTime, pier, regions, boat, unit, activities, notification);
-        WebMarkupContainer captainConteiner = new WebMarkupContainer("captain-container");
         notification.add(new AjaxFormComponentUpdatingBehavior("change") {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
                 getModelObject().putData(notification.getModelObject());
-                target.add(pier,regions,activities,notification,captainConteiner,boat);
+                target.add(pier, regions, activities, notification, captain, boat);
                 initBeforeRenderer();
             }
         });
-        queue(captainConteiner.setOutputMarkupId(true));
-        captainConteiner.add(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                captainEqOwner.setObject(!captainEqOwner.getObject());
-                target.add(captainConteiner);
-            }
-        }.add(new Label("btn-captain-eq-owner-label", new StringResourceModel("btn-captain-eq-owner.${captainEqOwner}", Model.of(this)).setParameters(captainEqOwner.getObject()))));
 
 
-        captainConteiner.add(captain);
+        queue(captain.setOutputMarkupId(true));
         Component editNotification = new AjaxLink<Notification>("edit-notification", LambdaModel.of(getModel(), ExitNotification::getNotification, ExitNotification::setNotification)) {
             @Override
             public void onClick(AjaxRequestTarget target) {
@@ -209,6 +200,100 @@ public class FormComponentInputPanel extends CompositeInputPanel<ExitNotificatio
             }
         };
         queue(editNotification);
+        add(new IValidator<ExitNotification>() {
+            @Override
+            public void validate(IValidatable<ExitNotification> validatable) {
+                if (validatable != null && validatable.getValue() != null) {
+                    ExitNotification exit = validatable.getValue();
+                    if (exit.getReturnDateTime() != null && exit.getExitDateTime() != null && !exit.getReturnDateTime().isAfter(exit.getExitDateTime())) {
+                        exitCallDateTime.error(String.format("Время возвращения должно быть позже времени выхода"));
+                    }
+
+                    if (exit.getEstimatedReturnDateTime() != null && exit.getExitDateTime() != null && !exit.getEstimatedReturnDateTime().isAfter(exit.getExitDateTime())) {
+                        exitCallDateTime.error(String.format("Ожидаемое время возвращения должно быть позже времени выхода"));
+                    }
+                    if (exit.getEstimatedReturnDateTime() != null && exit.getExitCallDateTime() != null && !exit.getEstimatedReturnDateTime().isAfter(exit.getExitCallDateTime())) {
+                        exitCallDateTime.error(String.format("Ожидаемое время возвращения должно быть позже времени звонка на выход"));
+                    }
+                    if (exit.getReturnDateTime() != null && exit.getExitCallDateTime() != null && !exit.getReturnDateTime().isAfter(exit.getExitCallDateTime())) {
+                        exitCallDateTime.error(String.format("Время возвращения должно быть позже времени звонка на выход"));
+                    }
+                    if (exit.getReturnCallDateTime() != null && exit.getExitCallDateTime() != null && !exit.getReturnCallDateTime().isAfter(exit.getExitCallDateTime())) {
+                        exitCallDateTime.error(String.format("Время звонка о возвращения должно быть позже времени звонка на выход"));
+                    }
+                }
+            }
+        });
+
+        add(new IValidator<ExitNotification>() {
+            @Override
+            public void validate(IValidatable<ExitNotification> validatable) {
+                ExitNotification exitNotification = validatable.getValue();
+                if (exitNotification != null) {
+                    Notification notification = exitNotification.getNotification();
+                    if (notification != null) {
+                        LocalDateTime d1 = exitNotification.getExitDateTime();
+                        if (d1 != null) {
+                            LocalDateTime d2 = exitNotification.getReturnDateTime();
+                            Specification<ExitNotification> specification = (r, q, b) -> {
+                                Predicate predicate = b.and(b.equal(r.get("notification"), notification),
+                                        b.lessThan(r.get("exitDateTime"), d2 != null ? d2 : LocalDateTime.now()),
+                                        b.greaterThan(b.coalesce(r.get("returnDateTime"), LocalDateTime.now()), d1));
+                                return predicate;
+                            };
+                            List<ExitNotification> duplicates = exitNotificationRepository.findAll(specification).stream().filter(exit -> !Objects.equals(exit, exitNotification)).collect(Collectors.toList());
+                            if (!duplicates.isEmpty()) {
+                                for (ExitNotification exit1 : duplicates) {
+                                    PageParameters parameters = CrudPage.pageParameters(exit1);
+                                    Behavior behavior = new AbstractAjaxBehavior() {
+                                        @Override
+                                        public void onRequest() {
+                                            CrudPage currentPage = findParent(CrudPage.class);
+                                            com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage editPage = new com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage(parameters);
+                                            editPage.setBackPage(currentPage);
+                                            setResponsePage(editPage);
+                                        }
+
+                                        @Override
+                                        public boolean rendersPage() {
+                                            return false;
+                                        }
+                                    };
+                                    add(behavior);
+                                    CharSequence url = urlForListener(behavior, null);
+                                    error(String.format("Найдено пересечение периодов выхода: <a href='%1$s'>%2$s<a>", url, exit1.toString()));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        /*notification.add(new DuplicateEntityBehavior<Notification, ExitNotification>(id.getModel(), ExitNotification.class) {
+            @Override
+            public void resolveDuplicate(AjaxRequestTarget target, ExitNotification entity) {
+                FormComponentInputPanel.this.setModelObject(entity);
+                target.add(content);
+            }
+
+            @Override
+            public List<ExitNotification> findDuplicates(Notification search) {
+                Specification<ExitNotification> specification = (r, q, b) -> b.equal(r.get("notification"), search);
+                ExitNotification exitNotification = getEntityModel().getObject();
+                specification = specification.and((r, q, b) -> b.lessThanOrEqualTo(r.get("exitDateTime"), exitNotification.getReturnDateTime()));
+
+                specification = specification.and((r, q, b) -> {
+                    Predicate predicate = r.get("returnDateTime").isNull();
+                    LocalDateTime exitDateTime = getEntityModel().map(ExitNotification::getExitDateTime).getObject();
+                    LocalDateTime returnDateTime = getEntityModel().map(ExitNotification::getExitDateTime).getObject();
+                    if (exitDateTime != null) {
+
+                    }
+                    return predicate;
+                });
+                return exitNotificationRepository.findAll(specification);
+            }
+        });*/
     }
 
     @Override

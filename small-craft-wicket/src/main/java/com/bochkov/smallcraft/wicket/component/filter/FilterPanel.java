@@ -9,6 +9,8 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 
+import java.util.Objects;
+
 public class FilterPanel<T> extends Border {
 
     Form<T> form = new Form("form");
@@ -34,6 +36,12 @@ public class FilterPanel<T> extends Border {
                 form.clearInput();
                 Object data = form.getModel();
                 form.visitFormComponents((comp, visit) -> {
+                    if (Objects.equals("includeUnitChilds", comp.getId())) {
+                        return;
+                    }
+                    if (Objects.equals("unit", comp.getId())) {
+                        return;
+                    }
                     if (comp.getModel() != null) {
                         comp.setDefaultModelObject(null);
                     }

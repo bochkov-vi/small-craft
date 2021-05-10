@@ -50,7 +50,7 @@ public class DefaultDetailsPanel<T> extends GenericPanel<T> {
             @Override
             protected void populateItem(ListItem<String> item) {
                 item.add(new Label("name", new ResourceModel(item.getModelObject(), item.getModelObject())));
-                item.add(new Label("value", new PropertyModel<>(DefaultDetailsPanel.this.getModel(), item.getModelObject())));
+                item.add(new Label("value", new PropertyModel<>(DefaultDetailsPanel.this.getModel(), item.getModelObject()).map(Object::toString)));
             }
         };
         add(list);

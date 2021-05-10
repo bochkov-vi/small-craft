@@ -8,6 +8,6 @@ interface BoatSafeSaveRepository {
     @Transactional
     Boat prepareSave(Boat entity);
 
-    @javax.transaction.Transactional
+    @Transactional
     void setSequenceValueToMaxOfBoatRegistrationNumber();
 }

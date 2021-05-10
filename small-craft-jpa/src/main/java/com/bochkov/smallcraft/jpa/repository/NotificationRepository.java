@@ -2,8 +2,10 @@ package com.bochkov.smallcraft.jpa.repository;
 
 import com.bochkov.smallcraft.jpa.entity.Boat;
 import com.bochkov.smallcraft.jpa.entity.Notification;
+import com.bochkov.smallcraft.jpa.entity.Person;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +17,15 @@ import java.util.Optional;
 import java.util.TimeZone;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long>, JpaSpecificationExecutor<Notification>, NotificationSafeSaveRepository {
+
+    static Specification<Notification> activeSpecificationAtDate(LocalDate from, LocalDate to) {
+        return (r, q, b) -> b.and(b.lessThanOrEqualTo(r.get("dateFrom"), to),
+                b.or(b.greaterThanOrEqualTo(r.get("dateTo"), from)));
+    }
+
+    static Specification<Notification> activeSpecificationAtDate(LocalDate date) {
+        return activeSpecificationAtDate(date, date);
+    }
 
     @Query(nativeQuery = true, value = "SELECT distinct region FROM (SELECT region FROM(SELECT n.region FROM notification_region n WHERE region ILIKE :mask UNION DISTINCT SELECT n.region FROM exit_notification_region n WHERE region ILIKE :mask) as t ORDER BY position(:sort in region), length(region), region) as t",
             countQuery = "SELECT count(distinct region) FROM (SELECT n.region FROM notification_region n WHERE region ILIKE :mask UNION DISTINCT SELECT n.region FROM exit_notification_region n WHERE region ILIKE :mask)as t WHERE :sort IS NOT NULL\n")
@@ -74,4 +85,12 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     }
 
     List<Notification> findByYearAndNumber(Integer year, Integer number);
+
+    default List<Notification> findByCaptainOrBoatPerson(Person person,LocalDate date) {
+        Specification<Notification> specification = (r, q, b) -> b.equal(r.get("captain"), person);
+        specification = specification.or((r, q, b) -> b.equal(r.get("boat").get("person"), person));
+        specification  = activeSpecificationAtDate(date).and(specification);
+        return findAll(specification);
+    }
+
 }

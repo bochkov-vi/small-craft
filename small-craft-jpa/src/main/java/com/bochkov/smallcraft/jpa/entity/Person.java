@@ -64,7 +64,14 @@ public class Person extends AbstractEntity<Long> {
                 .orElse(null);
     }
 
+    @JsonIgnore
+    public String getFullFio() {
+        return String.format("%s %s %s",lastName,firstName,middleName);
+    }
+
     public Person setPhone(String... s) {
         return setPhones(Sets.newLinkedHashSet(Lists.newArrayList(s)));
     }
+
+
 }

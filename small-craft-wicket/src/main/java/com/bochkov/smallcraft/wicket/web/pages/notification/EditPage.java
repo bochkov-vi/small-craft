@@ -68,14 +68,10 @@ public class EditPage extends CrudEditPage<Notification, Long> {
         return notification;
     }
 
-//    @Override
-//    public Notification save(Notification entity) {
-//        if (Optional.ofNullable(entity).map(Notification::getNumber).orElse(null) == null) {
-//            entity.setNumber(notificationNumberSeqRepository.nextValue(entity.getYear()));
-//        }
-//
-//        return super.save(entity);
-//    }
+    @Override
+    protected void onInitialize() {
+        super.onInitialize();
+    }
 
     @Override
     public void onSave(Optional<AjaxRequestTarget> target, IModel<Notification> model) {

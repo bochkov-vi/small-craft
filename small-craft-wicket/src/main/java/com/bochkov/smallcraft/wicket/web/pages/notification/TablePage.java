@@ -13,10 +13,14 @@ import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.smallcraft.wicket.web.crud.EntityDataTable;
 import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeLink;
+import com.bochkov.wicket.component.LocalDateTextField;
 import com.bochkov.wicket.jpa.model.PersistableModel;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ClassAttributeModifier;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
 import org.apache.wicket.markup.head.CssHeaderItem;
@@ -59,9 +63,13 @@ public class TablePage extends CrudTablePage<Notification, Long> {
 
     String quickSearch;
 
-    Boolean active=true;
+    Boolean active = true;
 
     Boolean includeUnitChilds = true;
+
+    LocalDate dateFrom;
+
+    LocalDate dateTo;
 
     public TablePage(PageParameters parameters) {
         super(Notification.class, parameters);
@@ -73,11 +81,13 @@ public class TablePage extends CrudTablePage<Notification, Long> {
     }
 
     public Specification specification() {
-        return Specification.where(MaskableProperty.<Notification>maskSpecification(quickSearch, Lists.newArrayList("number", "captain.lastName", "boat.person.lastName", "boat.tailNumber", "boat.registrationNumber", "captain.phones","boat.model")))
+        return Specification.where(MaskableProperty.<Notification>maskSpecification(quickSearch, Lists.newArrayList("number", "captain.lastName", "boat.person.lastName", "boat.tailNumber", "boat.registrationNumber", "captain.phones", "boat.model")))
                 .and(Optional.ofNullable(unit).flatMap(id -> unitRepository.findById(id)).map(unitEntity -> Hierarchicals.getAllChildIds(true, unitEntity)).filter(list -> !list.isEmpty()).map(list -> (Specification<Notification>) (r, q, b) -> r.get("unit").get("id").in(list)).orElse(null))
-                .and(Optional.ofNullable(active).map(aBoolean -> (Specification<Notification>) (r, q, b) -> {
+                .and(Optional.ofNullable(active).filter(b -> b).map(aBoolean -> (Specification<Notification>) (r, q, b) -> {
                     return b.greaterThanOrEqualTo(r.get("dateTo"), LocalDate.now());
-                }).orElse(null));
+                }).orElse(null))
+                .and(Optional.ofNullable(dateFrom).map(ld -> (Specification<Notification>) (r, q, b) -> b.greaterThanOrEqualTo(r.get("date"), ld)).orElse(null))
+                .and(Optional.ofNullable(dateTo).map(ld -> (Specification<Notification>) (r, q, b) -> b.lessThanOrEqualTo(r.get("date"), ld)).orElse(null));
     }
 
     @Override
@@ -85,6 +95,8 @@ public class TablePage extends CrudTablePage<Notification, Long> {
         super.onInitialize();
         add(new FilterPanel("filter", new CompoundPropertyModel<>(this)));
         queue(new CheckBox("active").setOutputMarkupId(true));
+        queue(new LocalDateTextField("dateFrom", getString("dateFormat")));
+        queue(new LocalDateTextField("dateTo", getString("dateFormat")));
     }
 
     @Override
@@ -106,7 +118,7 @@ public class TablePage extends CrudTablePage<Notification, Long> {
                 cellItem.add(new AttributeModifier("colspan",
                         rowModel.map(Notification::getBoat).filter(Boat::isNotRegistable).map(b -> 3).orElse(0)
                 ));
-                cellItem.add(new AttributeModifier("title",rowModel.map(Notification::getBoat).map(Boat::getId)));
+                cellItem.add(new AttributeModifier("title", rowModel.map(Notification::getBoat).map(Boat::getId)));
 
             }
 
@@ -137,7 +149,13 @@ public class TablePage extends CrudTablePage<Notification, Long> {
         columns.add(new PropertyColumn(new ResourceModel("number"), "number", "number"));
         columns.add(new PropertyColumn(new ResourceModel("date"), "date", "date"));
 
-        columns.add(new PropertyColumn(new ResourceModel("captain"), "captain", "captain.fio"));
+        columns.add(new PropertyColumn<Notification, String>(new ResourceModel("captain"), "captain", "captain.fio") {
+            @Override
+            public void populateItem(Item<ICellPopulator<Notification>> item, String componentId, IModel<Notification> rowModel) {
+                super.populateItem(item, componentId, rowModel);
+                item.add(new AttributeModifier("title", rowModel.map(Notification::getCaptain).map(capt -> Joiner.on(' ').join(capt.getLastName(), capt.getFirstName(), capt.getMiddleName()))));
+            }
+        });
         columns.add(new PropertyColumn(new ResourceModel("type"), "boat.type", "boat.type") {
             @Override
             public String getCssClass() {
@@ -145,6 +163,19 @@ public class TablePage extends CrudTablePage<Notification, Long> {
             }
         });
         columns.add(new PropertyColumn(new ResourceModel("model"), "boat.model", "boat.model"));
+        columns.add(new LambdaColumn<Notification, String>(new ResourceModel("person"), "person", n -> Optional.ofNullable(n).map(Notification::getBoat)
+                .map(Boat::getPersonAsString)
+                .orElse(null)) {
+            @Override
+            public void populateItem(Item<ICellPopulator<Notification>> item, String componentId, IModel<Notification> rowModel) {
+                super.populateItem(item, componentId, rowModel);
+                item.add(new AttributeModifier("title", rowModel.map(Notification::getBoat).map(b -> {
+                    String fio = Optional.ofNullable(b.getPerson()).map(p -> Joiner.on(' ').join(p.getLastName(), p.getFirstName(), p.getMiddleName())).orElse(null);
+                    String result = Optional.ofNullable(b.getLegalPerson()).map(lp -> String.format("%s (%s)", lp.toString(), fio)).orElse(fio);
+                    return result;
+                })));
+            }
+        });
         columns.add(new PropertyColumn(new ResourceModel("tailNumber"), "boat.tailNumber", "boat.tailNumber"));
         columns.add(new PropertyColumn(new ResourceModel("pier"), "pier", "pier") {
             @Override
@@ -231,6 +262,23 @@ public class TablePage extends CrudTablePage<Notification, Long> {
                         super.onConfigure();
                     }
                 });
+            }
+        });
+        columns.add(new PropertyColumn<Notification, String>(new ResourceModel("canVoiceCall"), "canVoiceCall", "canVoiceCall") {
+            @Override
+            public void populateItem(Item<ICellPopulator<Notification>> item, String componentId, IModel<Notification> rowModel) {
+                item.add(new AjaxLink<Notification>(componentId, rowModel) {
+                    @Override
+                    public void onClick(AjaxRequestTarget target) {
+                        Notification n = getModelObject();
+                        n.setCanVoiceCall(!n.getCanVoiceCall());
+                        getRepository().safeSave(n);
+                        target.add(item);
+                        target.appendJavaScript("$('.tooltip').remove()");
+                        target.appendJavaScript("$('[title]').tooltip()");
+                    }
+                }.setBody(rowModel.map(Notification::getCanVoiceCall).map(b -> b ? "<div class='btn btn-outline-secondary' title='Голосовые уведомления включены'><i class='fa fa-microphone' ></i></div>" : "<div class='btn btn-outline-warning' title='Голосовые уведомления не доступны'><i class='fa fa-microphone-slash '></i></div>")).setEscapeModelStrings(false));
+                item.setOutputMarkupId(true);
             }
         });
         columns.add(createEditColumn());

@@ -7,6 +7,7 @@ import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavi
 import com.bochkov.smallcraft.wicket.web.crud.CompositeInputPanel;
 import com.bochkov.smallcraft.wicket.web.pages.boat.SelectPier;
 import com.bochkov.smallcraft.wicket.web.pages.legalPerson.FormComponentInput;
+import com.bochkov.smallcraft.wicket.web.pages.person.EditPage;
 import com.bochkov.smallcraft.wicket.web.pages.unit.SessionSelectUnit;
 import com.bochkov.wicket.component.LocalDateTextField;
 import com.bochkov.wicket.jpa.model.PersistableModel;
@@ -14,9 +15,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.HiddenField;
@@ -24,7 +23,6 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.model.util.CollectionModel;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.IValidator;
@@ -65,10 +63,6 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     FormComponent<Collection<String>> regions = new SelectRegion("regions", new CollectionModel<String>());
 
-    FormComponent<Person> captain = new CaptainPanel("captain", PersistableModel.of(id -> personRepository.findById(id))).setCanSelect(true);
-
-    FormComponent<String> pier = new SelectPier("pier", Model.of());
-
     com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel boat = new com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel("boat", PersistableModel.of(id -> boatRepository.findById(id))) {
         @Override
         public void onUpdate(AjaxRequestTarget target) {
@@ -82,6 +76,10 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
         }
     }.setCanSelect(true);
+
+    FormComponent<Person> captain = new CaptainPanel("captain", PersistableModel.of(id -> personRepository.findById(id)), boat.getModel().map(Boat::getPerson));
+
+    FormComponent<String> pier = new SelectPier("pier", Model.of());
 
     FormComponent<LegalPerson> legalPerson = new FormComponentInput("legalPerson", PersistableModel.of(id -> legalPersonRepository.findById(id))).setCanSelect(true);
 
@@ -99,7 +97,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     FormComponent<Boolean> voiceCall = new CheckBox("voiceCall", Model.of());
 
-    IModel<Boolean> captainEqOwner = Model.of(true);
+    //IModel<Boolean> captainEqOwner = Model.of(true);
 
     public FormComponentInputPanel(String id) {
         super(id);
@@ -109,12 +107,20 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
         super(id, model);
     }
 
-    public Boolean getCaptainEqOwner() {
-        return captainEqOwner.getObject();
-    }
 
     @Override
     protected void onInitialize() {
+        boat.setOnPersonEdit((personModel, target) -> {
+            EditPage personEditPage = new EditPage(personModel);
+            personEditPage.addOnBack((editedPerson) -> {
+                Boat boatEntity = boat.getModelObject();
+                if (boatEntity != null) {
+                    boatEntity.setPerson(editedPerson.getObject());
+                }
+            });
+            setResponsePage(personEditPage);
+            personEditPage.setBackPage(getPage());
+        });
         super.onInitialize();
         WebMarkupContainer container = new WebMarkupContainer("content");
         add(container);
@@ -158,24 +164,31 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
         });
         pier.add(new PatternValidator("[^-]+"));
 
-        captain.setOutputMarkupId(true);
         setOutputMarkupId(true);
         queue(voiceCall, pier, regions, captain, boat, legalPerson, date, dateFrom, dateTo, activities, timeOfDay, tck, id, number, year, unit);
         legalPerson.setVisible(false).setEnabled(false);
         tck.setOutputMarkupId(true);
-        queue(new AjaxLink<Boolean>("btn-captain-eq-owner", captainEqOwner) {
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                captainEqOwner.setObject(!captainEqOwner.getObject());
-                target.add(FormComponentInputPanel.this);
-            }
-        }.add(new Label("btn-captain-eq-owner-label", new StringResourceModel("btn-captain-eq-owner.${captainEqOwner}", Model.of(this)).setParameters(captainEqOwner.getObject()))));
         dateFrom.setOutputMarkupId(true);
         date.add(new AjaxFormComponentUpdatingBehavior("change") {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
                 dateFrom.setModelObject(date.getModelObject());
                 target.add(dateFrom);
+            }
+        });
+        add(new IValidator<Notification>() {
+            @Override
+            public void validate(IValidatable<Notification> validatable) {
+                Notification notification = validatable.getValue();
+                if (notification != null) {
+                    if (notification.getDateFrom() != null) {
+                        if (notification.getDateTo() != null && !notification.getDateTo().isAfter(notification.getDateFrom())) {
+                            validatable.error(new ValidationError("Не допустимый период действия уведомления"));
+                            dateFrom.error(new ValidationError());
+                            dateTo.error(new ValidationError());
+                        }
+                    }
+                }
             }
         });
         number.add(new OnChangeDuplicateBehavior<Integer, Notification>(getModel(), Notification.class) {
@@ -190,7 +203,9 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
                 return notificationRepository.findByYearAndNumber(year.getModelObject(), number);
             }
         });
+        //regions.add(new SplitByComaValidator());
         FormComponentErrorBehavior.append(this);
+
     }
 
     @Override
@@ -205,11 +220,6 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
         entity.setDate(date.getConvertedInput());
 
         entity.setBoat(boat.getConvertedInput());
-        if (captainEqOwner.getObject()) {
-            entity.setCaptain(Optional.ofNullable(boat.getConvertedInput()).map(Boat::getPerson).orElse(null));
-        } else {
-            entity.setCaptain(captain.getConvertedInput());
-        }
         entity.setDateTo(dateTo.getConvertedInput());
         entity.setDateFrom(dateFrom.getConvertedInput());
         entity.setActivities(Optional.ofNullable(activities.getConvertedInput()).map(Sets::newHashSet).orElse(null));
@@ -219,13 +229,14 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
         entity.setUnit(unit.getConvertedInput());
         entity.setCanVoiceCall(voiceCall.getConvertedInput());
         entity.setPier(pier.getConvertedInput());
+        entity.setCaptain(captain.getConvertedInput());
         setConvertedInput(entity);
     }
 
     @Override
     protected void initBeforeRenderer() {
         id.setModelObject(getModelObject());
-        unit.setModelObject(getModel().map(Notification::getUnit).getObject());
+        unit.setModelObject(getModel().map(Notification::getUnit).orElseGet(() -> unit.getModelObject()).getObject());
         year.setModelObject(getModel().map(Notification::getYear).getObject());
         number.setModelObject(getModel().map(Notification::getNumber).getObject());
         date.setModelObject(getModel().map(Notification::getDate).getObject());
@@ -239,6 +250,8 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
         voiceCall.setModelObject(getModel().map(Notification::getCanVoiceCall).getObject());
         timeOfDay.setModelObject(getModel().map(Notification::getTimeOfDay).getObject());
         pier.setModelObject(getModel().map(Notification::getPier).getObject());
+        //captain.setModelObject(getModel().map(Notification::getCaptain).getObject());
+
 
     }
 
@@ -249,14 +262,36 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     @Override
     protected void onConfigure() {
-
-        if (captainEqOwner.getObject()) {
-            captain.setEnabled(false);
-            captain.setVisible(false);
-        } else {
-            captain.setEnabled(true);
-            captain.setVisible(true);
-        }
         super.onConfigure();
+        captain.setVisible(!getModel().map(AbstractEntity::isNew).orElse(true).getObject());
+    }
+
+    public static class SplitByComaValidator extends AjaxFormComponentUpdatingBehavior implements IValidator<Collection<String>> {
+
+        public SplitByComaValidator() {
+            super("change");
+        }
+
+        @Override
+        protected void onUpdate(AjaxRequestTarget target) {
+            System.out.println(target);
+        }
+
+        @Override
+        public void validate(IValidatable<Collection<String>> validatable) {
+            System.out.println(validatable.getValue());
+        }
+      /*  public CharSequence createAjaxLink(String entity) {
+            CharSequence htmlLink = String.format("<a href=\"#\"><span class=\"fa fa-pencil\" onclick=\"%s\"></span></a>", createCallbackAjaxFunction(entity));
+            //htmlLink = Strings.escapeMarkup(htmlLink);
+            return htmlLink;
+        }
+
+        public CharSequence createCallbackAjaxFunction(E entity) {
+            CharSequence url = getCallbackUrl(entity);
+            CharSequence func = org.apache.wicket.util.string.Strings.escapeMarkup(String.format("Wicket.Ajax.get({'u':'%s'})", url));
+            return func;
+        }*/
+
     }
 }

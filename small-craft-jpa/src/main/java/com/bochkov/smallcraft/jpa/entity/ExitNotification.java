@@ -1,6 +1,6 @@
 package com.bochkov.smallcraft.jpa.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.bochkov.smallcraft.jpa.repository.BaseConverter;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -82,5 +82,18 @@ public class ExitNotification extends AbstractAuditableEntity<Long> {
         setPier(o.map(Notification::getPier).orElse(null));
         setUnit(o.map(Notification::getUnit).orElse(null));
         return this;
+    }
+
+    public String getCode() {
+        return BaseConverter.convert(id);
+    }
+
+    public ExitNotification setCode(String code){
+        this.id = BaseConverter.convert(code);
+        return this;
+    }
+    @Override
+    public String toString() {
+        return String.format("Выход №%s",getCode());
     }
 }

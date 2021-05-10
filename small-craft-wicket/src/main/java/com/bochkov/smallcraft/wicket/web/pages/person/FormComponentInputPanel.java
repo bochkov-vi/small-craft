@@ -19,9 +19,11 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.feedback.IFeedbackMessageFilter;
 import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.TextArea;
@@ -32,6 +34,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.SetModel;
 import org.apache.wicket.util.visit.IVisit;
 import org.apache.wicket.util.visit.IVisitor;
+import org.danekja.java.util.function.serializable.SerializableBiConsumer;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -49,6 +52,10 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
     @Getter
     @Setter
     boolean canSelect = false;
+
+    @Getter
+    @Setter
+    SerializableBiConsumer<IModel<Person>, AjaxRequestTarget> onEdit;
 
     PhonesInput phones = (PhonesInput) new PhonesInput("phone", new SetModel<>()).setRequired(true);
 
@@ -187,7 +194,20 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
         add(phones);
         add(email);
         add(address);
-
+        WebMarkupContainer editLinkContainer = new WebMarkupContainer("edit-prepend-container") {
+            @Override
+            protected void onConfigure() {
+                super.onConfigure();
+                setVisible(onEdit != null);
+            }
+        };
+        editLinkContainer.add(new AjaxLink<Person>("edit", selectPerson.getModel()) {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                onEdit.accept(this.getModel(), target);
+            }
+        });
+        add(editLinkContainer);
         /*lastName.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
             @Override
             public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
@@ -268,7 +288,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
                 return model(entity);
             }
         });
-        passportSerial.add(new InputMaskBehavior("9999"));
+        //passportSerial.add(new InputMaskBehavior("{ regex: `([0-9]{4}|[A-Z]{2})`}"));
         passportNumber.add(new OnChangeDuplicateBehavior<String, Person>(getModel(), Person.class) {
             @Override
             public void resolveDuplicate(AjaxRequestTarget target, Person entity) {
@@ -296,7 +316,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
 
             @Override
             public List<Person> findDuplicates(String search) {
-                return personRepository.findByPhones(search);
+                return onDuplicatePhoneFinded(personRepository.findByPhones(search));
             }
 
             @Override
@@ -307,6 +327,10 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
 
         email.add(InputMaskBehavior.email());
         FormComponentErrorBehavior.append(this);
+    }
+
+    public List<Person> onDuplicatePhoneFinded(List<Person> personListWithEqPhone) {
+        return personListWithEqPhone;
     }
 
     @Override

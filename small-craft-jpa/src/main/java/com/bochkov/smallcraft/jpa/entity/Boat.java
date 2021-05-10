@@ -49,10 +49,10 @@ public class Boat extends AbstractEntity<Long> {
     Person person;
 
     @ManyToOne
-    @JoinColumn(name = "id_unit" ,nullable = false)
+    @JoinColumn(name = "id_unit", nullable = false)
     Unit unit;
 
-    @Column(nullable = false,columnDefinition = "boolean not null default true")
+    @Column(nullable = false, columnDefinition = "boolean not null default true")
     boolean notRegistable;
 
     @ManyToOne
@@ -62,5 +62,14 @@ public class Boat extends AbstractEntity<Long> {
     @Override
     public String toString() {
         return Stream.of(type, model, tailNumber, person, legalPerson, Optional.ofNullable(registrationNumber).map(n -> String.format("(%s)", n)).orElse(null)).filter(Objects::nonNull).map(Object::toString).collect(Collectors.joining(" "));
+    }
+
+    public String getPersonAsString() {
+        return Optional.ofNullable(legalPerson).map(lp -> String.format("%s (%s)",lp.toString(), getFio())).orElseGet(this::getFio);
+    }
+
+
+    public String getFio() {
+        return Optional.ofNullable(person).map(Person::getFio).orElse(null);
     }
 }

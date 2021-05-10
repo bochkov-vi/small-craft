@@ -1,28 +1,37 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="src/static/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <b-navbar type="light" variant="light">
+      <b-nav>
+        <b-nav-item v-show="route.name" class="nav-item" v-for="(route,idx,) in routes" :key="idx" :to="route.path" exact exact-active-class="active" active-class="active">
+          <i :class="route.meta.icon" class="fa"/>
+          {{ $t(route.name) }}
+        </b-nav-item>
+      </b-nav>
+    </b-navbar>
+    <div class="container">
+      <keep-alive>
+        <router-view/>
+      </keep-alive>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+
 
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  props: {
+    routes: {
+      type: Array,
+      required: true
+    }
   }
 }
 </script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+
 }
 </style>

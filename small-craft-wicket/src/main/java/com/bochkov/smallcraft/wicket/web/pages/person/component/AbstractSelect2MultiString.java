@@ -35,7 +35,37 @@ public abstract class AbstractSelect2MultiString extends Select2MultiChoice<Stri
             public void query(String term, int page, Response<String> response) {
                 AbstractSelect2MultiString.this.query(term, page, response);
             }
+
+            @Override
+            public String getDisplayValue(String choice) {
+                return AbstractSelect2MultiString.this.getDisplayValue(choice);
+            }
+
+            @Override
+            public String getIdValue(String choice) {
+                return AbstractSelect2MultiString.this.getIdValue(choice);
+            }
+
+            @Override
+            public Collection<String> toChoices(Collection<String> ids) {
+                return AbstractSelect2MultiString.this.toChoices(ids);
+            }
         };
+    }
+
+
+    public String getDisplayValue(String choice) {
+        return choice;
+    }
+
+
+    public String getIdValue(String choice) {
+        return choice;
+    }
+
+
+    public Collection<String> toChoices(Collection<String> ids) {
+        return ids;
     }
 
     public abstract void query(String term, int page, Response<String> response);

@@ -7,10 +7,9 @@ import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeAjaxLink;
 import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeLink;
 import com.bochkov.wicket.jpa.model.PersistableModel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.wicket.ClassAttributeModifier;
-import org.apache.wicket.Component;
-import org.apache.wicket.Page;
+import org.apache.wicket.*;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.AttributeAppender;
@@ -51,11 +50,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
     protected Class<ENTITY> entityClass;
 
     @Getter
-    private SerializableConsumer<IModel<T>> onBack = new SerializableConsumer<IModel<T>>() {
-        @Override
-        public void accept(IModel<T> tiModel) {
-        }
-    };
+    private SerializableConsumer<IModel<T>> onBack = null;
 
     public CrudPage(Class<ENTITY> entityClass) {
         super();
@@ -84,6 +79,18 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         };
     }
 
+    public static <X> PageParameters pageParametersForModel(IModel<X> model) {
+        return pageParameters(model.getObject());
+    }
+
+    public static <X> PageParameters pageParameters(X object) {
+        PageParameters parameters = new PageParameters();
+        Class<X> clazz = (Class<X>) object.getClass();
+        String value = Application.get().getConverterLocator().getConverter(clazz).convertToString(object, Session.get().getLocale());
+        parameters.set(0, value);
+        return parameters;
+    }
+
     protected abstract <R extends CrudRepository<ENTITY, ID>> R getRepository();
 
     public void onDelete(AjaxRequestTarget target, IModel<ENTITY> model) {
@@ -95,7 +102,7 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
                 try {
                     getRepository().delete(model.getObject());
                     deletePanel.hide(target);
-                    info(new StringResourceModel("delete.success", this, model).setParameters(model.getObject()).getObject());
+                    info(new StringResourceModel("delete.success", this, model).setParameters(entity).getObject());
                     onAfterDelete(target);
                 } catch (Exception e) {
                     String message = new StringResourceModel("delete.error", this, model).setParameters(model.getObject()).getObject();
@@ -200,16 +207,16 @@ public abstract class CrudPage<T, ENTITY extends Persistable<ID>, ID extends Ser
         return IModelComparator.ALWAYS_FALSE;
     }
 
-
     @Override
     protected void onConfigure() {
         super.onConfigure();
     }
 
     public void addOnBack(SerializableConsumer<IModel<T>> consumer) {
-        this.onBack = onBack.andThen(consumer);
+        this.onBack = onBack != null ? onBack.andThen(consumer) : consumer;
     }
-    public void setBackPage(Page page){
+
+    public void setBackPage(Page page) {
         addOnBack(goBackToPage(page));
     }
 }

@@ -3,6 +3,7 @@ package com.bochkov.smallcraft.wicket.web.crud;
 import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeButton;
 import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeLink;
 import com.bochkov.wicket.jpa.model.PersistableModel;
+import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.apache.commons.beanutils.FluentPropertyBeanIntrospector;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -52,6 +53,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
 
     WebMarkupContainer container = new WebMarkupContainer("container");
 
+    @Getter
     Form<T> form = new Form<>("form");
 
 
@@ -130,9 +132,7 @@ public abstract class CrudEditPage<T extends Persistable<ID>, ID extends Seriali
     }
 
     public void onAfterSave(Optional<AjaxRequestTarget> target, IModel<T> model) {
-        if (getOnBack() != null) {
-            getOnBack().accept(model);
-        }
+
     }
 
     public void onSaveError(Optional<AjaxRequestTarget> target, IModel<T> model) {
