@@ -20,7 +20,6 @@ import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.MetaDataHeaderItem;
 import org.apache.wicket.markup.html.GenericWebPage;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.IModel;
@@ -38,6 +37,8 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -175,4 +176,12 @@ public class BasePage<T> extends GenericWebPage<T> {
         }
         return null;
     }
+
+    public String format(LocalDate localDate) {
+        return Optional.ofNullable(localDate).map(ld -> ld.format(DateTimeFormatter.ofPattern(getString("dateFormat")))).orElse(null);
+    }
+    public String format(LocalDateTime localDateTime) {
+        return Optional.ofNullable(localDateTime).map(ld -> ld.format(DateTimeFormatter.ofPattern(getString("dateTimeFormat")))).orElse(null);
+    }
+
 }

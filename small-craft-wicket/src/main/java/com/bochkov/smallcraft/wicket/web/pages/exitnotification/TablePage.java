@@ -15,6 +15,7 @@ import com.bochkov.smallcraft.wicket.security.SmallCraftWebSession;
 import com.bochkov.smallcraft.wicket.web.crud.CrudEditPage;
 import com.bochkov.smallcraft.wicket.web.crud.CrudTablePage;
 import com.bochkov.smallcraft.wicket.web.crud.EntityDataTable;
+import com.bochkov.smallcraft.wicket.web.crud.button.AuthorizeAjaxLink;
 import com.bochkov.wicket.jpa.model.PersistableModel;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -24,6 +25,8 @@ import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.authorization.Action;
+import org.apache.wicket.authroles.authorization.strategies.role.annotations.AuthorizeAction;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
@@ -258,11 +261,11 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
             }
         });
         columns.add(new PropertyColumn(new ResourceModel("notification.number"), "notification.number", "notification.number"));
-        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("id"), "id", en -> BaseConverter.convert(en.getId())){
+        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("id"), "id", en -> BaseConverter.convert(en.getId())) {
             @Override
             public void populateItem(Item<ICellPopulator<ExitNotification>> item, String componentId, IModel<ExitNotification> rowModel) {
                 super.populateItem(item, componentId, rowModel);
-                item.add(new AttributeAppender("title",rowModel.map(ExitNotification::getId)));
+                item.add(new AttributeAppender("title", rowModel.map(ExitNotification::getId)));
             }
         });
         columns.add(new PropertyColumn<ExitNotification, String>(new ResourceModel("captain"), "captain", "captain.fio") {
@@ -304,9 +307,9 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
         columns.add(new PropertyColumn(new ResourceModel("model"), "model", "boat.model"));
         columns.add(new PropertyColumn(new ResourceModel("tailNumber"), "tailNumber", "boat.tailNumber"));
         columns.add(new PropertyColumn(new ResourceModel("pier"), "pier", "pier"));
-        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("regions"), "regions", row -> Optional.ofNullable(row).map(ExitNotification::getRegions).map(set -> set.stream().collect(Collectors.joining("; "))).orElse(null)));
-        columns.add(new PropertyColumn(new ResourceModel("exitDateTime"), "exitDateTime", "exitDateTime"));
-        columns.add(new PropertyColumn(new ResourceModel("estimatedReturnDateTime"), "estimatedReturnDateTime", "estimatedReturnDateTime") {
+        columns.add(new LambdaColumn<>(new ResourceModel("regions"), "regions", row -> Optional.ofNullable(row).map(ExitNotification::getRegions).map(set -> set.stream().collect(Collectors.joining("; "))).orElse(null)));
+        columns.add(new LambdaColumn<>(new ResourceModel("exitDateTime"), "exitDateTime", en -> format(en.getExitDateTime())));
+        columns.add(new LambdaColumn<ExitNotification, String>(new ResourceModel("estimatedReturnDateTime"), "estimatedReturnDateTime", en -> format(en.getEstimatedReturnDateTime())) {
             @Override
             public String getCssClass() {
                 return "d-none d-lg-table-cell";
@@ -316,10 +319,10 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
             @Override
             public void populateItem(Item<ICellPopulator<ExitNotification>> cellItem, String componentId, IModel<ExitNotification> rowModel) {
                 if (rowModel.map(ExitNotification::getReturnDateTime).map(dt -> true).orElse(false).getObject()) {
-                    cellItem.add(new Label(componentId, rowModel.map(ExitNotification::getReturnDateTime)));
+                    cellItem.add(new Label(componentId, rowModel.map(ExitNotification::getReturnDateTime).map(rdt -> format(rdt))));
                 } else {
                     cellItem.setOutputMarkupId(true);
-                    AbstractLink link = new AjaxLink<ExitNotification>(componentId, PersistableModel.of(rowModel.getObject(), id -> repository.findById(id))) {
+                    AbstractLink link = new AdminOnlyAjaxLink<ExitNotification>(componentId, PersistableModel.of(rowModel.getObject(), id -> repository.findById(id))) {
                         @Override
                         public void onClick(AjaxRequestTarget target) {
                             target.add(table);
@@ -494,6 +497,14 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
 
         public boolean isNew(Instant lastmd) {
             return Optional.ofNullable(lastmd).map(lmd -> checked.isBefore(lmd)).orElse(false);
+        }
+    }
+
+    @AuthorizeAction(action = Action.RENDER, roles = "ROLE_ADMIN")
+    static abstract class AdminOnlyAjaxLink<X> extends AuthorizeAjaxLink<X> {
+
+        public AdminOnlyAjaxLink(String id, IModel<X> model) {
+            super(id, model);
         }
     }
 }
