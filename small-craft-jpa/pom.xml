@@ -27,6 +27,18 @@
             </build>
         </profile>
         <profile>
+            <id>remotehost-properties</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>
+                            src/main/remotehost-properties
+                        </directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
             <id>development</id>
             <build>
                 <resources>
@@ -65,5 +77,38 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.polago.maven.plugins</groupId>
+                <artifactId>merge-properties-maven-plugin</artifactId>
+                <version>1.2</version>
 
+                <configuration>
+                    <overwrite>true</overwrite>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <overwriteProperties>true</overwriteProperties>
+                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                    <outputFile>application.properties</outputFile>
+                    <resources>
+                        <resource>
+                            <directory>src/main/localhost-resources</directory>
+                            <filtering>true</filtering>
+                        </resource>
+                        <resource>
+                            <directory>src/main/dev-resources</directory>
+                            <filtering>true</filtering>
+                        </resource>
+                    </resources>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

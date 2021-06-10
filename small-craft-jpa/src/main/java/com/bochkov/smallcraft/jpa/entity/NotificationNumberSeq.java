@@ -17,13 +17,21 @@ import javax.persistence.Id;
 @NoArgsConstructor
 public class NotificationNumberSeq {
 
+    final static Integer segments = 5;
+
+    final static Integer level = 0;
+
     @Id
     Integer year;
 
     Integer number;
 
-    public Integer nextValue() {
-        return number++;
+    public synchronized Integer nextValue() {
+        number++;
+        while (number % segments != level) {
+            number++;
+        }
+        return number;
     }
 
     public NotificationNumberSeq increment() {

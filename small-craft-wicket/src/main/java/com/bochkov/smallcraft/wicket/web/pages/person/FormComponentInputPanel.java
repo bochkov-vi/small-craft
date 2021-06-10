@@ -55,6 +55,10 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
 
     @Getter
     @Setter
+    boolean canEdit = true;
+
+    @Getter
+    @Setter
     SerializableBiConsumer<IModel<Person>, AjaxRequestTarget> onEdit;
 
     PhonesInput phones = (PhonesInput) new PhonesInput("phone", new SetModel<>()).setRequired(true);
@@ -358,6 +362,18 @@ public class FormComponentInputPanel extends CompositeInputPanel<Person> {
             selectPerson.setVisible(false);
             id.setVisible(true);
         }
+
+        phones.setEnabled(canEdit);
+        email.setEnabled(canEdit);
+        passportSerial.setEnabled(canEdit);
+        passportNumber.setEnabled(canEdit);
+        lastName.setEnabled(canEdit);
+        firstName.setEnabled(canEdit);
+        middleName.setEnabled(canEdit);
+        passportDate.setEnabled(canEdit);
+        birthDate.setEnabled(canEdit);
+        passportData.setEnabled(canEdit);
+        address.setEnabled(canEdit);
     }
 
     IModel<Person> model(Person p) {
