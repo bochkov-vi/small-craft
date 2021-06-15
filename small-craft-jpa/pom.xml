@@ -15,30 +15,6 @@
     </properties>
     <profiles>
         <profile>
-            <id>localhost</id>
-            <build>
-                <resources>
-                    <resource>
-                        <directory>
-                            src/main/localhost-resources
-                        </directory>
-                    </resource>
-                </resources>
-            </build>
-        </profile>
-        <profile>
-            <id>remotehost-properties</id>
-            <build>
-                <resources>
-                    <resource>
-                        <directory>
-                            src/main/remotehost-properties
-                        </directory>
-                    </resource>
-                </resources>
-            </build>
-        </profile>
-        <profile>
             <id>development</id>
             <build>
                 <resources>

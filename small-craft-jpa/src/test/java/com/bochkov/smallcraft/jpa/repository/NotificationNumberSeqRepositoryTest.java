@@ -27,8 +27,6 @@ public class NotificationNumberSeqRepositoryTest {
 
     @Test
     public void multiThreading() throws InterruptedException {
-
-
         ExecutorService service = Executors.newFixedThreadPool(80);
         for (int t = 0; t < 1000; t++) {
             service.execute(() -> {

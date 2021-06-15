@@ -108,7 +108,6 @@ public abstract class CrudTablePage<T extends Persistable<ID>, ID extends Serial
         table.setOutputMarkupId(true);
         container.setOutputMarkupId(true);
         exportExcel = new XLSXDataExportLink("export-excel", table, exportFileName.getObject());
-        table.setOutputMarkupId(true);
         container.add(table);
         container.setOutputMarkupId(true);
         container.add(createAddRowButton("btn-add-row"));

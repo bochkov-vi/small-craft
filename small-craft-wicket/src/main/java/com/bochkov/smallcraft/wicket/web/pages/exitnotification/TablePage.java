@@ -501,7 +501,7 @@ public class TablePage extends CrudTablePage<ExitNotification, Long> {
     }
 
     @AuthorizeAction(action = Action.RENDER, roles = "ROLE_ADMIN")
-    static abstract class AdminOnlyAjaxLink<X> extends AuthorizeAjaxLink<X> {
+    public static abstract class AdminOnlyAjaxLink<X> extends AuthorizeAjaxLink<X> {
 
         public AdminOnlyAjaxLink(String id, IModel<X> model) {
             super(id, model);

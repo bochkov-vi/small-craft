@@ -16,23 +16,6 @@
     </properties>
     <profiles>
         <profile>
-            <id>localhost</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.apache.directory.server</groupId>
-                    <artifactId>apacheds-server-jndi</artifactId>
-                    <version>1.5.5</version>
-                </dependency>
-            </dependencies>
-            <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/localhost-resources</directory>
-                    </resource>
-                </resources>
-            </build>
-        </profile>
-        <profile>
             <id>development</id>
             <build>
                 <resources>

@@ -110,6 +110,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     @Override
     protected void onInitialize() {
+        number.setEnabled(false);
         boat.setOnPersonEdit((personModel, target) -> {
             EditPage personEditPage = new EditPage(personModel);
             personEditPage.addOnBack((editedPerson) -> {
