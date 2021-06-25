@@ -1,6 +1,9 @@
 package com.bochkov.smallcraft.wicket.web.pages.boat;
 
-import com.bochkov.smallcraft.jpa.entity.*;
+import com.bochkov.smallcraft.jpa.entity.Boat;
+import com.bochkov.smallcraft.jpa.entity.LegalPerson;
+import com.bochkov.smallcraft.jpa.entity.Person;
+import com.bochkov.smallcraft.jpa.entity.Unit;
 import com.bochkov.smallcraft.jpa.repository.*;
 import com.bochkov.smallcraft.wicket.component.FormComponentErrorBehavior;
 import com.bochkov.smallcraft.wicket.component.duplicate.OnChangeDuplicateBehavior;
@@ -25,6 +28,7 @@ import org.apache.wicket.model.Model;
 import org.danekja.java.util.function.serializable.SerializableBiConsumer;
 
 import javax.inject.Inject;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -77,6 +81,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
 
     FormComponent<Integer> buildYear = new NumberTextField<>("buildYear", Model.of(), Integer.class);
 
+    FormComponent<BigDecimal> power = new NumberTextField<>("power", Model.of(), BigDecimal.class).setStep(BigDecimal.valueOf(0.1));
 
     FormComponent<String> model = new TextField<>("model", Model.of(), String.class).setRequired(true);
 
@@ -90,7 +95,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
 
     FormComponent<Boolean> notRegistable = new CheckBox("notRegistable", Model.of(false));
 
-    WebMarkupContainer registrationPanel = new WebMarkupContainer("registrationPanel") ;
+    WebMarkupContainer registrationPanel = new WebMarkupContainer("registrationPanel");
 
     public FormComponentInputPanel(String id, IModel<Boat> model) {
         super(id, model);
@@ -105,7 +110,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
         //============REGISTRATION INPUTS
         add(registrationPanel);
         registrationPanel.setOutputMarkupId(true);
-        WebMarkupContainer registrationContent = new WebMarkupContainer("registrationContent"){
+        WebMarkupContainer registrationContent = new WebMarkupContainer("registrationContent") {
             @Override
             protected void onConfigure() {
                 super.onConfigure();
@@ -113,8 +118,8 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
             }
         };
         registrationContent.setOutputMarkupId(true);
-        queue(unit);
-        registrationContent.add(registrationDate, registrationNumber, expirationDate,  buildYear, serialNumber);
+        queue(unit, power);
+        registrationContent.add(registrationDate, registrationNumber, expirationDate, buildYear, serialNumber);
         registrationPanel.add(registrationContent);
         add(id, selectBoat, tailNumber, model, type);
         add(notRegistable);
@@ -259,6 +264,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
         boat.setSerialNumber(serialNumber.getConvertedInput());
         boat.setBuildYear(buildYear.getConvertedInput());
         boat.setNotRegistable(notRegistable.getConvertedInput());
+        boat.setPower(power.getConvertedInput());
         setConvertedInput(boat);
     }
 
@@ -278,6 +284,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Boat> {
         person.setModelObject(getModel().map(Boat::getPerson).getObject());
         legalPerson.setModelObject(getModel().map(Boat::getLegalPerson).getObject());
         notRegistable.setModelObject(getModel().map(Boat::isNotRegistable).orElseGet(() -> notRegistable.getModelObject()).getObject());
+        power.setModelObject(getModel().map(Boat::getPower).orElse(null).getObject());
 
     }
 

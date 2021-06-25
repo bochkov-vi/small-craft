@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
@@ -44,6 +45,9 @@ public class Boat extends AbstractEntity<Long> {
 
     String serialNumber;
 
+    @Column(scale = 4, precision = 1)
+    BigDecimal power;
+
     @ManyToOne
     @JoinColumn(name = "id_person", nullable = false)
     Person person;
@@ -65,7 +69,7 @@ public class Boat extends AbstractEntity<Long> {
     }
 
     public String getPersonAsString() {
-        return Optional.ofNullable(legalPerson).map(lp -> String.format("%s (%s)",lp.toString(), getFio())).orElseGet(this::getFio);
+        return Optional.ofNullable(legalPerson).map(lp -> String.format("%s (%s)", lp.toString(), getFio())).orElseGet(this::getFio);
     }
 
 

@@ -149,6 +149,7 @@ public class TablePage extends CrudTablePage<Boat, Long> {
         columns.add(new PropertyColumn(new ResourceModel("tailNumber"), "tailNumber", "tailNumber"));
         columns.add(new PropertyColumn(new ResourceModel("type"), "type", "type"));
         columns.add(new PropertyColumn(new ResourceModel("model"), "model", "model"));
+        columns.add(new PropertyColumn(new ResourceModel("power"), "power", "power"));
         columns.add(new PropertyColumn(new ResourceModel("serialNumber"), "serialNumber", "serialNumber"));
         columns.add(new PropertyColumn(new ResourceModel("buildYear"), "buildYear", "buildYear"));
         columns.add(new LambdaColumn<Boat, String>(new ResourceModel("person"), "person.lastName", row -> Optional.ofNullable(row).map(Boat::getPerson).map(Person::toString).orElse(null)));
