@@ -23,6 +23,7 @@ import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IModelComparator;
 import org.apache.wicket.model.Model;
@@ -37,11 +38,7 @@ import org.springframework.data.jpa.domain.Specification;
 import javax.inject.Inject;
 import javax.persistence.criteria.Predicate;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
@@ -72,6 +69,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
     FormComponent<Collection<String>> regions = new SelectRegion("regions", new CollectionModel<String>());
 
     com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel boat = new com.bochkov.smallcraft.wicket.web.pages.boat.FormComponentInputPanel("boat", PersistableModel.of(id -> boatRepository.findById(id))) {
+
         @Override
         public void onUpdate(AjaxRequestTarget target) {
             Boat b = getModelObject();
@@ -118,6 +116,9 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
 
     @Override
     protected void onInitialize() {
+        getPage().visitChildren(FeedbackPanel.class, (object, visit) -> {
+            object.setEscapeModelStrings(false);
+        });
         number.setEnabled(false);
         boat.setOnPersonEdit((personModel, target) -> {
             EditPage personEditPage = new EditPage(personModel);
@@ -178,17 +179,20 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
                 Notification notification = validatable.getValue();
                 if (notification != null) {
                     Boat boat = notification.getBoat();
-                    if (boat != null) {
+                    Person captain = notification.getCaptain();
+                    if (boat != null && captain != null) {
                         LocalDate d1 = notification.getDateFrom();
                         if (d1 != null) {
                             LocalDate d2 = notification.getDateTo();
                             Specification<Notification> specification = (r, q, b) -> {
                                 Predicate predicate = b.and(b.equal(r.get("boat"), boat),
+                                        b.equal(r.get("captain"), captain),
                                         b.lessThan(r.get("dateFrom"), d2 != null ? d2 : LocalDate.now()),
-                                        b.greaterThan(b.coalesce(r.get("dateTo"), LocalDate.now()), d1));
+                                        b.greaterThan(b.coalesce(r.get("dateTo"), LocalDate.now()), d1)
+                                );
                                 return predicate;
                             };
-                            List<Notification> duplicates = notificationRepository.findAll(specification);
+                            List<Notification> duplicates = notificationRepository.findAll(specification).stream().filter(n -> !Objects.equals(n, notification)).collect(Collectors.toList());
                             if (!duplicates.isEmpty()) {
                                 for (Notification exit1 : duplicates) {
                                     PageParameters parameters = CrudPage.pageParameters(exit1);
@@ -196,7 +200,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
                                         @Override
                                         public void onRequest() {
                                             CrudPage currentPage = findParent(CrudPage.class);
-                                            com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage editPage = new com.bochkov.smallcraft.wicket.web.pages.exitnotification.EditPage(parameters);
+                                            com.bochkov.smallcraft.wicket.web.pages.notification.EditPage editPage = new com.bochkov.smallcraft.wicket.web.pages.notification.EditPage(parameters);
                                             editPage.setBackPage(currentPage);
                                             setResponsePage(editPage);
                                         }
@@ -273,7 +277,9 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
             entity = new Notification();
         }
         entity.setYear(year.getConvertedInput());
-        entity.setNumber(number.getConvertedInput());
+        if (number.isEnabled()) {
+            entity.setNumber(number.getConvertedInput());
+        }
         entity.setDate(date.getConvertedInput());
 
         entity.setBoat(boat.getConvertedInput());
