@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:panel>
+    <div class="card border-primary">
+        <div class="card-header bg-primary text-light">
+            <wicket:message key="filter"/>
+        </div>
+        <div class="card-body">
+            <form wicket:id="form">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label wicket:for="unit">
+                            <wicket:message key="unit"/>
+                        </label>
+                        <select wicket:id="unit" class="form-control"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="custom-control custom-checkbox">
+                            <input wicket:id="includeUnitChilds" type="checkbox" class="custom-control-input">
+                            <label wicket:for="includeUnitChilds" class="custom-control-label">
+                                <wicket:message key="include-childs"/>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="btn-toolbar m-3 justify-content-between">
+        <div class="btn-group">
+            <button wicket:id="excel" class="btn btn-outline-success" type="button">
+                <span class="fa fa-file-excel-o"></span>
+            </button>
+        </div>
+    </div>
+    <div class="rounded border">
+        <table wicket:id="table" class="table table-striped m-0"></table>
+    </div>
+</wicket:panel>
+</body>
+</html>

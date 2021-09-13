@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:head>
+    <style>
+        .long-time {
+            background-color: rgba(251, 194, 255, .5);
+        }
+
+        .table-striped tbody tr.long-time:nth-of-type(2n+1) {
+            background-color: rgba(251, 194, 255, .8);
+
+        }
+
+    </style>
+</wicket:head>
+<wicket:extend>
+    <div wicket:id="filter"
+         class="container">
+        <div class="form-row">
+            <div class="form-group col-sm-2">
+                <label wicket:for="dateFrom">
+                    <wicket:message key="dateFrom"/>
+                </label>
+                <input type="text"
+                       wicket:id="dateFrom">
+            </div>
+            <div class="form-group col-sm-2">
+                <label wicket:for="dateTo">
+                    <wicket:message key="dateTo"/>
+                </label>
+                <input type="text"
+                       wicket:id="dateTo">
+            </div>
+            <div class="form-group col-sm-5">
+                <label wicket:for="dateTo">
+                    <wicket:message key="period-control"/>
+                </label>
+                <div class="btn-group">
+                    <button wicket:id="month-backward"
+                            class="btn btn-outline-primary">
+                        <span class="fa fa-gear"></span>
+                    </button>
+                    <button wicket:id="day-backward"
+                            class="btn btn-outline-primary">
+                        <span class="fa fa-gear"></span>
+                    </button>
+
+                    <button wicket:id="today"
+                            class="btn btn-outline-primary">
+                        <span class="fa fa-gear"></span>
+                    </button>
+                    <button wicket:id="current-month"
+                            class="btn btn-outline-primary">
+                        <span class="fa fa-gear"></span>
+                    </button>
+
+                    <button wicket:id="day-forward"
+                            class="btn btn-outline-primary">
+                        <span class="fa fa-gear"></span>
+                    </button>
+                    <button wicket:id="month-forward"
+                            class="btn btn-outline-primary">
+                        <span class="fa fa-gear"></span>
+                    </button>
+                </div>
+
+
+            </div>
+            <div class="form-group col-sm-3">
+                <div class="custom-control custom-checkbox">
+                    <input wicket:id="onExitOnly"
+                           type="checkbox"
+                           class="custom-control-input">
+                    <label wicket:for="onExitOnly"
+                           class="custom-control-label">
+                        <wicket:message key="boat-on-exit"/>
+                    </label>
+                </div>
+                <div class="custom-control custom-checkbox">
+                    <input wicket:id="longDateTime"
+                           type="checkbox"
+                           class="custom-control-input">
+                    <label wicket:for="longDateTime"
+                           class="custom-control-label">
+                        <wicket:message key="longDateTime"/>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <wicket:fragment wicket:id="badge-new">
+        <span class="badge badge-primary">new</span>
+    </wicket:fragment>
+</wicket:extend>
+</body>
+</html>

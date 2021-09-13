@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<wicket:head>
+    <title>
+        <wicket:message key="home-page-title"/> </title>
+</wicket:head>
+<wicket:extend>
+    <div class="container">
+
+        <div class="card-body">
+            <div wicket:id="dashboard"></div>
+        </div>
+        <ul class="list-group m-2 d-none">
+            <li class="list-group-item">
+                <a wicket:id="home" href="home"><i class="fa fa-home"/>
+                    <wicket:message key="home-page-title"/>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a wicket:id="boat" href="home"><i class="fa fa-ship"/>
+                    <wicket:message key="boat-page-title"/>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a wicket:id="person" href="home"><i class="fa fa-user"/>
+                    <wicket:message key="person-page-title"/>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a wicket:id="legal" href="home"><i class="fa fa-users"/>
+                    <wicket:message key="legal-person-page-title"/>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a wicket:id="notification" href="home"><i class="fa fa-newspaper-o"/>
+                    <wicket:message key="notification-page-title"/>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a wicket:id="exit-notification" href="home"><i class="fa fa-exchange"/>
+                    <wicket:message key="exit-notification-page-title"/>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a wicket:id="unit" href="home"><i class="fa fa-bandcamp"/>
+                    <wicket:message key="unit-page-title"/>
+                </a>
+            </li>
+
+        </ul>
+    </div>
+
+</wicket:extend>
+</html>

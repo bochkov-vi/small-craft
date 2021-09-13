@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:panel>
+
+    <div class="form-group" wicket:enclosure="boat">
+        <select wicket:id="boat" class="form-control"></select>
+    </div>
+    <input wicket:id="id" type="hidden" class="form-control">
+
+    <div class="form-row border rounded m-1">
+        <div class="form-group col-md-2">
+            <label wicket:for="type">
+                <wicket:message key="type"/>
+            </label>
+            <select wicket:id="type" class="form-control"></select>
+        </div>
+        <div class="form-group col-md-2">
+            <label wicket:for="model">
+                <wicket:message key="model"/>
+            </label>
+            <input wicket:id="model" type="text" class="form-control">
+        </div>
+
+        <div class="form-group col-md-2">
+            <label wicket:for="tailNumber">
+                <wicket:message key="tailNumber"/>
+            </label>
+            <input wicket:id="tailNumber" type="text" class="form-control" wicket:message="placeholder:noTailNumber">
+        </div>
+
+        <div class="form-group col-md-2">
+            <div class="form-group">
+                <label wicket:for="notRegistable" class="form-check-label">
+                    <wicket:message key="notRegistable"/>
+                </label>
+                <input wicket:id="notRegistable" type="checkbox" class="form-check">
+            </div>
+        </div>
+
+        <div class="form-group col-md-2">
+            <label wicket:for="unit">
+                <wicket:message key="unit"/>
+            </label>
+            <select wicket:id="unit" class="form-control"></select>
+        </div>
+    </div>
+    <div wicket:id="registrationPanel">
+        <div wicket:id="registrationContent" class="form-row border rounded m-1">
+            <div class="form-group col-md-2">
+                <label wicket:for="registrationNumber">
+                    <wicket:message key="registrationNumber"/>
+                </label>
+                <div class="input-group">
+                    <input wicket:id="registrationNumber" class="form-control">
+                    <div class="input-group-append">
+                        <div wicket:id="generateNewNumber" class="btn btn-outline-primary input-group-text">
+                            <i class="fa fa-gear" wicket:message="title:generateNewNumber"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group col-md-2">
+                <label wicket:for="registrationDate">
+                    <wicket:message key="registrationDate"/>
+                </label>
+
+                <input wicket:id="registrationDate" class="form-control">
+
+            </div>
+            <div class="form-group col-md-2">
+                <label wicket:for="expirationDate">
+                    <wicket:message key="expirationDate"/>
+                </label>
+                <input wicket:id="expirationDate" class="form-control">
+            </div>
+            <div class="form-group col-md-2">
+                <label wicket:for="power">
+                    <wicket:message key="power"/>
+                </label>
+                <input wicket:id="power" type="number" class="form-control">
+            </div>
+            <div class="form-group col-md-2">
+                <label wicket:for="buildYear">
+                    <wicket:message key="buildYear"/>
+                </label>
+                <input wicket:id="buildYear" type="number" class="form-control">
+            </div>
+            <div class="form-group col-md-2">
+                <label wicket:for="serialNumber">
+                    <wicket:message key="serialNumber"/>
+                </label>
+                <input wicket:id="serialNumber" type="text" class="form-control">
+            </div>
+            <div class="form-group col-md-4">
+                <label wicket:for="pier">
+                    <wicket:message key="pier"/>
+                </label>
+                <select wicket:id="pier" class="form-control"></select>
+            </div>
+        </div>
+    </div>
+    <div class="card border-primary m-1">
+        <div class="card-header bg-primary text-white">
+            <label wicket:for="person">
+                <wicket:message key="person"/>
+            </label>
+        </div>
+        <div class="card-body" wicket:id="person"></div>
+    </div>
+
+    <div wicket:id="legal-person-panel" class="card border-secondary mt-1">
+        <div class="card-header bg-secondary text-white">
+            <wicket:message key="legalPerson"/>
+        </div>
+        <div wicket:id="btn-add-legal-person" class="btn btn-outline-primary">
+            <span class="fa fa-plus"></span>
+            <span wicket:id="btn-add-legal-person-label">Это юридическое лицо</span>
+        </div>
+        <div wicket:id="legalPerson" class="card-body"></div>
+    </div>
+</wicket:panel>
+</body>
+</html>

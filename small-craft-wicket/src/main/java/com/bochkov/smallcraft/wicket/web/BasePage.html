@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<wicket:head>
+    <title>
+        <wicket:message key="title"></wicket:message> </title>
+    <style>
+        html {
+            font-size: 12px;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        .fa {
+            line-height: inherit !important;
+        }
+
+        .select2-container {
+            width: 100% !important;
+        }
+
+        label {
+            text-overflow: ellipsis !important;
+            display: block;
+        }
+    </style>
+</wicket:head>
+<body style="padding-top: 44px;">
+<div>
+    <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div id="navbarSupportedContent" class="collapse navbar-collapse">
+            <div class="navbar-nav ">
+
+                <a wicket:id="links" href="#" class="nav-item nav-link btn-outline-info">
+                    <i wicket:id="icon"></i>
+                    <span  wicket:id="label"  style="white-space: nowrap; text-overflow: ellipsis"></span>
+                </a>
+
+            </div>
+            <div class="navbar-nav flex-row ml-md-auto d-none d-md-flex">
+                <div class="nav-item text-nowrap overflow-hidden">
+                    <div wicket:id="btn-signout" class="nav-link">
+                        <span wicket:id="account-label">[account label]</span>
+                        <span class="fa fa-sign-out"></span>
+                    </div>
+                    <div wicket:id="btn-signin" class="nav-link ">
+                        <span>
+                            <wicket:message key="signin"/>
+                        </span>
+                        <span class="fa fa-sign-in"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>
+<wicket:child></wicket:child>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:panel>
+
+    <input type="hidden"
+           wicket:id="id">
+    <div class="form-group"
+         wicket:enclosure="person">
+        <div class="input-group flex-nowrap">
+            <select wicket:id="person"
+                    class="form-control"></select>
+            <div wicket:id="edit-prepend-container"
+                 class="input-group-append">
+                <button wicket:id="edit"
+                        type="button"
+                        class="btn btn-outline-primary">
+                    <i class="fa fa-pencil"/>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group col-md-4">
+            <label wicket:for="lastName">
+                <wicket:message key="lastName"/>
+            </label>
+            <input wicket:id="lastName"
+                   type="text"
+                   class="form-control"
+                   required>
+        </div>
+        <div class="form-group col-md-4">
+            <label wicket:for="firstName">
+                <wicket:message key="firstName"/>
+            </label>
+            <select wicket:id="firstName"
+                    class="form-control"
+                    required></select>
+        </div>
+        <div class="form-group col-md-4">
+            <label wicket:for="middleName">
+                <wicket:message key="middleName"/>
+            </label>
+            <select wicket:id="middleName"
+                    type="text"
+                    class="form-control"
+                    required></select>
+        </div>
+    </div>
+
+    <div class="form-row border rounded m-0">
+        <div class="form-group col-md-2">
+            <label wicket:for="passport.serial">
+                <wicket:message key="passport.serial"/>
+            </label>
+            <input wicket:id="passport.serial"
+                   type="text"
+                   class="form-control"
+                   maxlength="4"
+                   pattern="(\w{2}|\d{4})"
+                   required>
+        </div>
+        <div class="form-group col-md-3">
+            <label wicket:for="passport.number">
+                <wicket:message key="passport.number"/>
+            </label>
+            <input wicket:id="passport.number"
+                   type="text"
+                   class="form-control"
+                   maxlength="6"
+                   pattern="\d{6}"
+                   required>
+        </div>
+        <div class="form-group col-md-3">
+            <label wicket:for="passport.date">
+                <wicket:message key="passport.date"/>
+            </label>
+            <input wicket:id="passport.date"
+                   type="text"
+                   class="form-control"
+                   required>
+        </div>
+        <div class="form-group col-md-4">
+            <label wicket:for="passport.data">
+                <wicket:message key="passport.data"/>
+            </label>
+            <input wicket:id="passport.data"
+                   type="text"
+                   class="form-control"
+                   required>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group col-md-2">
+            <label wicket:for="birthDate">
+                <wicket:message key="birthDate"/>
+            </label>
+            <input wicket:id="birthDate"
+                   type="text"
+                   class="form-control">
+        </div>
+        <div class="form-group col-md-4">
+            <label wicket:for="address">
+                <wicket:message key="address"/>
+            </label>
+            <textarea wicket:id="address"
+                      type="text"
+                      class="form-control"
+                      required>
+            </textarea>
+        </div>
+        <div class="form-group col-md-4">
+            <label wicket:for="phone">
+                <wicket:message key="phone"/>
+            </label>
+            <div wicket:id="phone"></div>
+        </div>
+        <div class="form-group col-md-2">
+            <label wicket:for="email">
+                <wicket:message key="email"/>
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">@</span>
+                </div>
+                <input wicket:id="email"
+                       type="email"
+                       class="form-control"></div>
+        </div>
+
+    </div>
+</wicket:panel>
+</body>
+</html>

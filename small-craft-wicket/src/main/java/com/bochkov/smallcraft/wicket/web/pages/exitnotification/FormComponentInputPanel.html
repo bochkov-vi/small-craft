@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<body>
+<wicket:panel>
+    <div class="card mt-md-3 mt-1 border-primary ">
+        <div wicket:id="content" class="card-body  ">
+            <input wicket:id="id" type="hidden">
+            <div wicket:id="number-code" class="border border-success rounded h2">[Exit Notification Number]</div>
+            <div class="form-row">
+                <div class="form-group col-md-2">
+                    <label wicket:for="exitCallDateTime">
+                        <wicket:message key="exitCallDateTime"/>
+                    </label>
+                    <input wicket:id="exitCallDateTime" class="form-control">
+                </div>
+                <div class="form-group col-md-2">
+                    <label wicket:for="exitDateTime">
+                        <wicket:message key="exitDateTime"/>
+                    </label>
+                    <input wicket:id="exitDateTime" class="form-control">
+                </div>
+                <div class="form-group col-md-2">
+                    <label wicket:for="estimatedReturnDateTime">
+                        <wicket:message key="estimatedReturnDateTime"/>
+                    </label>
+                    <input wicket:id="estimatedReturnDateTime" class="form-control">
+                </div>
+                <div class="form-group col-md-6">
+                    <label wicket:for="pier">
+                        <wicket:message key="pier"/>
+                    </label>
+                    <select wicket:id="pier" class="form-control"></select>
+                </div>
+
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-2">
+                    <label wicket:for="returnCallDateTime">
+                        <wicket:message key="returnCallDateTime"/>
+                    </label>
+                    <input wicket:id="returnCallDateTime" class="form-control">
+                </div>
+                <div class="form-group col-md-2">
+                    <label wicket:for="returnDateTime">
+                        <wicket:message key="returnDateTime"/>
+                    </label>
+                    <input wicket:id="returnDateTime" class="form-control">
+                </div>
+                <div class="form-group col-md-4">
+                    <label wicket:for="regions">
+                        <wicket:message key="regions"/>
+                    </label>
+                    <select wicket:id="regions" class="form-control"></select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label wicket:for="activities">
+                        <wicket:message key="activities"/>
+                    </label>
+                    <select wicket:id="activities" class="form-control"></select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-8">
+                    <label wicket:for="notification">
+                        <wicket:message key="notification"/>
+                    </label>
+                    <div class="input-group flex-nowrap">
+                        <select wicket:id="notification" class="form-control"></select>
+                        <div wicket:id="edit-notification" class="input-group-append" wicket:message="title:edit-label">
+                            <div class="btn btn-outline-secondary">
+                                <span class="fa fa-pencil"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-md-4">
+                    <label wicket:for="unit">
+                        <wicket:message key="unit"/>
+                    </label>
+                    <select wicket:id="unit" class="form-control" required></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div wicket:id="captain"></div>
+
+    <div class="card border-success mt-1 mt-md-3">
+        <div class="card-header bg-success">
+            <label wicket:for="boat">
+                <wicket:message key="boat"/>
+            </label>
+        </div>
+
+        <div class="card-body" wicket:id="boat"></div>
+    </div>
+
+
+</wicket:panel>
+</body>
+</html>

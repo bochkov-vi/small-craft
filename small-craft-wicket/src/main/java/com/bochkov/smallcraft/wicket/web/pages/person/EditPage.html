@@ -1,0 +1,29 @@
+<wicket:extend xmlns="http://www.w3.org/1999/xhtml"
+               xmlns:wicket="http://wicket.apache.org">
+    <div class="container">
+        <div class="h3">Суда в собственности</div>
+        <table class="table table-sm table-striped">
+            <tr wicket:id="boats">
+                <td wicket:id="boat"></td>
+                <td><span wicket:id="edit"></span></td>
+            </tr>
+        </table>
+        <div class="h3">
+            <wicket:message key="notification-page-title"/>
+        </div>
+        <table class="table table-sm table-striped">
+            <tr wicket:id="notifications">
+                <td wicket:id="year"></td>
+                <td wicket:id="notification"></td>
+                <td wicket:id="boat"></td>
+                <td wicket:id="dateFrom"></td>
+                <td wicket:id="dateTo"></td>
+                <td><span wicket:id="edit"></span></td>
+            </tr>
+        </table>
+        <div class="h3">
+            <wicket:message key="exit-notification-page-title"/>
+        </div>
+        <table wicket:id="exits"></table>
+    </div>
+</wicket:extend>
