@@ -30,6 +30,7 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
+import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -61,6 +62,8 @@ public class WicketWebSecurityAdapterConfig extends WebSecurityConfigurerAdapter
     public static BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {

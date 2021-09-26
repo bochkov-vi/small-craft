@@ -47,7 +47,7 @@ public class Boat extends AbstractEntity<Long> {
 
     String pier;
 
-    @Column(scale = 4, precision = 1)
+    @Column(scale = 1, precision = 4)
     BigDecimal power;
 
     @ManyToOne

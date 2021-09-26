@@ -110,7 +110,14 @@ public class EditPage extends CrudEditPage<Person, Long> {
             return b.equal(r.get("captain"), EditPage.this.getModelObject());
         }, () -> Sort.by(Sort.Order.desc("exitDateTime")));
 
-        EntityDataTable<ExitNotification, Long> exits = new EntityDataTable<ExitNotification, Long>("exits", exitColumns, provider, 50);
+        EntityDataTable<ExitNotification, Long> exits = new EntityDataTable<ExitNotification, Long>("exits", exitColumns, provider, 50) {
+            @Override
+            protected void onConfigure() {
+                super.onConfigure();
+                this.setVisible(EditPage.this.getModelObject() != null && !EditPage.this.getModelObject().isNew());
+
+            }
+        };
         add(exits);
 
     }

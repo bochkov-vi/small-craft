@@ -180,7 +180,7 @@ public class FormComponentInputPanel extends CompositeInputPanel<Notification> {
                 if (notification != null) {
                     Boat boat = notification.getBoat();
                     Person captain = notification.getCaptain();
-                    if (boat != null && captain != null) {
+                    if (boat != null && captain != null && !captain.isNew()) {
                         LocalDate d1 = notification.getDateFrom();
                         if (d1 != null) {
                             LocalDate d2 = notification.getDateTo();
